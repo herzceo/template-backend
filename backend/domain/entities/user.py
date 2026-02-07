@@ -8,4 +8,3 @@ from .base import Base, WithActive, WithTime, WithUUIDID
 
 class User(WithUUIDID, WithActive, WithTime, Base):
     login: Mapped[str] = mapped_column(String, index=True, unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String, nullable=False)
