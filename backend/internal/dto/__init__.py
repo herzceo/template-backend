@@ -1,5 +1,5 @@
 from .struct import StructDTO
-from .type import DTO, FromBuiltinsSupported, FromObjectSupported, ToBuiltinsSupported
+from .types import DTO, FromBuiltinsSupported, FromObjectSupported, ToBuiltinsSupported
 
 __all__ = (
     "DTO",
