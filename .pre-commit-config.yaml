@@ -1,5 +1,5 @@
 fail_fast: true
-always_run: true
+
 
 repos:
   - repo: https://github.com/astral-sh/uv-pre-commit
@@ -33,6 +33,7 @@ repos:
           - "pyproject.toml"
           - "--force-exclude"
         language: system
+        always_run: true
 
       - id: ruff
         entry: uv run --isolated --frozen ruff check
@@ -41,6 +42,7 @@ repos:
           - "pyproject.toml"
           - "--force-exclude"
         language: system
+        always_run: true
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.18.1
@@ -51,4 +53,5 @@ repos:
           - "--config-file"
           - "pyproject.toml"
         language: system
+        always_run: true
         exclude: ^scripts/
