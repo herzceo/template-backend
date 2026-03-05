@@ -1,0 +1,83 @@
+
+services:
+  backend:
+    container_name: template.local.backend
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - ${HTTP_PORT:-8000}:8000
+    networks:
+      - internal
+    command: ["backend", "api"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsSL", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    env_file:
+      - .env
+
+  migrations:
+    container_name: template.local.migrations
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      - internal
+    command: ["backend", "alembic", "upgrade", "head"]
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: no
+    env_file:
+      - .env
+
+  database:
+    container_name: template.local.database
+    image: postgres:18
+    shm_size: 4g
+    volumes:
+      - psql_data:/var/lib/postgresql/data:rw
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    networks:
+      internal:
+    command: postgres -c 'max_connections=${POSTGRES_MAX_CONNECTIONS}'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    env_file:
+      - .env
+
+  redis:
+    container_name: template.local.redis
+    image: redis:8
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - internal
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  psql_data:
+    name: template.local.psql_data
+  redis_data:
+    name: template.local.redis_data

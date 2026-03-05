@@ -10,8 +10,8 @@ from backend.infra.database.config import DatabaseConfig
 def create_async_engine(config: DatabaseConfig) -> AsyncEngine:
     return _create_async_engine(
         config.get_postgres_url(),
-        pool_size=config.POOL_SIZE,
-        max_overflow=config.MAX_OVERFLOW,
+        pool_size=config.POSTGRES_POOL_SIZE,
+        max_overflow=config.POSTGRES_MAX_OVERFLOW,
     )
 
 

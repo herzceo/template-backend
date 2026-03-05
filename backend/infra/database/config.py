@@ -9,8 +9,8 @@ class DatabaseConfig(StructDTO):
     POSTGRES_PASS: str
     POSTGRES_DRIVER: str = "psycopg"
 
-    POOL_SIZE: int = 100
-    MAX_OVERFLOW: int = 20
+    POSTGRES_POOL_SIZE: int = 100
+    POSTGRES_MAX_OVERFLOW: int = 20
 
     def get_postgres_url(self) -> str:
         return f"postgresql+{self.POSTGRES_DRIVER}://{self.POSTGRES_USER}:{self.POSTGRES_PASS}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
