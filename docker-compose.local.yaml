@@ -44,7 +44,7 @@ services:
     image: postgres:18
     shm_size: 4g
     volumes:
-      - psql_data:/var/lib/postgresql/data:rw
+      - psql_data:/var/lib/postgresql:rw
     ports:
       - "${POSTGRES_PORT}:5432"
     networks:
@@ -56,6 +56,11 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASS}
+      - POSTGRES_MAX_CONNECTIONS=${POSTGRES_MAX_CONNECTIONS}
     env_file:
       - .env
 
@@ -81,3 +86,7 @@ volumes:
     name: template.local.psql_data
   redis_data:
     name: template.local.redis_data
+
+networks:
+  internal:
+    internal: true

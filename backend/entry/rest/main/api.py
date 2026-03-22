@@ -13,7 +13,7 @@ from .openapi import create_openapi
 
 
 def create_router() -> Router:
-    return Router("/api", route_handlers=[create_v1_router()])
+    return Router("", route_handlers=[create_v1_router()])
 
 
 def create_api(config: APIConfig, db_config: DatabaseConfig) -> Litestar:

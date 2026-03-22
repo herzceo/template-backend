@@ -8,7 +8,7 @@ from backend.internal.di import Depends, inject
 class UsersController(Controller):
     path = "/users"
 
-    @get("/{id}")
+    @get("/{id:str}")
     @inject
     async def get_user(self, id: str, handler: Depends[users.GetUserHandler]) -> dtos.UserShort:
         return await handler(users.GetUserCommand(id=id))

@@ -12,7 +12,7 @@ test:
 run svc="api":
     uv run backend {{ svc }}
 
-start *svc:
+start +svc:
     docker compose -f {{ compose_file }} up -d --force-recreate --build {{ svc }}
 
 stop:
