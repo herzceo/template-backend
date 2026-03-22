@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, ClassVar, Self, get_args
+from typing import Any, ClassVar, get_args
 
 from backend.internal.dto import StructDTO
 
@@ -24,10 +24,6 @@ class Handler[C: Command, R: StructDTO | None, X: StructDTO | None](ABC):
     async def __call__(self, __cmd: C, ctx: X, /) -> R:
         raise NotImplementedError
 
-    @classmethod
-    def get_defined_handlers(
-        cls: type[Self],
-    ) -> dict[type[Command], type["Handler[Any, Any, Any]"]]:
-        return dict(
-            filter(lambda dto_handler: issubclass(dto_handler[1], cls), _DEFINED_HANDLERS.items())
-        )
+
+def get_defined_handlers() -> dict[type[Command], type["Handler[Any, Any, Any]"]]:
+    return _DEFINED_HANDLERS

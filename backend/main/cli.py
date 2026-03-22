@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from alembic.config import CommandLine as AlembicCLI
 from alembic.config import Config as AlembicConfig
 
+from backend.entry.rest.main import APIConfig, run_api
 from backend.infra.database.alembic import ALEMBIC_CONFIG
 from backend.infra.database.config import DatabaseConfig
 
@@ -30,7 +31,7 @@ def create_parser() -> ArgumentParser:
     return parser
 
 
-def run_alembic(options: Namespace) -> None:
+def cmd_run_alembic(options: Namespace) -> None:
     db = load_from_env(DatabaseConfig)
 
     if options.config is None:
@@ -47,11 +48,18 @@ def run_alembic(options: Namespace) -> None:
     alembic_cli.run_cmd(cfg, options)
 
 
+def cmd_run_api(_options: Namespace) -> None:
+    api_config = load_from_env(APIConfig)
+    db_config = load_from_env(DatabaseConfig)
+    run_api(api_config, db_config)
+
+
 def main() -> None:
     parser = create_parser()
     options = parser.parse_args()
 
     cmd_map: dict[str, Callable[[Namespace], None]] = {
-        "alembic": run_alembic,
+        "alembic": cmd_run_alembic,
+        "api": cmd_run_api,
     }
     cmd_map[options.which](options)
