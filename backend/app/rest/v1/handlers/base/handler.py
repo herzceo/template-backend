@@ -1,0 +1,33 @@
+from abc import ABC, abstractmethod
+from typing import Any, ClassVar, Self, get_args
+
+from backend.internal.dto import StructDTO
+
+from .type import HandlerType
+
+
+class Command(StructDTO): ...
+
+
+_DEFINED_HANDLERS: dict[type[Command], type["Handler[Any, Any, Any]"]] = {}
+
+
+class Handler[C: Command, R: StructDTO | None, X: StructDTO | None](ABC):
+    command_dto: ClassVar[type[Command]]
+    type_: ClassVar[HandlerType]
+
+    def __init_subclass__(cls, /, type_: HandlerType = HandlerType.WRITE) -> None:
+        cls.command_dto = get_args(cls.__orig_bases__[-1])[0]  # type: ignore[attr-defined]
+        cls.type_ = type_
+
+    @abstractmethod
+    async def __call__(self, __cmd: C, ctx: X, /) -> R:
+        raise NotImplementedError
+
+    @classmethod
+    def get_defined_handlers(
+        cls: type[Self],
+    ) -> dict[type[Command], type["Handler[Any, Any, Any]"]]:
+        return dict(
+            filter(lambda dto_handler: issubclass(dto_handler[1], cls), _DEFINED_HANDLERS.items())
+        )

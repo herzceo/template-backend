@@ -1,9 +1,8 @@
 __all__ = (
     "Command",
     "Handler",
-    "get_defined_handlers",
-    "handler",
+    "HandlerType",
 )
 
-from .base import Command, Handler
-from .dec import get_defined_handlers, handler
+from .handler import Command, Handler
+from .type import HandlerType
