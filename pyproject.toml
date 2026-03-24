@@ -5,6 +5,7 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.12,<=3.13"
 dependencies = [
+    "aiohttp>=3.11.0",
     "alembic>=1.16.5",
     "dishka>=1.7.2",
     "greenlet>=3.2.4",
@@ -98,6 +99,9 @@ select = ["ALL"]
 "tests/**" = [
   "S101",         # assert (S101)
   "S106",         # hardcoded-password-func-arg (S106)
+]
+"backend/infra/external/http/sessions/**" = [
+  "ASYNC109",     # timeout parameter in async functions (passed to aiohttp, not asyncio)
 ]
 
 

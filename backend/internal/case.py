@@ -1,8 +1,10 @@
 import re
 import typing
 
-pattern: typing.Final[re.Pattern[str]] = re.compile(r"(?<!^)(?=[A-Z])")
+_pattern: typing.Final[re.Pattern[str]] = re.compile(
+    r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])"
+)
 
 
 def pascal_case_to_snake_case(string: str, /) -> str:
-    return pattern.sub("_", string).lower().strip("_")
+    return _pattern.sub("_", string).lower().strip("_")
