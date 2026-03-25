@@ -103,6 +103,10 @@ select = ["ALL"]
 "backend/infra/external/http/sessions/**" = [
   "ASYNC109",     # timeout parameter in async functions (passed to aiohttp, not asyncio)
 ]
+"backend/domain/entities/**" = [
+  "TC002",        # SQLAlchemy needs type imports at runtime for Mapped[] resolution
+  "TC003",
+]
 
 
 [tool.ruff.lint.isort]

@@ -1,3 +1,5 @@
+from .asset import AssetRepo
+from .audit_log import AuditLogRepo
 from .base import (
     CRUDSupported,
     CountSupported,
@@ -5,14 +7,22 @@ from .base import (
     DeleteByIdSupported,
     GetByIdSupported,
     GetForUpdateSupported,
+    OffsetPaginationSupported,
     StreamSupported,
     UpdateSupported,
 )
 from .commiter import Commiter
 from .gateway import RepoGateway
+from .notification import NotificationRepo
+from .permission import PermissionRepo
+from .role import RoleRepo
+from .session import SessionRepo
+from .tenant import TenantRepo
 from .user import UserRepo
 
 __all__ = (
+    "AssetRepo",
+    "AuditLogRepo",
     "CRUDSupported",
     "Commiter",
     "CountSupported",
@@ -20,8 +30,14 @@ __all__ = (
     "DeleteByIdSupported",
     "GetByIdSupported",
     "GetForUpdateSupported",
+    "NotificationRepo",
+    "OffsetPaginationSupported",
+    "PermissionRepo",
     "RepoGateway",
+    "RoleRepo",
+    "SessionRepo",
     "StreamSupported",
+    "TenantRepo",
     "UpdateSupported",
     "UserRepo",
 )

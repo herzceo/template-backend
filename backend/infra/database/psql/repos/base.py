@@ -11,6 +11,7 @@ from backend.domain.repos.base import CreateSupported as ICreateSupported
 from backend.domain.repos.base import DeleteByIdSupported as IDeleteByIdSupported
 from backend.domain.repos.base import GetByIdSupported as IGetByIdSupported
 from backend.domain.repos.base import GetForUpdateSupported as IGetForUpdateSupported
+from backend.domain.repos.base import OffsetPaginationSupported as IOffsetPaginationSupported
 from backend.domain.repos.base import StreamSupported as IStreamSupported
 from backend.domain.repos.base import UpdateSupported as IUpdateSupported
 from backend.internal import Option
@@ -106,6 +107,15 @@ class ImplStreamSupported[E: Base](IStreamSupported[E], BaseRepo[E]):
         return await self._session.stream_scalars(stmt)
 
 
+class ImplOffsetPaginationSupported[E: Base](IOffsetPaginationSupported[E], BaseRepo[E]):
+    __slots__ = ()
+
+    async def list_with_offset(self, *, offset: int = 0, limit: int = 50) -> list[E]:
+        stmt = select(self._entity).offset(offset).limit(limit).order_by(self._entity.id)
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
+
+
 class ImplCRUDSupported[E: Base](
     ImplCreateSupported[E],
     ImplGetByIdSupported[E],
@@ -113,6 +123,7 @@ class ImplCRUDSupported[E: Base](
     ImplDeleteByIdSupported[E],
     ImplCountSupported[E],
     ImplGetForUpdateSupported[E],
+    ImplOffsetPaginationSupported[E],
     BaseRepo[E],
 ):
     __slots__ = ()

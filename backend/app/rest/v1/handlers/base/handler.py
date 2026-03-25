@@ -19,6 +19,8 @@ class Handler[C: Command, R: StructDTO | None, X: StructDTO | None](ABC):
     def __init_subclass__(cls, /, type_: HandlerType = HandlerType.WRITE) -> None:
         cls.command_dto = get_args(cls.__orig_bases__[-1])[0]  # type: ignore[attr-defined]
         cls.type_ = type_
+        if not getattr(cls, "__abstractmethods__", None):
+            _DEFINED_HANDLERS[cls.command_dto] = cls
 
     @abstractmethod
     async def __call__(self, __cmd: C, ctx: X, /) -> R:

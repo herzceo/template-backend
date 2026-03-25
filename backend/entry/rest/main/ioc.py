@@ -27,7 +27,7 @@ def create_psql_provider() -> Provider:
 
     provider.provide(create_async_engine, provides=AsyncEngine)
     provider.provide(create_async_session_maker, provides=async_sessionmaker[AsyncSession])
-    provider.provide(create_async_session, provides=AsyncSession)
+    provider.provide(create_async_session, provides=AsyncSession, scope=Scope.REQUEST)
 
     return provider
 

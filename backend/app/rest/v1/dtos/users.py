@@ -1,5 +1,14 @@
 from backend.internal.dto import StructDTO
 
 
-class UserShort(StructDTO):
+class User(StructDTO):
     id: str
+    login: str
+    email: str
+    first_name: str
+    last_name: str
+    avatar_url: str | None
+    active: bool
+    tenant_id: str
+    created_at: str
+    updated_at: str

@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 
-from backend.app.rest.v1.dtos.users import UserShort
+from uuid_utils.compat import UUID
+
+from backend.app.errors import NotFoundError
+from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
+from backend.domain.repos.gateway import RepoGateway
 
 
 class GetUserCommand(Command):
@@ -9,6 +13,9 @@ class GetUserCommand(Command):
 
 
 @dataclass
-class GetUserHandler(Handler[GetUserCommand, UserShort, None], type_=HandlerType.READ):
-    async def __call__(self, cmd: GetUserCommand, _ctx: None = None) -> UserShort:
-        return UserShort(id=cmd.id)
+class GetUserHandler(Handler[GetUserCommand, dtos.User, None], type_=HandlerType.READ):
+    gateway: RepoGateway
+
+    async def __call__(self, cmd: GetUserCommand, _ctx: None = None) -> dtos.User:
+        user = (await self.gateway.user.get_by_id(UUID(cmd.id))).some(NotFoundError())
+        return dtos.User.from_object(user)

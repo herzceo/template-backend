@@ -46,6 +46,11 @@ class StreamSupported[E: Base](Protocol):
     async def stream(self) -> AsyncIterable[E]: ...
 
 
+class OffsetPaginationSupported[E: Base](Protocol):
+    @abstractmethod
+    async def list_with_offset(self, *, offset: int = 0, limit: int = 50) -> list[E]: ...
+
+
 class CRUDSupported[E: Base](
     CreateSupported[E],
     GetByIdSupported[E],
@@ -53,5 +58,6 @@ class CRUDSupported[E: Base](
     DeleteByIdSupported[E],
     CountSupported[E],
     GetForUpdateSupported[E],
+    OffsetPaginationSupported[E],
     Protocol,
 ): ...
