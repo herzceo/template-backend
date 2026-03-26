@@ -1,3 +1,6 @@
+from collections.abc import AsyncIterator
+
+from aiobotocore.session import get_session
 from dishka import AsyncContainer, Provider, Scope, make_async_container
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
@@ -12,6 +15,16 @@ from backend.infra.database.psql.engine import (
 from backend.infra.database.psql.repos import (
     ImplRepoGateway,
 )
+from backend.infra.external.http.amplitude.client import AmplitudeClient
+from backend.infra.external.http.amplitude.config import AmplitudeSettings
+from backend.infra.external.http.google_maps.client import GoogleMapsClient
+from backend.infra.external.http.google_maps.config import GoogleMapsSettings
+from backend.infra.external.http.sessions.aiohttp import (
+    AiohttpConfig,
+    create_aiohttp_session,
+)
+from backend.infra.external.s3.client import S3Client
+from backend.infra.external.s3.config import S3Settings
 
 
 def create_utils_provider(db_config: DatabaseConfig) -> Provider:
@@ -45,10 +58,66 @@ def create_handlers_provider() -> Provider:
     return provider
 
 
-def create_container(db_config: DatabaseConfig) -> AsyncContainer:
+def _create_amplitude_client(settings: AmplitudeSettings) -> AmplitudeClient:
+    session = create_aiohttp_session(AiohttpConfig(BASE_URL=settings.AMPLITUDE_BASE_URL))
+    return AmplitudeClient(session=session, settings=settings)
+
+
+def _create_google_maps_client(settings: GoogleMapsSettings) -> GoogleMapsClient:
+    session = create_aiohttp_session(AiohttpConfig(BASE_URL=settings.GOOGLE_MAPS_BASE_URL))
+    return GoogleMapsClient(session=session, settings=settings)
+
+
+async def _create_s3_client(settings: S3Settings) -> AsyncIterator[S3Client]:
+    session = get_session()
+    async with session.create_client(
+        "s3",
+        region_name=settings.S3_REGION,
+        aws_access_key_id=settings.S3_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.S3_SECRET_ACCESS_KEY,
+        endpoint_url=settings.S3_ENDPOINT_URL,
+    ) as client:
+        yield S3Client(settings=settings, client=client)
+
+
+def create_external_provider(
+    *,
+    amplitude_settings: AmplitudeSettings | None = None,
+    google_maps_settings: GoogleMapsSettings | None = None,
+    s3_settings: S3Settings | None = None,
+) -> Provider:
+    provider = Provider(scope=Scope.APP)
+
+    if amplitude_settings is not None:
+        provider.provide(lambda: amplitude_settings, provides=AmplitudeSettings)
+        provider.provide(_create_amplitude_client, provides=AmplitudeClient)
+
+    if google_maps_settings is not None:
+        provider.provide(lambda: google_maps_settings, provides=GoogleMapsSettings)
+        provider.provide(_create_google_maps_client, provides=GoogleMapsClient)
+
+    if s3_settings is not None:
+        provider.provide(lambda: s3_settings, provides=S3Settings)
+        provider.provide(_create_s3_client, provides=S3Client)
+
+    return provider
+
+
+def create_container(
+    db_config: DatabaseConfig,
+    *,
+    amplitude_settings: AmplitudeSettings | None = None,
+    google_maps_settings: GoogleMapsSettings | None = None,
+    s3_settings: S3Settings | None = None,
+) -> AsyncContainer:
     return make_async_container(
         create_utils_provider(db_config),
         create_psql_provider(),
         create_repos_provider(),
         create_handlers_provider(),
+        create_external_provider(
+            amplitude_settings=amplitude_settings,
+            google_maps_settings=google_maps_settings,
+            s3_settings=s3_settings,
+        ),
     )
