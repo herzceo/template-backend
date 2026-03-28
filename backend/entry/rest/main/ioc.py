@@ -4,7 +4,10 @@ from aiobotocore.session import get_session
 from dishka import AsyncContainer, Provider, Scope, make_async_container
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
+from backend.app.ports.password_hasher import PasswordHasher
+from backend.app.ports.secret_token import SecretTokenGenerator
 from backend.app.rest.v1 import handlers
+from backend.app.rest.v1.services.session import SessionService
 from backend.domain.repos.gateway import RepoGateway
 from backend.infra.database.config import DatabaseConfig
 from backend.infra.database.psql.engine import (
@@ -25,6 +28,8 @@ from backend.infra.external.http.sessions.aiohttp import (
 )
 from backend.infra.external.s3.client import S3Client
 from backend.infra.external.s3.config import S3Settings
+from backend.infra.security.password_hasher import ImplArgon2PasswordHasher
+from backend.infra.security.secret_token import ImplSHA256SecretTokenGenerator
 
 
 def create_utils_provider(db_config: DatabaseConfig) -> Provider:
@@ -48,6 +53,14 @@ def create_psql_provider() -> Provider:
 def create_repos_provider() -> Provider:
     provider = Provider(scope=Scope.REQUEST)
     provider.provide(ImplRepoGateway, provides=RepoGateway)
+    return provider
+
+
+def create_auth_provider() -> Provider:
+    provider = Provider(scope=Scope.APP)
+    provider.provide(ImplSHA256SecretTokenGenerator, provides=SecretTokenGenerator)
+    provider.provide(ImplArgon2PasswordHasher, provides=PasswordHasher)
+    provider.provide(SessionService, provides=SessionService, scope=Scope.REQUEST)
     return provider
 
 
@@ -114,6 +127,7 @@ def create_container(
         create_utils_provider(db_config),
         create_psql_provider(),
         create_repos_provider(),
+        create_auth_provider(),
         create_handlers_provider(),
         create_external_provider(
             amplitude_settings=amplitude_settings,

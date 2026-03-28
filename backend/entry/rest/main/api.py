@@ -1,7 +1,9 @@
 from dishka.integrations.litestar import setup_dishka
 from litestar import Litestar, Router
+from litestar.middleware.base import DefineMiddleware
 from uvicorn import Config, Server
 
+from backend.entry.rest.common.middlewares.session import SessionMiddleware
 from backend.entry.rest.v1 import create_v1_router
 from backend.infra.database.config import DatabaseConfig
 
@@ -20,6 +22,7 @@ def create_api(config: APIConfig, db_config: DatabaseConfig) -> Litestar:
     app = Litestar(
         path="",
         route_handlers=[create_router()],
+        middleware=[DefineMiddleware(SessionMiddleware)],
         openapi_config=create_openapi(config),
         cors_config=create_cors(config),
         exception_handlers=create_exception_handlers(),

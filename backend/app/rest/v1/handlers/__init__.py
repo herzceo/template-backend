@@ -1,5 +1,6 @@
 from . import assets as assets
 from . import audit_logs as audit_logs
+from . import auth as auth
 from . import notifications as notifications
 from . import permissions as permissions
 from . import roles as roles

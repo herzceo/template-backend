@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12,<=3.13"
 dependencies = [
     "aiobotocore>=2.21.1",
+    "argon2-cffi>=23.1.0",
     "aiohttp>=3.11.0",
     "alembic>=1.16.5",
     "dishka>=1.7.2",
@@ -73,6 +74,7 @@ ignore = [
   "A002",         # builtin-argument-shadowing (A002)
   "T201",         # print (T201)
   "PLR0913",      # too-many-arguments (PLR0913)
+  "B008",         # function-call-in-default-argument (B008)
   "COM819",       # prohibited-trailing-comma (COM819)
   "TRY003",       # raise-vanilla-args (TRY003)
   "EM102",        # f-string-in-exception (EM102)
