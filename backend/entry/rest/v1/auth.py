@@ -4,6 +4,7 @@ from litestar import Controller, Request, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import auth
+from backend.entry.rest.common.scope import set_session_token
 from backend.internal.di import Depends, inject
 
 
@@ -20,5 +21,5 @@ class AuthController(Controller):
         request: Request[Any, Any, Any],
     ) -> dtos.User:
         ctx = await handler(data)
-        request.scope.setdefault("state", {})["session_token"] = ctx.token
+        set_session_token(request.scope, ctx.token)
         return ctx.data

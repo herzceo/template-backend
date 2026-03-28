@@ -103,6 +103,9 @@ select = ["ALL"]
   "S101",         # assert (S101)
   "S106",         # hardcoded-password-func-arg (S106)
 ]
+"backend/entry/rest/common/middlewares/**" = [
+  "S105",         # false positive on scope key names containing "token"
+]
 "backend/infra/external/http/sessions/**" = [
   "ASYNC109",     # timeout parameter in async functions (passed to aiohttp, not asyncio)
 ]

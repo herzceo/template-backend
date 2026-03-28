@@ -48,7 +48,8 @@ class SessionService:
         await self.gateway.session_.delete_by_id(session_id)
         await self.gateway.commiter.commit()
 
-    async def resolve_session(self, token_hash: str) -> Option[Session]:
+    async def resolve_session(self, raw_token: str) -> Option[Session]:
+        token_hash = self.token_generator.hash(raw_token)
         session_opt = await self.gateway.session_.get_by_token_hash(token_hash)
         session = session_opt.value
         if session is None:
