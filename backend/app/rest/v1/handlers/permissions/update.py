@@ -5,7 +5,7 @@ from uuid_utils.compat import UUID
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class UpdatePermissionCommand(Command):
@@ -18,14 +18,17 @@ class UpdatePermissionCommand(Command):
 class UpdatePermissionHandler(
     Handler[UpdatePermissionCommand, dtos.Permission, None], type_=HandlerType.WRITE
 ):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(self, cmd: UpdatePermissionCommand, _ctx: None = None) -> dtos.Permission:
-        entity = (await self.gateway.permission.get_by_id(UUID(cmd.id))).some(NotFoundError())
-        if cmd.codename is not None:
-            entity.codename = cmd.codename
-        if cmd.description is not None:
-            entity.description = cmd.description
-        updated = (await self.gateway.permission.update(entity)).some(NotFoundError())
-        await self.gateway.commiter.commit()
+        async with self.db:
+            entity = (await self.db.gateway.permission.get_by_id(UUID(cmd.id))).some(
+                NotFoundError()
+            )
+            if cmd.codename is not None:
+                entity.codename = cmd.codename
+            if cmd.description is not None:
+                entity.description = cmd.description
+            updated = (await self.db.gateway.permission.update(entity)).some(NotFoundError())
+            await self.db.commit()
         return dtos.Permission.from_object(updated)

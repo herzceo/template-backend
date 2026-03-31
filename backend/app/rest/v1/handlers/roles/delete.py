@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from uuid_utils.compat import UUID
 
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class DeleteRoleCommand(Command):
@@ -12,8 +12,9 @@ class DeleteRoleCommand(Command):
 
 @dataclass
 class DeleteRoleHandler(Handler[DeleteRoleCommand, None, None], type_=HandlerType.WRITE):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(self, cmd: DeleteRoleCommand, _ctx: None = None) -> None:
-        await self.gateway.role.delete_by_id(UUID(cmd.id))
-        await self.gateway.commiter.commit()
+        async with self.db:
+            await self.db.gateway.role.delete_by_id(UUID(cmd.id))
+            await self.db.commit()

@@ -6,7 +6,7 @@ from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.domain.entities.asset import Asset
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class CreateAssetCommand(Command):
@@ -21,18 +21,19 @@ class CreateAssetCommand(Command):
 
 @dataclass
 class CreateAssetHandler(Handler[CreateAssetCommand, dtos.Asset, None], type_=HandlerType.WRITE):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(self, cmd: CreateAssetCommand, _ctx: None = None) -> dtos.Asset:
-        entity = Asset(
-            key=cmd.key,
-            content_type=cmd.content_type,
-            size_bytes=cmd.size_bytes,
-            tenant_id=UUID(cmd.tenant_id),
-            uploader_id=UUID(cmd.uploader_id),
-            blurhash=cmd.blurhash,
-            original_filename=cmd.original_filename,
-        )
-        created = (await self.gateway.asset.create(entity)).some(AlreadyExistsError())
-        await self.gateway.commiter.commit()
+        async with self.db:
+            entity = Asset(
+                key=cmd.key,
+                content_type=cmd.content_type,
+                size_bytes=cmd.size_bytes,
+                tenant_id=UUID(cmd.tenant_id),
+                uploader_id=UUID(cmd.uploader_id),
+                blurhash=cmd.blurhash,
+                original_filename=cmd.original_filename,
+            )
+            created = (await self.db.gateway.asset.create(entity)).some(AlreadyExistsError())
+            await self.db.commit()
         return dtos.Asset.from_object(created)

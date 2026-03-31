@@ -6,7 +6,7 @@ from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.domain.entities.notification import Notification
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class CreateNotificationCommand(Command):
@@ -23,20 +23,21 @@ class CreateNotificationCommand(Command):
 class CreateNotificationHandler(
     Handler[CreateNotificationCommand, dtos.Notification, None], type_=HandlerType.WRITE
 ):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(
         self, cmd: CreateNotificationCommand, _ctx: None = None
     ) -> dtos.Notification:
-        entity = Notification(
-            title=cmd.title,
-            body=cmd.body,
-            audience=cmd.audience,
-            urgency=cmd.urgency,
-            tenant_id=UUID(cmd.tenant_id),
-            target_id=UUID(cmd.target_id) if cmd.target_id else None,
-            sender_id=UUID(cmd.sender_id) if cmd.sender_id else None,
-        )
-        created = (await self.gateway.notification.create(entity)).some(AlreadyExistsError())
-        await self.gateway.commiter.commit()
+        async with self.db:
+            entity = Notification(
+                title=cmd.title,
+                body=cmd.body,
+                audience=cmd.audience,
+                urgency=cmd.urgency,
+                tenant_id=UUID(cmd.tenant_id),
+                target_id=UUID(cmd.target_id) if cmd.target_id else None,
+                sender_id=UUID(cmd.sender_id) if cmd.sender_id else None,
+            )
+            created = (await self.db.gateway.notification.create(entity)).some(AlreadyExistsError())
+            await self.db.commit()
         return dtos.Notification.from_object(created)

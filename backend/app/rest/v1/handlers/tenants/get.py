@@ -5,7 +5,7 @@ from uuid_utils.compat import UUID
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class GetTenantCommand(Command):
@@ -14,8 +14,9 @@ class GetTenantCommand(Command):
 
 @dataclass
 class GetTenantHandler(Handler[GetTenantCommand, dtos.Tenant, None], type_=HandlerType.READ):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(self, cmd: GetTenantCommand, _ctx: None = None) -> dtos.Tenant:
-        tenant = (await self.gateway.tenant.get_by_id(UUID(cmd.id))).some(NotFoundError())
+        async with self.db:
+            tenant = (await self.db.gateway.tenant.get_by_id(UUID(cmd.id))).some(NotFoundError())
         return dtos.Tenant.from_object(tenant)

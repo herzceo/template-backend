@@ -11,7 +11,7 @@ from .base import (
     StreamSupported,
     UpdateSupported,
 )
-from .commiter import Commiter
+from .database import Database
 from .gateway import RepoGateway
 from .notification import NotificationRepo
 from .permission import PermissionRepo
@@ -24,9 +24,9 @@ __all__ = (
     "AssetRepo",
     "AuditLogRepo",
     "CRUDSupported",
-    "Commiter",
     "CountSupported",
     "CreateSupported",
+    "Database",
     "DeleteByIdSupported",
     "GetByIdSupported",
     "GetForUpdateSupported",

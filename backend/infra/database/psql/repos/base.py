@@ -72,7 +72,6 @@ class ImplDeleteByIdSupported[E: Base](IDeleteByIdSupported[E], BaseRepo[E]):
     async def delete_by_id(self, id_: UUID, /) -> None:
         stmt = delete(self._entity).where(self._entity.id == id_)
         await self._session.execute(stmt)
-        await self._session.commit()
 
 
 class ImplCountSupported[E: Base](ICountSupported[E], BaseRepo[E]):

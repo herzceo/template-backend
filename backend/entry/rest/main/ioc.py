@@ -8,16 +8,13 @@ from backend.app.ports.password_hasher import PasswordHasher
 from backend.app.ports.secret_token import SecretTokenGenerator
 from backend.app.rest.v1 import handlers
 from backend.app.rest.v1.services.session import SessionService
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 from backend.infra.database.config import DatabaseConfig
 from backend.infra.database.psql.engine import (
     create_async_engine,
-    create_async_session,
     create_async_session_maker,
 )
-from backend.infra.database.psql.repos import (
-    ImplRepoGateway,
-)
+from backend.infra.database.psql.repos import ImplDatabase
 from backend.infra.external.http.amplitude.client import AmplitudeClient
 from backend.infra.external.http.amplitude.config import AmplitudeSettings
 from backend.infra.external.http.google_maps.client import GoogleMapsClient
@@ -45,14 +42,12 @@ def create_psql_provider() -> Provider:
 
     provider.provide(create_async_engine, provides=AsyncEngine)
     provider.provide(create_async_session_maker, provides=async_sessionmaker[AsyncSession])
-    provider.provide(create_async_session, provides=AsyncSession, scope=Scope.REQUEST)
-
     return provider
 
 
-def create_repos_provider() -> Provider:
+def create_database_provider() -> Provider:
     provider = Provider(scope=Scope.REQUEST)
-    provider.provide(ImplRepoGateway, provides=RepoGateway)
+    provider.provide(ImplDatabase, provides=Database)
     return provider
 
 
@@ -126,7 +121,7 @@ def create_container(
     return make_async_container(
         create_utils_provider(db_config),
         create_psql_provider(),
-        create_repos_provider(),
+        create_database_provider(),
         create_auth_provider(),
         create_handlers_provider(),
         create_external_provider(

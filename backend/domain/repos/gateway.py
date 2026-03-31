@@ -1,8 +1,6 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from backend.domain.repos.commiter import Commiter
-
 from .asset import AssetRepo
 from .audit_log import AuditLogRepo
 from .notification import NotificationRepo
@@ -45,7 +43,3 @@ class RepoGateway(Protocol):
     @property
     @abstractmethod
     def audit_log(self) -> AuditLogRepo: ...
-
-    @property
-    @abstractmethod
-    def commiter(self) -> Commiter: ...

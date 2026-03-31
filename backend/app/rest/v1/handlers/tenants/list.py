@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class ListTenantsCommand(Command):
@@ -15,13 +15,16 @@ class ListTenantsHandler(
     Handler[ListTenantsCommand, dtos.PaginatedResponse[dtos.Tenant], None],
     type_=HandlerType.READ,
 ):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(
         self, cmd: ListTenantsCommand, _ctx: None = None
     ) -> dtos.PaginatedResponse[dtos.Tenant]:
-        items = await self.gateway.tenant.list_with_offset(offset=cmd.offset, limit=cmd.limit)
-        total = await self.gateway.tenant.count()
+        async with self.db:
+            items = await self.db.gateway.tenant.list_with_offset(
+                offset=cmd.offset, limit=cmd.limit
+            )
+            total = await self.db.gateway.tenant.count()
         return dtos.PaginatedResponse(
             items=[dtos.Tenant.from_object(i) for i in items],
             total=total,

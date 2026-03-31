@@ -7,7 +7,7 @@ from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.domain.entities.session import Session
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class CreateSessionCommand(Command):
@@ -24,18 +24,19 @@ class CreateSessionCommand(Command):
 class CreateSessionHandler(
     Handler[CreateSessionCommand, dtos.Session, None], type_=HandlerType.WRITE
 ):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(self, cmd: CreateSessionCommand, _ctx: None = None) -> dtos.Session:
-        entity = Session(
-            user_id=UUID(cmd.user_id),
-            token_hash=cmd.token_hash,
-            ip=cmd.ip,
-            user_agent=cmd.user_agent,
-            fingerprint=cmd.fingerprint,
-            country_code=cmd.country_code,
-            expires_at=datetime.fromisoformat(cmd.expires_at),
-        )
-        created = (await self.gateway.session_.create(entity)).some(AlreadyExistsError())
-        await self.gateway.commiter.commit()
+        async with self.db:
+            entity = Session(
+                user_id=UUID(cmd.user_id),
+                token_hash=cmd.token_hash,
+                ip=cmd.ip,
+                user_agent=cmd.user_agent,
+                fingerprint=cmd.fingerprint,
+                country_code=cmd.country_code,
+                expires_at=datetime.fromisoformat(cmd.expires_at),
+            )
+            created = (await self.db.gateway.session_.create(entity)).some(AlreadyExistsError())
+            await self.db.commit()
         return dtos.Session.from_object(created)

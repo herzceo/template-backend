@@ -7,7 +7,7 @@ from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.domain.entities.tenant import Tenant
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class CreateTenantCommand(Command):
@@ -19,15 +19,16 @@ class CreateTenantCommand(Command):
 
 @dataclass
 class CreateTenantHandler(Handler[CreateTenantCommand, dtos.Tenant, None], type_=HandlerType.WRITE):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(self, cmd: CreateTenantCommand, _ctx: None = None) -> dtos.Tenant:
-        entity = Tenant(
-            name=cmd.name,
-            slug=cmd.slug,
-            settings=cmd.settings,
-            owner_id=UUID(cmd.owner_id) if cmd.owner_id else None,
-        )
-        created = (await self.gateway.tenant.create(entity)).some(AlreadyExistsError())
-        await self.gateway.commiter.commit()
+        async with self.db:
+            entity = Tenant(
+                name=cmd.name,
+                slug=cmd.slug,
+                settings=cmd.settings,
+                owner_id=UUID(cmd.owner_id) if cmd.owner_id else None,
+            )
+            created = (await self.db.gateway.tenant.create(entity)).some(AlreadyExistsError())
+            await self.db.commit()
         return dtos.Tenant.from_object(created)

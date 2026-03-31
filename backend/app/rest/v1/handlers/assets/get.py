@@ -5,7 +5,7 @@ from uuid_utils.compat import UUID
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class GetAssetCommand(Command):
@@ -14,8 +14,9 @@ class GetAssetCommand(Command):
 
 @dataclass
 class GetAssetHandler(Handler[GetAssetCommand, dtos.Asset, None], type_=HandlerType.READ):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(self, cmd: GetAssetCommand, _ctx: None = None) -> dtos.Asset:
-        asset = (await self.gateway.asset.get_by_id(UUID(cmd.id))).some(NotFoundError())
+        async with self.db:
+            asset = (await self.db.gateway.asset.get_by_id(UUID(cmd.id))).some(NotFoundError())
         return dtos.Asset.from_object(asset)

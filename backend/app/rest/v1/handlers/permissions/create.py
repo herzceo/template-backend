@@ -4,7 +4,7 @@ from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.domain.entities.permission import Permission
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class CreatePermissionCommand(Command):
@@ -16,13 +16,14 @@ class CreatePermissionCommand(Command):
 class CreatePermissionHandler(
     Handler[CreatePermissionCommand, dtos.Permission, None], type_=HandlerType.WRITE
 ):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(self, cmd: CreatePermissionCommand, _ctx: None = None) -> dtos.Permission:
-        entity = Permission(
-            codename=cmd.codename,
-            description=cmd.description,
-        )
-        created = (await self.gateway.permission.create(entity)).some(AlreadyExistsError())
-        await self.gateway.commiter.commit()
+        async with self.db:
+            entity = Permission(
+                codename=cmd.codename,
+                description=cmd.description,
+            )
+            created = (await self.db.gateway.permission.create(entity)).some(AlreadyExistsError())
+            await self.db.commit()
         return dtos.Permission.from_object(created)

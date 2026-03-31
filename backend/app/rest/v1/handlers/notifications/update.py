@@ -5,7 +5,7 @@ from uuid_utils.compat import UUID
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class UpdateNotificationCommand(Command):
@@ -19,18 +19,21 @@ class UpdateNotificationCommand(Command):
 class UpdateNotificationHandler(
     Handler[UpdateNotificationCommand, dtos.Notification, None], type_=HandlerType.WRITE
 ):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(
         self, cmd: UpdateNotificationCommand, _ctx: None = None
     ) -> dtos.Notification:
-        entity = (await self.gateway.notification.get_by_id(UUID(cmd.id))).some(NotFoundError())
-        if cmd.title is not None:
-            entity.title = cmd.title
-        if cmd.body is not None:
-            entity.body = cmd.body
-        if cmd.urgency is not None:
-            entity.urgency = cmd.urgency
-        updated = (await self.gateway.notification.update(entity)).some(NotFoundError())
-        await self.gateway.commiter.commit()
+        async with self.db:
+            entity = (await self.db.gateway.notification.get_by_id(UUID(cmd.id))).some(
+                NotFoundError()
+            )
+            if cmd.title is not None:
+                entity.title = cmd.title
+            if cmd.body is not None:
+                entity.body = cmd.body
+            if cmd.urgency is not None:
+                entity.urgency = cmd.urgency
+            updated = (await self.db.gateway.notification.update(entity)).some(NotFoundError())
+            await self.db.commit()
         return dtos.Notification.from_object(updated)

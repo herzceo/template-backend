@@ -5,13 +5,13 @@ from uuid_utils.compat import UUID
 
 from backend.app.ports.secret_token import SecretTokenGenerator
 from backend.domain.entities.session import Session
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 from backend.internal import Option
 
 
 @dataclass
 class SessionService:
-    gateway: RepoGateway
+    db: Database
     token_generator: SecretTokenGenerator
     session_ttl: timedelta = timedelta(days=14)
 
@@ -38,26 +38,29 @@ class SessionService:
             expires_at=now + self.session_ttl,
         )
 
-        created = (await self.gateway.session_.create(entity)).some(
-            RuntimeError("Failed to create session")
-        )
-        await self.gateway.commiter.commit()
+        async with self.db:
+            created = (await self.db.gateway.session_.create(entity)).some(
+                RuntimeError("Failed to create session")
+            )
+            await self.db.commit()
         return raw_token, created
 
     async def revoke_session(self, session_id: UUID) -> None:
-        await self.gateway.session_.delete_by_id(session_id)
-        await self.gateway.commiter.commit()
+        async with self.db:
+            await self.db.gateway.session_.delete_by_id(session_id)
+            await self.db.commit()
 
     async def resolve_session(self, raw_token: str) -> Option[Session]:
         token_hash = self.token_generator.hash(raw_token)
-        session_opt = await self.gateway.session_.get_by_token_hash(token_hash)
+        session_opt = await self.db.gateway.session_.get_by_token_hash(token_hash)
         session = session_opt.value
         if session is None:
             return Option(None)
 
         if session.expires_at <= datetime.now(UTC):
-            await self.gateway.session_.delete_by_id(session.id)
-            await self.gateway.commiter.commit()
+            async with self.db:
+                await self.db.gateway.session_.delete_by_id(session.id)
+                await self.db.commit()
             return Option(None)
 
         return Option(session)

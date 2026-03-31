@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class ListNotificationsCommand(Command):
@@ -15,13 +15,16 @@ class ListNotificationsHandler(
     Handler[ListNotificationsCommand, dtos.PaginatedResponse[dtos.Notification], None],
     type_=HandlerType.READ,
 ):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(
         self, cmd: ListNotificationsCommand, _ctx: None = None
     ) -> dtos.PaginatedResponse[dtos.Notification]:
-        items = await self.gateway.notification.list_with_offset(offset=cmd.offset, limit=cmd.limit)
-        total = await self.gateway.notification.count()
+        async with self.db:
+            items = await self.db.gateway.notification.list_with_offset(
+                offset=cmd.offset, limit=cmd.limit
+            )
+            total = await self.db.gateway.notification.count()
         return dtos.PaginatedResponse(
             items=[dtos.Notification.from_object(i) for i in items],
             total=total,

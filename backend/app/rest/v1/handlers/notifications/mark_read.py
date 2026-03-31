@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from uuid_utils.compat import UUID
 
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.gateway import RepoGateway
+from backend.domain.repos.database import Database
 
 
 class MarkReadCommand(Command):
@@ -13,8 +13,11 @@ class MarkReadCommand(Command):
 
 @dataclass
 class MarkReadHandler(Handler[MarkReadCommand, None, None], type_=HandlerType.WRITE):
-    gateway: RepoGateway
+    db: Database
 
     async def __call__(self, cmd: MarkReadCommand, _ctx: None = None) -> None:
-        await self.gateway.notification.mark_read(UUID(cmd.notification_id), UUID(cmd.user_id))
-        await self.gateway.commiter.commit()
+        async with self.db:
+            await self.db.gateway.notification.mark_read(
+                UUID(cmd.notification_id), UUID(cmd.user_id)
+            )
+            await self.db.commit()
