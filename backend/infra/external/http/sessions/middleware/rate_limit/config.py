@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from msgspec import field
+
 from backend.internal.dto import StructDTO
 
 
@@ -16,5 +18,5 @@ class RateLimitRule(StructDTO):
 
 class RateLimiterConfig(StructDTO):
     default_rule: RateLimitRule | None = None
-    endpoint_rules: dict[str, RateLimitRule] = {}  # noqa: RUF012
+    endpoint_rules: dict[str, RateLimitRule] = field(default_factory=dict)
     strategy: str = "token_bucket"

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TypedDict
 
+from msgspec import field
+
 from backend.internal.dto import StructDTO
 
 
@@ -49,14 +51,14 @@ class AutocompletePrediction(StructDTO):
     place_id: str = ""
     description: str = ""
     structured_formatting: StructuredFormatting = StructuredFormatting()
-    terms: list[Term] = []  # noqa: RUF012
-    types: list[str] = []  # noqa: RUF012
-    matched_substrings: list[MatchedSubstring] = []  # noqa: RUF012
+    terms: list[Term] = field(default_factory=list)
+    types: list[str] = field(default_factory=list)
+    matched_substrings: list[MatchedSubstring] = field(default_factory=list)
 
 
 class AutocompleteResponse(StructDTO):
     status: str = ""
-    predictions: list[AutocompletePrediction] = []  # noqa: RUF012
+    predictions: list[AutocompletePrediction] = field(default_factory=list)
 
 
 class Location(StructDTO):
@@ -71,7 +73,7 @@ class Geometry(StructDTO):
 class AddressComponent(StructDTO):
     long_name: str = ""
     short_name: str = ""
-    types: list[str] = []  # noqa: RUF012
+    types: list[str] = field(default_factory=list)
 
 
 class PlaceDetails(StructDTO):
@@ -79,8 +81,8 @@ class PlaceDetails(StructDTO):
     name: str = ""
     formatted_address: str = ""
     geometry: Geometry = Geometry()
-    address_components: list[AddressComponent] = []  # noqa: RUF012
-    types: list[str] = []  # noqa: RUF012
+    address_components: list[AddressComponent] = field(default_factory=list)
+    types: list[str] = field(default_factory=list)
     url: str = ""
     utc_offset: int | None = None
 
@@ -94,10 +96,10 @@ class GeocodeResult(StructDTO):
     place_id: str = ""
     formatted_address: str = ""
     geometry: Geometry = Geometry()
-    address_components: list[AddressComponent] = []  # noqa: RUF012
-    types: list[str] = []  # noqa: RUF012
+    address_components: list[AddressComponent] = field(default_factory=list)
+    types: list[str] = field(default_factory=list)
 
 
 class GeocodeResponse(StructDTO):
     status: str = ""
-    results: list[GeocodeResult] = []  # noqa: RUF012
+    results: list[GeocodeResult] = field(default_factory=list)

@@ -2,6 +2,8 @@ from typing import Literal
 
 from backend.internal.dto import StructDTO
 
+from .servers import ServerType
+
 
 class APIConfig(StructDTO):
     NAME: str
@@ -22,3 +24,5 @@ class APIConfig(StructDTO):
     ]
     CORS_EXPOSE_HEADERS: list[str]
     CORS_MAX_AGE: int
+
+    SERVER_TYPE: ServerType = ServerType.GRANIAN
