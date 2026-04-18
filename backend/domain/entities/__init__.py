@@ -5,6 +5,8 @@ from .identity import Identity
 from .notification import Notification
 from .notification_read import NotificationRead
 from .permission import Permission
+from .queue import Job, JobEvent, WorkerEvent
+from .queue import Worker as QueueWorker
 from .rbac import role_permission, user_role
 from .role import Role
 from .session import Session
@@ -16,13 +18,17 @@ __all__ = (
     "AuditLog",
     "Base",
     "Identity",
+    "Job",
+    "JobEvent",
     "Notification",
     "NotificationRead",
     "Permission",
+    "QueueWorker",
     "Role",
     "Session",
     "Tenant",
     "User",
+    "WorkerEvent",
     "role_permission",
     "user_role",
 )

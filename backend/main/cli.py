@@ -4,9 +4,11 @@ from typing import TYPE_CHECKING
 from alembic.config import CommandLine as AlembicCLI
 from alembic.config import Config as AlembicConfig
 
+from backend.entry.queue import run_queue
 from backend.entry.rest.main import APIConfig, run_api
 from backend.infra.database.alembic import ALEMBIC_CONFIG
 from backend.infra.database.config import DatabaseConfig
+from backend.infra.dbus.psql.config import QueueExecutorConfig
 from backend.infra.external.http.discord.config import DiscordOAuthSettings
 from backend.infra.external.http.github.config import GitHubOAuthSettings
 from backend.infra.external.http.google_oauth.config import GoogleOAuthSettings
@@ -31,6 +33,7 @@ def create_parser() -> ArgumentParser:
         formatter_class=alembic_parent.formatter_class,
     )
     sub.add_parser("api", prog="backend api")
+    sub.add_parser("queue", prog="backend queue")
 
     return parser
 
@@ -52,6 +55,13 @@ def cmd_run_alembic(options: Namespace) -> None:
     alembic_cli.run_cmd(cfg, options)
 
 
+def cmd_run_queue(_options: Namespace) -> None:
+    run_queue(
+        load_from_env(QueueExecutorConfig),
+        load_from_env(DatabaseConfig),
+    )
+
+
 def cmd_run_api(_options: Namespace) -> None:
     run_api(
         load_from_env(APIConfig),
@@ -70,5 +80,6 @@ def main() -> None:
     cmd_map: dict[str, Callable[[Namespace], None]] = {
         "alembic": cmd_run_alembic,
         "api": cmd_run_api,
+        "queue": cmd_run_queue,
     }
     cmd_map[options.which](options)

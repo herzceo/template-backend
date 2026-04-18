@@ -6,6 +6,7 @@ from .audit_log import AuditLogRepo
 from .identity import IdentityRepo
 from .notification import NotificationRepo
 from .permission import PermissionRepo
+from .queue import JobEventRepo, JobRepo, WorkerEventRepo, WorkerRepo
 from .role import RoleRepo
 from .session import SessionRepo
 from .tenant import TenantRepo
@@ -48,3 +49,19 @@ class RepoGateway(Protocol):
     @property
     @abstractmethod
     def audit_log(self) -> AuditLogRepo: ...
+
+    @property
+    @abstractmethod
+    def job(self) -> JobRepo: ...
+
+    @property
+    @abstractmethod
+    def job_event(self) -> JobEventRepo: ...
+
+    @property
+    @abstractmethod
+    def queue_worker(self) -> WorkerRepo: ...
+
+    @property
+    @abstractmethod
+    def worker_event(self) -> WorkerEventRepo: ...

@@ -44,6 +44,19 @@ class ImplCreateSupported[E: Base](ICreateSupported[E], BaseRepo[E]):
         return Option(result.scalar_one_or_none())
 
 
+class ImplBulkCreateSupported[E: Base](BaseRepo[E]):
+    __slots__ = ()
+
+    async def bulk_create(self, entities: list[E], /) -> list[E]:
+        if not entities:
+            return []
+        stmt = (
+            insert(self._entity).values([e.to_builtins() for e in entities]).returning(self._entity)
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
+
+
 class ImplGetByIdSupported[E: Base](IGetByIdSupported[E], BaseRepo[E]):
     __slots__ = ()
 

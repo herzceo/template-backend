@@ -14,6 +14,11 @@ class CreateSupported[
     async def create(self, entity: E, /) -> Option[E]: ...
 
 
+class BulkCreateSupported[E: Base](Protocol):
+    @abstractmethod
+    async def bulk_create(self, entities: list[E], /) -> list[E]: ...
+
+
 class GetByIdSupported[E: Base](Protocol):
     @abstractmethod
     async def get_by_id(self, id_: UUID, /) -> Option[E]: ...

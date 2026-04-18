@@ -4,6 +4,7 @@ from aiobotocore.session import get_session
 from dishka import AsyncContainer, Provider, Scope, make_async_container
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
+from backend.app.ports.dbus import DBus
 from backend.app.ports.oauth_gateway import OAuthGateway
 from backend.app.ports.oauth_state import OAuthStateSigner
 from backend.app.ports.password_hasher import PasswordHasher
@@ -18,6 +19,7 @@ from backend.infra.database.psql.engine import (
     create_async_session_maker,
 )
 from backend.infra.database.psql.repos import ImplDatabase
+from backend.infra.dbus.psql import ImplDBus
 from backend.infra.external.adapters.oauth import (
     ImplDiscordOAuthAdapter,
     ImplGitHubOAuthAdapter,
@@ -167,6 +169,12 @@ def create_external_provider(
     return provider
 
 
+def create_dbus_provider() -> Provider:
+    provider = Provider(scope=Scope.REQUEST)
+    provider.provide(ImplDBus, provides=DBus)
+    return provider
+
+
 def create_container(
     db_config: DatabaseConfig,
     *,
@@ -182,6 +190,7 @@ def create_container(
         create_utils_provider(db_config),
         create_psql_provider(),
         create_database_provider(),
+        create_dbus_provider(),
         create_auth_provider(
             oauth_state_config=oauth_state_config,
             google_oauth_settings=google_oauth_settings,
