@@ -21,3 +21,11 @@ class AuditAction(StrEnum):
     LOGIN = "login"
     LOGOUT = "logout"
     PERMISSION_CHANGE = "permission_change"
+
+
+class IdentityProvider(StrEnum):
+    EMAIL_PASSWORD = "email_password"
+    USERNAME_PASSWORD = "username_password"
+    GOOGLE = "google"
+    GITHUB = "github"
+    DISCORD = "discord"

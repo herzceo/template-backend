@@ -6,7 +6,10 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+import backend.domain.entities as _entities  # pyright: ignore[reportUnusedImport]
 from backend.domain.entities.base.base import Base
+
+__all__ = ("_entities",)
 
 config = context.config
 

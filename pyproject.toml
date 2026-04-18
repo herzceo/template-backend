@@ -89,6 +89,7 @@ ignore = [
   "D415",         # missing-terminal-punctuation (D415)
   "D400",         # missing-trailing-period (D400)
   "S311",         # suspicious-non-cryptographic-random-usage (S311)
+  "S105",         # hardcoded-password-string (S105)
   # Typing
   "ANN401",       # any-type (ANN401)
   # Incompatible

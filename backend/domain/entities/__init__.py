@@ -1,6 +1,7 @@
 from .asset import Asset
 from .audit_log import AuditLog
 from .base import Base
+from .identity import Identity
 from .notification import Notification
 from .notification_read import NotificationRead
 from .permission import Permission
@@ -14,6 +15,7 @@ __all__ = (
     "Asset",
     "AuditLog",
     "Base",
+    "Identity",
     "Notification",
     "NotificationRead",
     "Permission",

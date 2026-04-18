@@ -1,6 +1,7 @@
 from .assets import Asset
 from .audit_logs import AuditLog
 from .auth import AuthContext
+from .identity import IdentityDTO
 from .notifications import Notification
 from .pagination import PaginatedResponse
 from .permissions import Permission
@@ -13,6 +14,7 @@ __all__ = (
     "Asset",
     "AuditLog",
     "AuthContext",
+    "IdentityDTO",
     "Notification",
     "PaginatedResponse",
     "Permission",

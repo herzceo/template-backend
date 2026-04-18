@@ -13,6 +13,7 @@ from .base import (
 )
 from .database import Database
 from .gateway import RepoGateway
+from .identity import IdentityRepo
 from .notification import NotificationRepo
 from .permission import PermissionRepo
 from .role import RoleRepo
@@ -30,6 +31,7 @@ __all__ = (
     "DeleteByIdSupported",
     "GetByIdSupported",
     "GetForUpdateSupported",
+    "IdentityRepo",
     "NotificationRepo",
     "OffsetPaginationSupported",
     "PermissionRepo",

@@ -7,6 +7,7 @@ from backend.domain.repos import RepoGateway
 
 from .asset import ImplAssetRepo
 from .audit_log import ImplAuditLogRepo
+from .identity import ImplIdentityRepo
 from .notification import ImplNotificationRepo
 from .permission import ImplPermissionRepo
 from .role import ImplRoleRepo
@@ -27,6 +28,10 @@ class ImplRepoGateway(RepoGateway):
     @cached_property
     def tenant(self) -> ImplTenantRepo:
         return ImplTenantRepo(self._session)
+
+    @cached_property
+    def identity(self) -> ImplIdentityRepo:
+        return ImplIdentityRepo(self._session)
 
     @cached_property
     def role(self) -> ImplRoleRepo:

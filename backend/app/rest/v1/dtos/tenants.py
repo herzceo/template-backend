@@ -8,6 +8,7 @@ class Tenant(StructDTO):
     name: str
     slug: str
     settings: dict[str, Any] | None
+    is_default: bool
     owner_id: str | None
     active: bool
     created_at: str

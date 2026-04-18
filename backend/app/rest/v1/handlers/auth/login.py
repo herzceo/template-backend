@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
 from backend.app.errors import AuthenticationRequiredError
-from backend.app.ports.password_hasher import PasswordHasher
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.dtos.auth import AuthContext
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
+from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.services.session import SessionService
+from backend.domain.enums import IdentityProvider
 from backend.domain.repos.database import Database
 
 
@@ -15,20 +16,24 @@ class LoginCommand(Command):
 
 
 @dataclass
-class LoginHandler(Handler[LoginCommand, dtos.User, None], type_=HandlerType.WRITE):
+class LoginHandler(Handler[LoginCommand, AuthContext[dtos.User], None], type_=HandlerType.WRITE):
     db: Database
     session_service: SessionService
-    password_hasher: PasswordHasher
+    identity_service: IdentityService
 
-    async def __call__(self, cmd: LoginCommand, _ctx: None = None) -> AuthContext[dtos.User]:  # type: ignore[override]
+    async def __call__(self, cmd: LoginCommand, _ctx: None = None) -> AuthContext[dtos.User]:
         async with self.db:
-            user = (await self.db.gateway.user.get_by_login(cmd.login)).some(
-                AuthenticationRequiredError(message="Invalid login or password")
+            provider = (
+                IdentityProvider.EMAIL_PASSWORD
+                if "@" in cmd.login
+                else IdentityProvider.USERNAME_PASSWORD
             )
-
-            if not self.password_hasher.verify(cmd.password, user.password_hash):
-                raise AuthenticationRequiredError(message="Invalid login or password")
-
+            identity = await self.identity_service.verify_password(
+                provider, cmd.login, cmd.password
+            )
+            user = (await self.db.gateway.user.get_by_id(identity.user_id)).some(
+                AuthenticationRequiredError(message="User not found")
+            )
             raw_token, _ = await self.session_service.create_session(user.id)
 
         return AuthContext(token=raw_token, data=dtos.User.from_object(user))

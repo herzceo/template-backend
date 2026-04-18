@@ -7,6 +7,10 @@ from alembic.config import Config as AlembicConfig
 from backend.entry.rest.main import APIConfig, run_api
 from backend.infra.database.alembic import ALEMBIC_CONFIG
 from backend.infra.database.config import DatabaseConfig
+from backend.infra.external.http.discord.config import DiscordOAuthSettings
+from backend.infra.external.http.github.config import GitHubOAuthSettings
+from backend.infra.external.http.google_oauth.config import GoogleOAuthSettings
+from backend.infra.security.config import OAuthStateConfig
 
 from .utils import load_from_env
 
@@ -49,9 +53,14 @@ def cmd_run_alembic(options: Namespace) -> None:
 
 
 def cmd_run_api(_options: Namespace) -> None:
-    api_config = load_from_env(APIConfig)
-    db_config = load_from_env(DatabaseConfig)
-    run_api(api_config, db_config)
+    run_api(
+        load_from_env(APIConfig),
+        load_from_env(DatabaseConfig),
+        oauth_state_config=load_from_env(OAuthStateConfig),
+        google_oauth_settings=load_from_env(GoogleOAuthSettings),
+        github_settings=load_from_env(GitHubOAuthSettings),
+        discord_settings=load_from_env(DiscordOAuthSettings),
+    )
 
 
 def main() -> None:
