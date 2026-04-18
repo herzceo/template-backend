@@ -12,7 +12,7 @@ from backend.domain.repos.database import Database
 
 
 class CreateUserCommand(Command):
-    login: str
+    username: str
     email: str
     password: str
     first_name: str
@@ -29,7 +29,7 @@ class CreateUserHandler(Handler[CreateUserCommand, dtos.User, None], type_=Handl
     async def __call__(self, cmd: CreateUserCommand, _ctx: None = None) -> dtos.User:
         async with self.db:
             entity = User(
-                login=cmd.login,
+                username=cmd.username,
                 email=cmd.email,
                 first_name=cmd.first_name,
                 last_name=cmd.last_name,
@@ -43,7 +43,7 @@ class CreateUserHandler(Handler[CreateUserCommand, dtos.User, None], type_=Handl
                 created.id, IdentityProvider.EMAIL_PASSWORD, cmd.email, cmd.password
             )
             await self.identity_service.link_password_identity(
-                created.id, IdentityProvider.USERNAME_PASSWORD, cmd.login, cmd.password
+                created.id, IdentityProvider.USERNAME_PASSWORD, cmd.username, cmd.password
             )
 
             await self.db.commit()

@@ -16,8 +16,8 @@ from .base import ImplCRUDSupported
 class ImplUserRepo(ImplCRUDSupported[User], UserRepo):
     __slots__ = ()
 
-    async def get_by_login(self, login: str) -> Option[User]:
-        stmt = select(User).where(User.login == login)
+    async def get_by_username(self, username: str) -> Option[User]:
+        stmt = select(User).where(User.username == username)
         result = await self._session.execute(stmt)
         return Option(result.scalar_one_or_none())
 

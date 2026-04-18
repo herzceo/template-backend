@@ -43,13 +43,13 @@ class OAuthCallbackHandler(
                     NotFoundError(message="No default tenant configured")
                 )
 
-                login = self._build_login(
+                username = self._build_username(
                     cmd.provider, user_info.subject_id, user_info.display_name
                 )
                 email = user_info.email or f"{user_info.subject_id}@{cmd.provider}.oauth"
 
                 user_entity = User(
-                    login=login,
+                    username=username,
                     email=email,
                     first_name=user_info.display_name or "",
                     last_name="",
@@ -67,7 +67,9 @@ class OAuthCallbackHandler(
         return AuthContext(token=raw_token, data=dtos.User.from_object(user))
 
     @staticmethod
-    def _build_login(provider: IdentityProvider, subject_id: str, display_name: str | None) -> str:
+    def _build_username(
+        provider: IdentityProvider, subject_id: str, display_name: str | None
+    ) -> str:
         if display_name:
             safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in display_name)
             return f"{safe}_{provider}_{subject_id}"

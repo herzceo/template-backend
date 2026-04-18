@@ -11,7 +11,7 @@ from backend.domain.repos.database import Database
 
 
 class LoginCommand(Command):
-    login: str
+    username: str
     password: str
 
 
@@ -25,11 +25,11 @@ class LoginHandler(Handler[LoginCommand, AuthContext[dtos.User], None], type_=Ha
         async with self.db:
             provider = (
                 IdentityProvider.EMAIL_PASSWORD
-                if "@" in cmd.login
+                if "@" in cmd.username
                 else IdentityProvider.USERNAME_PASSWORD
             )
             identity = await self.identity_service.verify_password(
-                provider, cmd.login, cmd.password
+                provider, cmd.username, cmd.password
             )
             user = (await self.db.gateway.user.get_by_id(identity.user_id)).some(
                 AuthenticationRequiredError(message="User not found")

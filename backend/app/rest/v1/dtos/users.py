@@ -3,7 +3,7 @@ from backend.internal.dto import StructDTO
 
 class User(StructDTO):
     id: str
-    login: str
+    username: str
     email: str
     first_name: str
     last_name: str
