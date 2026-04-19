@@ -1,14 +1,26 @@
-from collections.abc import AsyncIterator
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from aiobotocore.session import get_session
 from dishka import AsyncContainer, Provider, Scope, make_async_container
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from backend.infra.database.redis import RedisConfig
+    from backend.infra.external.http.discord.config import DiscordOAuthSettings
+    from backend.infra.external.http.github.config import GitHubOAuthSettings
+    from backend.infra.external.http.google_oauth.config import GoogleOAuthSettings
+    from backend.infra.security.config import OAuthStateConfig
 
 from backend.app.ports.dbus import DBus
 from backend.app.ports.oauth_gateway import OAuthGateway
 from backend.app.ports.oauth_state import OAuthStateSigner
 from backend.app.ports.password_hasher import PasswordHasher
 from backend.app.ports.secret_token import SecretTokenGenerator
+from backend.app.ports.verification import VerificationCodeStore
 from backend.app.rest.v1 import handlers
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.services.session import SessionService
@@ -19,6 +31,9 @@ from backend.infra.database.psql.engine import (
     create_async_session_maker,
 )
 from backend.infra.database.psql.repos import ImplDatabase
+from backend.infra.database.redis import RedisClient
+from backend.infra.database.redis.adapters.config import VerificationConfig
+from backend.infra.database.redis.adapters.verification_code import ImplVerificationCodeStore
 from backend.infra.dbus.psql import ImplDBus
 from backend.infra.external.adapters.oauth import (
     ImplDiscordOAuthAdapter,
@@ -29,20 +44,16 @@ from backend.infra.external.adapters.oauth import (
 from backend.infra.external.http.amplitude.client import AmplitudeClient
 from backend.infra.external.http.amplitude.config import AmplitudeSettings
 from backend.infra.external.http.discord import DiscordOAuthClient
-from backend.infra.external.http.discord.config import DiscordOAuthSettings
 from backend.infra.external.http.github import GitHubOAuthClient
-from backend.infra.external.http.github.config import GitHubOAuthSettings
 from backend.infra.external.http.google_maps.client import GoogleMapsClient
 from backend.infra.external.http.google_maps.config import GoogleMapsSettings
 from backend.infra.external.http.google_oauth import GoogleOAuthClient
-from backend.infra.external.http.google_oauth.config import GoogleOAuthSettings
 from backend.infra.external.http.sessions.aiohttp import (
     AiohttpConfig,
     create_aiohttp_session,
 )
 from backend.infra.external.s3.client import S3Client
 from backend.infra.external.s3.config import S3Settings
-from backend.infra.security.config import OAuthStateConfig
 from backend.infra.security.oauth_state import ImplHMACOAuthStateSigner
 from backend.infra.security.password_hasher import ImplArgon2PasswordHasher
 from backend.infra.security.secret_token import ImplSHA256SecretTokenGenerator
@@ -119,7 +130,7 @@ def create_auth_provider(
 
 def create_handlers_provider() -> Provider:
     provider = Provider(scope=Scope.REQUEST)
-    for handler in handlers.get_defined_handlers().values():
+    for handler in handlers.get_defined_rest_handlers().values():
         provider.provide(handler, provides=handler)
     return provider
 
@@ -175,9 +186,22 @@ def create_dbus_provider() -> Provider:
     return provider
 
 
+def create_redis_provider(
+    redis_config: RedisConfig, verification_config: VerificationConfig
+) -> Provider:
+    provider = Provider(scope=Scope.APP)
+    provider.provide(lambda: redis_config, provides=type(redis_config))
+    provider.provide(lambda: verification_config, provides=VerificationConfig)
+    provider.provide(RedisClient, provides=RedisClient)
+    provider.provide(ImplVerificationCodeStore, provides=VerificationCodeStore)
+    return provider
+
+
 def create_container(
     db_config: DatabaseConfig,
     *,
+    redis_config: RedisConfig,
+    verification_config: VerificationConfig,
     oauth_state_config: OAuthStateConfig,
     google_oauth_settings: GoogleOAuthSettings,
     github_settings: GitHubOAuthSettings,
@@ -191,6 +215,7 @@ def create_container(
         create_psql_provider(),
         create_database_provider(),
         create_dbus_provider(),
+        create_redis_provider(redis_config, verification_config),
         create_auth_provider(
             oauth_state_config=oauth_state_config,
             google_oauth_settings=google_oauth_settings,

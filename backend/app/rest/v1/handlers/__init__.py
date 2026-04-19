@@ -7,6 +7,6 @@ from . import roles as roles
 from . import sessions as sessions
 from . import tenants as tenants
 from . import users as users
-from .base import get_defined_handlers
+from .base import get_defined_rest_handlers
 
-__all__ = ("get_defined_handlers",)
+__all__ = ("get_defined_rest_handlers",)

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from backend.app.errors import AuthenticationRequiredError
+from backend.app.errors import AuthenticationRequiredError, ValidationFailedError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.dtos.auth import AuthContext
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
@@ -34,6 +34,8 @@ class LoginHandler(Handler[LoginCommand, AuthContext[dtos.User], None], type_=Ha
             user = (await self.db.gateway.user.get_by_id(identity.user_id)).some(
                 AuthenticationRequiredError(message="User not found")
             )
+            if not user.is_verified:
+                raise ValidationFailedError(message="Email not verified")
             raw_token, _ = await self.session_service.create_session(user.id)
 
         return AuthContext(token=raw_token, data=dtos.User.from_object(user))

@@ -4,41 +4,97 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
+from dishka import make_async_container
+
+from backend.app.events.v1.handlers import get_defined_event_handlers
 from backend.infra.database.psql.engine import create_async_engine, create_async_session_maker
 from backend.infra.database.psql.repos import ImplDatabase
 from backend.infra.dbus.psql.executor import HandlerDef, QueueExecutor
 
+from .ioc import (
+    create_email_provider,
+    create_event_handlers_provider,
+    create_redis_provider,
+    create_security_provider,
+)
+
 if TYPE_CHECKING:
+    from dishka import AsyncContainer
+
+    from backend.app.events.v1.handlers.base import EventHandler
+    from backend.app.shared.events.base import BaseEvent
     from backend.infra.database.config import DatabaseConfig
+    from backend.infra.database.redis import RedisConfig
+    from backend.infra.database.redis.adapters.config import VerificationConfig
     from backend.infra.dbus.psql.config import QueueExecutorConfig
+    from backend.infra.external.http.resend.config import ResendSettings
 
 logger = logging.getLogger(__name__)
 
 
-def build_handlers() -> dict[str, HandlerDef]:
-    return {}
+def _build_handlers(container: AsyncContainer) -> dict[str, HandlerDef]:
+    registry = get_defined_event_handlers()
+    handlers: dict[str, HandlerDef] = {}
+
+    for event_name, handler_cls in registry.items():
+        event_type = handler_cls.event_type
+
+        def _bind(cls: type, etype: type[BaseEvent]) -> HandlerDef:
+            async def _handler(**kwargs: object) -> None:
+                async with container() as request_container:
+                    instance: EventHandler[BaseEvent] = await request_container.get(cls)
+                    event = etype.from_builtins(kwargs)
+                    await instance(event)
+
+            hdef = HandlerDef()
+            hdef.handler = _handler
+            return hdef
+
+        handlers[event_name] = _bind(handler_cls, event_type)
+
+    return handlers
 
 
-def run_queue(config: QueueExecutorConfig, db_config: DatabaseConfig) -> None:
+def run_queue(
+    config: QueueExecutorConfig,
+    db_config: DatabaseConfig,
+    resend_settings: ResendSettings,
+    redis_config: RedisConfig,
+    verification_config: VerificationConfig,
+) -> None:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)-8s %(name)s: %(message)s",
     )
-    asyncio.run(_run(config, db_config))
+    asyncio.run(_run(config, db_config, resend_settings, redis_config, verification_config))
 
 
-async def _run(config: QueueExecutorConfig, db_config: DatabaseConfig) -> None:
+async def _run(
+    config: QueueExecutorConfig,
+    db_config: DatabaseConfig,
+    resend_settings: ResendSettings,
+    redis_config: RedisConfig,
+    verification_config: VerificationConfig,
+) -> None:
     engine = create_async_engine(db_config)
     session_maker = create_async_session_maker(engine)
     db = ImplDatabase(session_maker)
+
+    container = make_async_container(
+        create_security_provider(),
+        create_redis_provider(redis_config, verification_config),
+        create_email_provider(resend_settings, from_email="noreply@yourdomain.com"),
+        create_event_handlers_provider(),
+    )
 
     executor = QueueExecutor(
         config=config,
         db=db,
         engine=engine,
-        handlers=build_handlers(),
+        handlers=_build_handlers(container),
     )
     try:
         await executor.run()
     finally:
+        await container.close()
         await engine.dispose()

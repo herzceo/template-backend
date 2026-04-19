@@ -8,10 +8,13 @@ from backend.entry.queue import run_queue
 from backend.entry.rest.main import APIConfig, run_api
 from backend.infra.database.alembic import ALEMBIC_CONFIG
 from backend.infra.database.config import DatabaseConfig
+from backend.infra.database.redis import RedisConfig
+from backend.infra.database.redis.adapters.config import VerificationConfig
 from backend.infra.dbus.psql.config import QueueExecutorConfig
 from backend.infra.external.http.discord.config import DiscordOAuthSettings
 from backend.infra.external.http.github.config import GitHubOAuthSettings
 from backend.infra.external.http.google_oauth.config import GoogleOAuthSettings
+from backend.infra.external.http.resend.config import ResendSettings
 from backend.infra.security.config import OAuthStateConfig
 
 from .utils import load_from_env
@@ -59,6 +62,9 @@ def cmd_run_queue(_options: Namespace) -> None:
     run_queue(
         load_from_env(QueueExecutorConfig),
         load_from_env(DatabaseConfig),
+        load_from_env(ResendSettings),
+        load_from_env(RedisConfig),
+        load_from_env(VerificationConfig),
     )
 
 
@@ -66,6 +72,8 @@ def cmd_run_api(_options: Namespace) -> None:
     run_api(
         load_from_env(APIConfig),
         load_from_env(DatabaseConfig),
+        redis_config=load_from_env(RedisConfig),
+        verification_config=load_from_env(VerificationConfig),
         oauth_state_config=load_from_env(OAuthStateConfig),
         google_oauth_settings=load_from_env(GoogleOAuthSettings),
         github_settings=load_from_env(GitHubOAuthSettings),

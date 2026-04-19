@@ -26,6 +26,36 @@ class AuthController(Controller):
         set_session_token(request.scope, ctx.token)
         return ctx.data
 
+    @post("/signup", exclude_from_auth=True)
+    @inject
+    async def signup(
+        self,
+        data: auth.SignupCommand,
+        handler: Depends[auth.SignupHandler],
+    ) -> dtos.User:
+        return await handler(data)
+
+    @post("/verify-email", exclude_from_auth=True)
+    @inject
+    async def verify_email(
+        self,
+        data: auth.VerifyEmailCommand,
+        handler: Depends[auth.VerifyEmailHandler],
+        request: Request[Any, Any, Any],
+    ) -> dtos.User:
+        ctx = await handler(data)
+        set_session_token(request.scope, ctx.token)
+        return ctx.data
+
+    @post("/resend-verification", exclude_from_auth=True)
+    @inject
+    async def resend_verification(
+        self,
+        data: auth.ResendVerificationCommand,
+        handler: Depends[auth.ResendVerificationHandler],
+    ) -> None:
+        await handler(data)
+
     @get("/oauth/{provider:str}/initiate", exclude_from_auth=True)
     @inject
     async def initiate_oauth(

@@ -13,7 +13,7 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
-class BaseEvent(StructDTO):
+class BaseEvent(StructDTO, kw_only=True):
     name: ClassVar[str]
     id: uuid_utils.UUID = field(default_factory=uuid_utils.uuid7)
     created_at: datetime = field(default_factory=_now)
