@@ -50,7 +50,7 @@ class Term(StructDTO):
 class AutocompletePrediction(StructDTO):
     place_id: str = ""
     description: str = ""
-    structured_formatting: StructuredFormatting = StructuredFormatting()
+    structured_formatting: StructuredFormatting = field(default_factory=StructuredFormatting)
     terms: list[Term] = field(default_factory=list)
     types: list[str] = field(default_factory=list)
     matched_substrings: list[MatchedSubstring] = field(default_factory=list)
@@ -67,7 +67,7 @@ class Location(StructDTO):
 
 
 class Geometry(StructDTO):
-    location: Location = Location()
+    location: Location = field(default_factory=Location)
 
 
 class AddressComponent(StructDTO):
@@ -80,7 +80,7 @@ class PlaceDetails(StructDTO):
     place_id: str = ""
     name: str = ""
     formatted_address: str = ""
-    geometry: Geometry = Geometry()
+    geometry: Geometry = field(default_factory=Geometry)
     address_components: list[AddressComponent] = field(default_factory=list)
     types: list[str] = field(default_factory=list)
     url: str = ""
@@ -95,7 +95,7 @@ class PlaceDetailsResponse(StructDTO):
 class GeocodeResult(StructDTO):
     place_id: str = ""
     formatted_address: str = ""
-    geometry: Geometry = Geometry()
+    geometry: Geometry = field(default_factory=Geometry)
     address_components: list[AddressComponent] = field(default_factory=list)
     types: list[str] = field(default_factory=list)
 

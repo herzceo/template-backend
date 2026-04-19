@@ -52,4 +52,7 @@ def run_api(
     db_config: DatabaseConfig,
     **kwargs: Any,
 ) -> None:
-    create_server(config, db_config, **kwargs).run()
+    def app_factory() -> Litestar:
+        return create_api(config, db_config, **kwargs)
+
+    create_server(app_factory, config).run()

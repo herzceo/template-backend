@@ -1,23 +1,25 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from .granian import GranianServer
 from .type import ServerType
 from .uvicorn import UvicornServer
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from litestar import Litestar
+
     from backend.entry.rest.main.config import APIConfig
-    from backend.infra.database.config import DatabaseConfig
 
 
 def create_server(
+    app_factory: Callable[[], Litestar],
     api_config: APIConfig,
-    db_config: DatabaseConfig,
-    **kwargs: Any,
 ) -> GranianServer | UvicornServer:
     match api_config.SERVER_TYPE:
         case ServerType.GRANIAN:
-            return GranianServer(api_config, db_config, **kwargs)
+            return GranianServer(app_factory, api_config)
         case ServerType.UVICORN:
-            return UvicornServer(api_config, db_config, **kwargs)
+            return UvicornServer(app_factory(), api_config)

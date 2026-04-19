@@ -1,26 +1,24 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from uvicorn import Config, Server
 
-from backend.entry.rest.main.api import create_api
-
 if TYPE_CHECKING:
+    from litestar import Litestar
+
     from backend.entry.rest.main.config import APIConfig
-    from backend.infra.database.config import DatabaseConfig
 
 
 class UvicornServer:
     def __init__(
         self,
+        app: Litestar,
         api_config: APIConfig,
-        db_config: DatabaseConfig,
-        **kwargs: Any,
     ) -> None:
         self._server = Server(
             Config(
-                create_api(api_config, db_config, **kwargs),
+                app,
                 host=api_config.HOST,
                 port=api_config.PORT,
                 log_level=api_config.LOG_LEVEL.lower(),
