@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from uuid import UUID
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
@@ -27,6 +28,54 @@ class ListNotificationsHandler(
             total = await self.db.gateway.notification.count()
         return dtos.PaginatedResponse(
             items=[dtos.Notification.from_object(i) for i in items],
+            total=total,
+            offset=cmd.offset,
+            limit=cmd.limit,
+        )
+
+
+class ListUserNotificationsCommand(Command):
+    user_id: UUID
+    offset: int = 0
+    limit: int = 50
+    include_dismissed: bool = False
+
+
+@dataclass
+class ListUserNotificationsHandler(
+    Handler[
+        ListUserNotificationsCommand,
+        dtos.PaginatedResponse[dtos.UserNotification],
+        None,
+    ],
+    type_=HandlerType.READ,
+):
+    db: Database
+
+    async def __call__(
+        self, cmd: ListUserNotificationsCommand, _ctx: None = None
+    ) -> dtos.PaginatedResponse[dtos.UserNotification]:
+        async with self.db:
+            rows = await self.db.gateway.notification.list_for_user(
+                cmd.user_id,
+                offset=cmd.offset,
+                limit=cmd.limit,
+                include_dismissed=cmd.include_dismissed,
+            )
+            total = await self.db.gateway.notification.count_for_user(
+                cmd.user_id, include_dismissed=cmd.include_dismissed
+            )
+        items = [
+            dtos.UserNotification(
+                notification=dtos.Notification.from_object(n),
+                interaction=(
+                    dtos.NotificationInteraction.from_object(i) if i is not None else None
+                ),
+            )
+            for n, i in rows
+        ]
+        return dtos.PaginatedResponse(
+            items=items,
             total=total,
             offset=cmd.offset,
             limit=cmd.limit,

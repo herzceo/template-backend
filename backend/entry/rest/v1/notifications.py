@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import msgspec.structs
 from litestar import Controller, delete, get, patch, post
 
@@ -5,7 +7,7 @@ from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import notifications
 from backend.internal.di import Depends, inject
 
-from .dtos import UpdateNotificationBody
+from .dtos import ReactionBody, UpdateNotificationBody
 
 
 class NotificationsController(Controller):
@@ -21,6 +23,26 @@ class NotificationsController(Controller):
         limit: int = 50,
     ) -> dtos.PaginatedResponse[dtos.Notification]:
         return await handler(notifications.ListNotificationsCommand(offset=offset, limit=limit))
+
+    @get("/for-user/{user_id:str}")
+    @inject
+    async def list_for_user(
+        self,
+        user_id: str,
+        handler: Depends[notifications.ListUserNotificationsHandler],
+        offset: int = 0,
+        limit: int = 50,
+        *,
+        include_dismissed: bool = False,
+    ) -> dtos.PaginatedResponse[dtos.UserNotification]:
+        return await handler(
+            notifications.ListUserNotificationsCommand(
+                user_id=UUID(user_id),
+                offset=offset,
+                limit=limit,
+                include_dismissed=include_dismissed,
+            )
+        )
 
     @post("/")
     @inject
@@ -38,7 +60,7 @@ class NotificationsController(Controller):
         id: str,
         handler: Depends[notifications.GetNotificationHandler],
     ) -> dtos.Notification:
-        return await handler(notifications.GetNotificationCommand(id=id))
+        return await handler(notifications.GetNotificationCommand(id=UUID(id)))
 
     @patch("/{id:str}")
     @inject
@@ -49,7 +71,7 @@ class NotificationsController(Controller):
         handler: Depends[notifications.UpdateNotificationHandler],
     ) -> dtos.Notification:
         return await handler(
-            notifications.UpdateNotificationCommand(id=id, **msgspec.structs.asdict(data))
+            notifications.UpdateNotificationCommand(id=UUID(id), **msgspec.structs.asdict(data))
         )
 
     @delete("/{id:str}")
@@ -59,7 +81,7 @@ class NotificationsController(Controller):
         id: str,
         handler: Depends[notifications.DeleteNotificationHandler],
     ) -> None:
-        return await handler(notifications.DeleteNotificationCommand(id=id))
+        return await handler(notifications.DeleteNotificationCommand(id=UUID(id)))
 
     @post("/{id:str}/read")
     @inject
@@ -69,4 +91,34 @@ class NotificationsController(Controller):
         user_id: str,
         handler: Depends[notifications.MarkReadHandler],
     ) -> None:
-        return await handler(notifications.MarkReadCommand(notification_id=id, user_id=user_id))
+        return await handler(
+            notifications.MarkReadCommand(notification_id=UUID(id), user_id=UUID(user_id))
+        )
+
+    @post("/{id:str}/dismiss")
+    @inject
+    async def dismiss(
+        self,
+        id: str,
+        user_id: str,
+        handler: Depends[notifications.DismissHandler],
+    ) -> None:
+        return await handler(
+            notifications.DismissCommand(notification_id=UUID(id), user_id=UUID(user_id))
+        )
+
+    @post("/{id:str}/reaction")
+    @inject
+    async def react(
+        self,
+        id: str,
+        data: ReactionBody,
+        handler: Depends[notifications.ReactHandler],
+    ) -> None:
+        return await handler(
+            notifications.ReactCommand(
+                notification_id=UUID(id),
+                user_id=data.user_id,
+                reaction=data.reaction,
+            )
+        )

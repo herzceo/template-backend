@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
@@ -9,7 +8,7 @@ from backend.domain.repos.database import Database
 
 
 class GetTenantCommand(Command):
-    id: str
+    id: UUID
 
 
 @dataclass
@@ -18,5 +17,5 @@ class GetTenantHandler(Handler[GetTenantCommand, dtos.Tenant, None], type_=Handl
 
     async def __call__(self, cmd: GetTenantCommand, _ctx: None = None) -> dtos.Tenant:
         async with self.db:
-            tenant = (await self.db.gateway.tenant.get_by_id(UUID(cmd.id))).some(NotFoundError())
+            tenant = (await self.db.gateway.tenant.get_by_id(cmd.id)).some(NotFoundError())
         return dtos.Tenant.from_object(tenant)

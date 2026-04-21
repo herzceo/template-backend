@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
@@ -9,7 +8,7 @@ from backend.domain.repos.database import Database
 
 
 class UpdatePermissionCommand(Command):
-    id: str
+    id: UUID
     codename: str | None = None
     description: str | None = None
 
@@ -22,9 +21,7 @@ class UpdatePermissionHandler(
 
     async def __call__(self, cmd: UpdatePermissionCommand, _ctx: None = None) -> dtos.Permission:
         async with self.db:
-            entity = (await self.db.gateway.permission.get_by_id(UUID(cmd.id))).some(
-                NotFoundError()
-            )
+            entity = (await self.db.gateway.permission.get_by_id(cmd.id)).some(NotFoundError())
             if cmd.codename is not None:
                 entity.codename = cmd.codename
             if cmd.description is not None:

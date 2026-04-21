@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import msgspec.structs
 from litestar import Controller, delete, get, patch, post
 
@@ -38,7 +40,7 @@ class TenantsController(Controller):
         id: str,
         handler: Depends[tenants.GetTenantHandler],
     ) -> dtos.Tenant:
-        return await handler(tenants.GetTenantCommand(id=id))
+        return await handler(tenants.GetTenantCommand(id=UUID(id)))
 
     @patch("/{id:str}")
     @inject
@@ -48,7 +50,9 @@ class TenantsController(Controller):
         data: UpdateTenantBody,
         handler: Depends[tenants.UpdateTenantHandler],
     ) -> dtos.Tenant:
-        return await handler(tenants.UpdateTenantCommand(id=id, **msgspec.structs.asdict(data)))
+        return await handler(
+            tenants.UpdateTenantCommand(id=UUID(id), **msgspec.structs.asdict(data))
+        )
 
     @delete("/{id:str}")
     @inject
@@ -57,4 +61,4 @@ class TenantsController(Controller):
         id: str,
         handler: Depends[tenants.DeleteTenantHandler],
     ) -> None:
-        return await handler(tenants.DeleteTenantCommand(id=id))
+        return await handler(tenants.DeleteTenantCommand(id=UUID(id)))

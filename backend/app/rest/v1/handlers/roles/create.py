@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
@@ -11,7 +10,7 @@ from backend.domain.repos.database import Database
 
 class CreateRoleCommand(Command):
     name: str
-    tenant_id: str
+    tenant_id: UUID
     description: str | None = None
 
 
@@ -23,7 +22,7 @@ class CreateRoleHandler(Handler[CreateRoleCommand, dtos.Role, None], type_=Handl
         async with self.db:
             entity = Role(
                 name=cmd.name,
-                tenant_id=UUID(cmd.tenant_id),
+                tenant_id=cmd.tenant_id,
                 description=cmd.description,
             )
             created = (await self.db.gateway.role.create(entity)).some(AlreadyExistsError())

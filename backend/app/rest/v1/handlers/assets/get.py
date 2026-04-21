@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
@@ -9,7 +8,7 @@ from backend.domain.repos.database import Database
 
 
 class GetAssetCommand(Command):
-    id: str
+    id: UUID
 
 
 @dataclass
@@ -18,5 +17,5 @@ class GetAssetHandler(Handler[GetAssetCommand, dtos.Asset, None], type_=HandlerT
 
     async def __call__(self, cmd: GetAssetCommand, _ctx: None = None) -> dtos.Asset:
         async with self.db:
-            asset = (await self.db.gateway.asset.get_by_id(UUID(cmd.id))).some(NotFoundError())
+            asset = (await self.db.gateway.asset.get_by_id(cmd.id)).some(NotFoundError())
         return dtos.Asset.from_object(asset)

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
@@ -9,7 +8,7 @@ from backend.domain.repos.database import Database
 
 
 class UpdateNotificationCommand(Command):
-    id: str
+    id: UUID
     title: str | None = None
     body: str | None = None
     urgency: int | None = None
@@ -25,9 +24,7 @@ class UpdateNotificationHandler(
         self, cmd: UpdateNotificationCommand, _ctx: None = None
     ) -> dtos.Notification:
         async with self.db:
-            entity = (await self.db.gateway.notification.get_by_id(UUID(cmd.id))).some(
-                NotFoundError()
-            )
+            entity = (await self.db.gateway.notification.get_by_id(cmd.id)).some(NotFoundError())
             if cmd.title is not None:
                 entity.title = cmd.title
             if cmd.body is not None:

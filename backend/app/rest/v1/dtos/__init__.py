@@ -2,7 +2,7 @@ from .assets import Asset
 from .audit_logs import AuditLog
 from .auth import AuthContext
 from .identity import IdentityDTO
-from .notifications import Notification
+from .notifications import Notification, NotificationInteraction, UserNotification
 from .pagination import PaginatedResponse
 from .permissions import Permission
 from .roles import Role
@@ -16,10 +16,12 @@ __all__ = (
     "AuthContext",
     "IdentityDTO",
     "Notification",
+    "NotificationInteraction",
     "PaginatedResponse",
     "Permission",
     "Role",
     "Session",
     "Tenant",
     "User",
+    "UserNotification",
 )

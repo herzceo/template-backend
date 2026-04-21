@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
@@ -9,7 +8,7 @@ from backend.domain.repos.database import Database
 
 
 class UpdateAssetCommand(Command):
-    id: str
+    id: UUID
     blurhash: str | None = None
     original_filename: str | None = None
 
@@ -20,7 +19,7 @@ class UpdateAssetHandler(Handler[UpdateAssetCommand, dtos.Asset, None], type_=Ha
 
     async def __call__(self, cmd: UpdateAssetCommand, _ctx: None = None) -> dtos.Asset:
         async with self.db:
-            entity = (await self.db.gateway.asset.get_by_id(UUID(cmd.id))).some(NotFoundError())
+            entity = (await self.db.gateway.asset.get_by_id(cmd.id)).some(NotFoundError())
             if cmd.blurhash is not None:
                 entity.blurhash = cmd.blurhash
             if cmd.original_filename is not None:

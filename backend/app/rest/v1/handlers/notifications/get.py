@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
@@ -9,7 +8,7 @@ from backend.domain.repos.database import Database
 
 
 class GetNotificationCommand(Command):
-    id: str
+    id: UUID
 
 
 @dataclass
@@ -20,7 +19,7 @@ class GetNotificationHandler(
 
     async def __call__(self, cmd: GetNotificationCommand, _ctx: None = None) -> dtos.Notification:
         async with self.db:
-            notification = (await self.db.gateway.notification.get_by_id(UUID(cmd.id))).some(
+            notification = (await self.db.gateway.notification.get_by_id(cmd.id)).some(
                 NotFoundError()
             )
         return dtos.Notification.from_object(notification)

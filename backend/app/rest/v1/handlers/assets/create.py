@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
@@ -13,8 +12,8 @@ class CreateAssetCommand(Command):
     key: str
     content_type: str
     size_bytes: int
-    tenant_id: str
-    uploader_id: str
+    tenant_id: UUID
+    uploader_id: UUID
     blurhash: str | None = None
     original_filename: str | None = None
 
@@ -29,8 +28,8 @@ class CreateAssetHandler(Handler[CreateAssetCommand, dtos.Asset, None], type_=Ha
                 key=cmd.key,
                 content_type=cmd.content_type,
                 size_bytes=cmd.size_bytes,
-                tenant_id=UUID(cmd.tenant_id),
-                uploader_id=UUID(cmd.uploader_id),
+                tenant_id=cmd.tenant_id,
+                uploader_id=cmd.uploader_id,
                 blurhash=cmd.blurhash,
                 original_filename=cmd.original_filename,
             )

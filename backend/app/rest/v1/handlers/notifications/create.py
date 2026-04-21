@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
@@ -13,10 +12,10 @@ class CreateNotificationCommand(Command):
     title: str
     body: str
     audience: str
-    tenant_id: str
+    tenant_id: UUID
     urgency: int = 20
-    target_id: str | None = None
-    sender_id: str | None = None
+    target_id: UUID | None = None
+    sender_id: UUID | None = None
 
 
 @dataclass
@@ -34,9 +33,9 @@ class CreateNotificationHandler(
                 body=cmd.body,
                 audience=cmd.audience,
                 urgency=cmd.urgency,
-                tenant_id=UUID(cmd.tenant_id),
-                target_id=UUID(cmd.target_id) if cmd.target_id else None,
-                sender_id=UUID(cmd.sender_id) if cmd.sender_id else None,
+                tenant_id=cmd.tenant_id,
+                target_id=cmd.target_id,
+                sender_id=cmd.sender_id,
             )
             created = (await self.db.gateway.notification.create(entity)).some(AlreadyExistsError())
             await self.db.commit()

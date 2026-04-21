@@ -1,14 +1,13 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.domain.repos.database import Database
 
 
 class RevokeRoleCommand(Command):
-    user_id: str
-    role_id: str
+    user_id: UUID
+    role_id: UUID
 
 
 @dataclass
@@ -17,5 +16,5 @@ class RevokeRoleHandler(Handler[RevokeRoleCommand, None, None], type_=HandlerTyp
 
     async def __call__(self, cmd: RevokeRoleCommand, _ctx: None = None) -> None:
         async with self.db:
-            await self.db.gateway.user.revoke_role(UUID(cmd.user_id), UUID(cmd.role_id))
+            await self.db.gateway.user.revoke_role(cmd.user_id, cmd.role_id)
             await self.db.commit()
