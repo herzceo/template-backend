@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from litestar import Controller, get
 
 from backend.app.rest.v1 import dtos
@@ -26,4 +28,4 @@ class AuditLogsController(Controller):
         id: str,
         handler: Depends[audit_logs.GetAuditLogHandler],
     ) -> dtos.AuditLog:
-        return await handler(audit_logs.GetAuditLogCommand(id=id))
+        return await handler(audit_logs.GetAuditLogCommand(id=UUID(id)))

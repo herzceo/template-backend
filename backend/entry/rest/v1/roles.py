@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import msgspec.structs
 from litestar import Controller, delete, get, patch, post
 
@@ -41,7 +43,7 @@ class RolesController(Controller):
         id: str,
         handler: Depends[roles.GetRoleHandler],
     ) -> dtos.Role:
-        return await handler(roles.GetRoleCommand(id=id))
+        return await handler(roles.GetRoleCommand(id=UUID(id)))
 
     @patch("/{id:str}")
     @inject
@@ -51,7 +53,7 @@ class RolesController(Controller):
         data: UpdateRoleBody,
         handler: Depends[roles.UpdateRoleHandler],
     ) -> dtos.Role:
-        return await handler(roles.UpdateRoleCommand(id=id, **msgspec.structs.asdict(data)))
+        return await handler(roles.UpdateRoleCommand(id=UUID(id), **msgspec.structs.asdict(data)))
 
     @delete("/{id:str}")
     @inject
@@ -60,7 +62,7 @@ class RolesController(Controller):
         id: str,
         handler: Depends[roles.DeleteRoleHandler],
     ) -> None:
-        return await handler(roles.DeleteRoleCommand(id=id))
+        return await handler(roles.DeleteRoleCommand(id=UUID(id)))
 
     @post("/{id:str}/permissions/{permission_id:str}")
     @inject
@@ -70,7 +72,9 @@ class RolesController(Controller):
         permission_id: str,
         handler: Depends[roles.AssignPermissionHandler],
     ) -> None:
-        return await handler(roles.AssignPermissionCommand(role_id=id, permission_id=permission_id))
+        return await handler(
+            roles.AssignPermissionCommand(role_id=UUID(id), permission_id=UUID(permission_id))
+        )
 
     @delete("/{id:str}/permissions/{permission_id:str}")
     @inject
@@ -80,4 +84,6 @@ class RolesController(Controller):
         permission_id: str,
         handler: Depends[roles.RevokePermissionHandler],
     ) -> None:
-        return await handler(roles.RevokePermissionCommand(role_id=id, permission_id=permission_id))
+        return await handler(
+            roles.RevokePermissionCommand(role_id=UUID(id), permission_id=UUID(permission_id))
+        )

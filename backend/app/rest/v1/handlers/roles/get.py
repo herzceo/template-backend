@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
@@ -9,7 +8,7 @@ from backend.domain.repos.database import Database
 
 
 class GetRoleCommand(Command):
-    id: str
+    id: UUID
 
 
 @dataclass
@@ -18,5 +17,5 @@ class GetRoleHandler(Handler[GetRoleCommand, dtos.Role, None], type_=HandlerType
 
     async def __call__(self, cmd: GetRoleCommand, _ctx: None = None) -> dtos.Role:
         async with self.db:
-            role = (await self.db.gateway.role.get_by_id(UUID(cmd.id))).some(NotFoundError())
+            role = (await self.db.gateway.role.get_by_id(cmd.id)).some(NotFoundError())
         return dtos.Role.from_object(role)

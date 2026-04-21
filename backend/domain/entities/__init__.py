@@ -3,7 +3,7 @@ from .audit_log import AuditLog
 from .base import Base
 from .identity import Identity
 from .notification import Notification
-from .notification_read import NotificationRead
+from .notification_interaction import NotificationInteraction
 from .permission import Permission
 from .queue import Job, JobEvent, WorkerEvent
 from .queue import Worker as QueueWorker
@@ -21,7 +21,7 @@ __all__ = (
     "Job",
     "JobEvent",
     "Notification",
-    "NotificationRead",
+    "NotificationInteraction",
     "Permission",
     "QueueWorker",
     "Role",

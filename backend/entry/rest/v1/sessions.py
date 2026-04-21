@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from litestar import Controller, delete, get, post
 
 from backend.app.rest.v1 import dtos
@@ -35,7 +37,7 @@ class SessionsController(Controller):
         id: str,
         handler: Depends[sessions.GetSessionHandler],
     ) -> dtos.Session:
-        return await handler(sessions.GetSessionCommand(id=id))
+        return await handler(sessions.GetSessionCommand(id=UUID(id)))
 
     @delete("/{id:str}")
     @inject
@@ -44,4 +46,4 @@ class SessionsController(Controller):
         id: str,
         handler: Depends[sessions.DeleteSessionHandler],
     ) -> None:
-        return await handler(sessions.DeleteSessionCommand(id=id))
+        return await handler(sessions.DeleteSessionCommand(id=UUID(id)))

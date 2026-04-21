@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
@@ -17,7 +16,7 @@ class CreateUserCommand(Command):
     password: str
     first_name: str
     last_name: str
-    tenant_id: str
+    tenant_id: UUID
     avatar_url: str | None = None
 
 
@@ -33,7 +32,7 @@ class CreateUserHandler(Handler[CreateUserCommand, dtos.User, None], type_=Handl
                 email=cmd.email,
                 first_name=cmd.first_name,
                 last_name=cmd.last_name,
-                tenant_id=UUID(cmd.tenant_id),
+                tenant_id=cmd.tenant_id,
             )
             if cmd.avatar_url is not None:
                 entity.avatar_url = cmd.avatar_url

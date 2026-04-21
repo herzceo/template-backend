@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import UUID
 
 from backend.internal.dto import StructDTO
 
@@ -14,7 +15,7 @@ class UpdateTenantBody(StructDTO):
     name: str | None = None
     slug: str | None = None
     settings: dict[str, Any] | None = None
-    owner_id: str | None = None
+    owner_id: UUID | None = None
 
 
 class UpdateRoleBody(StructDTO):
@@ -36,3 +37,8 @@ class UpdateNotificationBody(StructDTO):
     title: str | None = None
     body: str | None = None
     urgency: int | None = None
+
+
+class ReactionBody(StructDTO):
+    user_id: UUID
+    reaction: str | None

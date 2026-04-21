@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
@@ -9,7 +8,7 @@ from backend.domain.repos.database import Database
 
 
 class UpdateUserCommand(Command):
-    id: str
+    id: UUID
     email: str | None = None
     first_name: str | None = None
     last_name: str | None = None
@@ -22,7 +21,7 @@ class UpdateUserHandler(Handler[UpdateUserCommand, dtos.User, None], type_=Handl
 
     async def __call__(self, cmd: UpdateUserCommand, _ctx: None = None) -> dtos.User:
         async with self.db:
-            entity = (await self.db.gateway.user.get_by_id(UUID(cmd.id))).some(NotFoundError())
+            entity = (await self.db.gateway.user.get_by_id(cmd.id)).some(NotFoundError())
             if cmd.email is not None:
                 entity.email = cmd.email
             if cmd.first_name is not None:

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
-
-from uuid_utils.compat import UUID
+from uuid import UUID
 
 from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
@@ -14,7 +13,7 @@ class CreateTenantCommand(Command):
     name: str
     slug: str
     settings: dict[str, Any] | None = None
-    owner_id: str | None = None
+    owner_id: UUID | None = None
 
 
 @dataclass
@@ -27,7 +26,7 @@ class CreateTenantHandler(Handler[CreateTenantCommand, dtos.Tenant, None], type_
                 name=cmd.name,
                 slug=cmd.slug,
                 settings=cmd.settings,
-                owner_id=UUID(cmd.owner_id) if cmd.owner_id else None,
+                owner_id=cmd.owner_id,
             )
             created = (await self.db.gateway.tenant.create(entity)).some(AlreadyExistsError())
             await self.db.commit()

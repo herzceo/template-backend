@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import msgspec.structs
 from litestar import Controller, delete, get, patch, post
 
@@ -38,7 +40,7 @@ class UsersController(Controller):
         id: str,
         handler: Depends[users.GetUserHandler],
     ) -> dtos.User:
-        return await handler(users.GetUserCommand(id=id))
+        return await handler(users.GetUserCommand(id=UUID(id)))
 
     @patch("/{id:str}")
     @inject
@@ -48,7 +50,7 @@ class UsersController(Controller):
         data: UpdateUserBody,
         handler: Depends[users.UpdateUserHandler],
     ) -> dtos.User:
-        return await handler(users.UpdateUserCommand(id=id, **msgspec.structs.asdict(data)))
+        return await handler(users.UpdateUserCommand(id=UUID(id), **msgspec.structs.asdict(data)))
 
     @delete("/{id:str}")
     @inject
@@ -57,7 +59,7 @@ class UsersController(Controller):
         id: str,
         handler: Depends[users.DeleteUserHandler],
     ) -> None:
-        return await handler(users.DeleteUserCommand(id=id))
+        return await handler(users.DeleteUserCommand(id=UUID(id)))
 
     @post("/{id:str}/roles/{role_id:str}", tags=["RBAC"])
     @inject
@@ -67,7 +69,7 @@ class UsersController(Controller):
         role_id: str,
         handler: Depends[users.AssignRoleHandler],
     ) -> None:
-        return await handler(users.AssignRoleCommand(user_id=id, role_id=role_id))
+        return await handler(users.AssignRoleCommand(user_id=UUID(id), role_id=UUID(role_id)))
 
     @delete("/{id:str}/roles/{role_id:str}", tags=["RBAC"])
     @inject
@@ -77,4 +79,4 @@ class UsersController(Controller):
         role_id: str,
         handler: Depends[users.RevokeRoleHandler],
     ) -> None:
-        return await handler(users.RevokeRoleCommand(user_id=id, role_id=role_id))
+        return await handler(users.RevokeRoleCommand(user_id=UUID(id), role_id=UUID(role_id)))

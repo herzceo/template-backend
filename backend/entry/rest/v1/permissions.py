@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import msgspec.structs
 from litestar import Controller, delete, get, patch, post
 
@@ -41,7 +43,7 @@ class PermissionsController(Controller):
         id: str,
         handler: Depends[permissions.GetPermissionHandler],
     ) -> dtos.Permission:
-        return await handler(permissions.GetPermissionCommand(id=id))
+        return await handler(permissions.GetPermissionCommand(id=UUID(id)))
 
     @patch("/{id:str}")
     @inject
@@ -52,7 +54,7 @@ class PermissionsController(Controller):
         handler: Depends[permissions.UpdatePermissionHandler],
     ) -> dtos.Permission:
         return await handler(
-            permissions.UpdatePermissionCommand(id=id, **msgspec.structs.asdict(data))
+            permissions.UpdatePermissionCommand(id=UUID(id), **msgspec.structs.asdict(data))
         )
 
     @delete("/{id:str}")
@@ -62,4 +64,4 @@ class PermissionsController(Controller):
         id: str,
         handler: Depends[permissions.DeletePermissionHandler],
     ) -> None:
-        return await handler(permissions.DeletePermissionCommand(id=id))
+        return await handler(permissions.DeletePermissionCommand(id=UUID(id)))

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import msgspec.structs
 from litestar import Controller, delete, get, patch, post
 
@@ -38,7 +40,7 @@ class AssetsController(Controller):
         id: str,
         handler: Depends[assets.GetAssetHandler],
     ) -> dtos.Asset:
-        return await handler(assets.GetAssetCommand(id=id))
+        return await handler(assets.GetAssetCommand(id=UUID(id)))
 
     @patch("/{id:str}")
     @inject
@@ -48,7 +50,7 @@ class AssetsController(Controller):
         data: UpdateAssetBody,
         handler: Depends[assets.UpdateAssetHandler],
     ) -> dtos.Asset:
-        return await handler(assets.UpdateAssetCommand(id=id, **msgspec.structs.asdict(data)))
+        return await handler(assets.UpdateAssetCommand(id=UUID(id), **msgspec.structs.asdict(data)))
 
     @delete("/{id:str}")
     @inject
@@ -57,4 +59,4 @@ class AssetsController(Controller):
         id: str,
         handler: Depends[assets.DeleteAssetHandler],
     ) -> None:
-        return await handler(assets.DeleteAssetCommand(id=id))
+        return await handler(assets.DeleteAssetCommand(id=UUID(id)))
