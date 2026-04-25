@@ -14,18 +14,18 @@ from backend.infra.external.s3.errors import (
 if TYPE_CHECKING:
     from aiobotocore.client import AioBaseClient
 
-    from backend.infra.external.s3.config import S3Settings
+    from backend.infra.external.s3.config import S3Config
 
 
 class S3Client:
-    __slots__ = ("_client", "_settings")
+    __slots__ = ("_client", "_config")
 
-    def __init__(self, settings: S3Settings, client: AioBaseClient) -> None:  # type: ignore[no-any-unimported]
-        self._settings = settings
+    def __init__(self, config: S3Config, client: AioBaseClient) -> None:  # type: ignore[no-any-unimported]
+        self._config = config
         self._client = client
 
     def _bucket(self, bucket: str | None) -> str:
-        return bucket or self._settings.S3_BUCKET
+        return bucket or self._config.S3_BUCKET
 
     async def upload(
         self,
@@ -101,7 +101,7 @@ class S3Client:
         method: Literal["get_object", "put_object"] = "get_object",
     ) -> io.PresignedUrlResult:
         target_bucket = self._bucket(bucket)
-        expiry = expires_in or self._settings.S3_PRESIGNED_URL_EXPIRY
+        expiry = expires_in or self._config.S3_PRESIGNED_URL_EXPIRY
         try:
             url = await self._client.generate_presigned_url(
                 method,

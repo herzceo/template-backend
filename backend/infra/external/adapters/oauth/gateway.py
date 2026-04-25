@@ -1,6 +1,6 @@
 from typing import final
 
-from backend.app.ports.oauth_gateway import OAuthGateway, OAuthProviderAdapter
+from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway, OAuthProviderAdapter
 from backend.domain.enums import IdentityProvider
 
 from .discord import ImplDiscordOAuthAdapter

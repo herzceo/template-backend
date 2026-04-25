@@ -2,11 +2,11 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from backend.app.errors import ValidationFailedError
-from backend.app.ports.verification import VerificationCodeStore
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.dtos.auth import AuthContext
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.session import SessionService
+from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.domain.repos.database import Database
 
 

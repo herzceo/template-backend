@@ -1,6 +1,6 @@
 from typing import Literal, final
 
-from backend.app.ports.email import EmailSender, EmailType, VerificationEmailParams
+from backend.app.shared.ports.outreach.email import EmailSender, EmailType, VerificationEmailParams
 from backend.infra.external.http.resend.client import ResendClient
 
 _TEMPLATES: dict[EmailType, tuple[str, str]] = {

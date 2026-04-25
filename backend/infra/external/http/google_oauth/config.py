@@ -5,7 +5,7 @@ from backend.internal.dto import StructDTO
 type GoogleScope = Literal["openid", "email", "profile"]
 
 
-class GoogleOAuthSettings(StructDTO):
+class GoogleOAuthConfig(StructDTO):
     CLIENT_ID: str
     CLIENT_SECRET: str
     REDIRECT_URI: str

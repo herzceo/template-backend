@@ -9,11 +9,11 @@ if TYPE_CHECKING:
 
 
 class HTTPClient[S: StructDTO]:
-    __slots__ = ("_session", "_settings")
+    __slots__ = ("_config", "_session")
 
-    def __init__(self, session: HTTPSession, settings: S) -> None:
+    def __init__(self, session: HTTPSession, config: S) -> None:
         self._session = session
-        self._settings = settings
+        self._config = config
 
     @property
     def _auth_headers(self) -> dict[str, str]:

@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 from backend.app.errors import ValidationFailedError
-from backend.app.ports.dbus import DBus
-from backend.app.ports.verification import VerificationCodeStore
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested
+from backend.app.shared.ports.events.dbus import DBus
+from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.domain.repos.database import Database
 
 RESEND_COOLDOWN_SECONDS = 60

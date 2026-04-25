@@ -5,7 +5,7 @@ from backend.internal.dto import StructDTO
 type DiscordScope = Literal["identify", "email", "guilds", "bot", "connections"]
 
 
-class DiscordOAuthSettings(StructDTO):
+class DiscordOAuthConfig(StructDTO):
     CLIENT_ID: str
     CLIENT_SECRET: str
     REDIRECT_URI: str

@@ -1,22 +1,22 @@
 from typing import final
 from urllib.parse import urlencode
 
-from backend.app.ports.oauth_gateway import (
+from backend.app.shared.ports.auth.oauth_gateway import (
     AuthorizationURL,
     OAuthProviderAdapter,
     OAuthUserInfo,
 )
 from backend.domain.enums import IdentityProvider
 from backend.infra.external.http.google_oauth import GoogleOAuthClient
-from backend.infra.external.http.google_oauth.config import GoogleOAuthSettings
+from backend.infra.external.http.google_oauth.config import GoogleOAuthConfig
 from backend.infra.external.http.google_oauth.endpoints import Endpoint
 
 
 @final
 class ImplGoogleOAuthAdapter(OAuthProviderAdapter):
-    def __init__(self, client: GoogleOAuthClient, settings: GoogleOAuthSettings) -> None:
+    def __init__(self, client: GoogleOAuthClient, config: GoogleOAuthConfig) -> None:
         self._client = client
-        self._settings = settings
+        self._config = config
 
     @property
     def provider(self) -> IdentityProvider:
@@ -24,15 +24,15 @@ class ImplGoogleOAuthAdapter(OAuthProviderAdapter):
 
     def get_authorization_url(self, state: str) -> AuthorizationURL:
         params = {
-            "client_id": self._settings.CLIENT_ID,
-            "redirect_uri": self._settings.REDIRECT_URI,
+            "client_id": self._config.CLIENT_ID,
+            "redirect_uri": self._config.REDIRECT_URI,
             "response_type": "code",
-            "scope": " ".join(self._settings.SCOPES),
+            "scope": " ".join(self._config.SCOPES),
             "state": state,
             "access_type": "offline",
             "prompt": "consent",
         }
-        url = f"{self._settings.ACCOUNTS_BASE_URL}{Endpoint.ACCOUNTS_AUTHORIZE}?{urlencode(params)}"
+        url = f"{self._config.ACCOUNTS_BASE_URL}{Endpoint.ACCOUNTS_AUTHORIZE}?{urlencode(params)}"
         return AuthorizationURL(url=url)
 
     async def exchange_code(self, code: str) -> OAuthUserInfo:

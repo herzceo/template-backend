@@ -3,8 +3,8 @@ from datetime import UTC, datetime
 from typing import final
 from uuid import UUID
 
-from backend.app.ports.secret_token import SecretTokenGenerator
-from backend.app.ports.verification import VerificationCodeStore, VerificationEntry
+from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
+from backend.app.shared.ports.security.verification import VerificationCodeStore, VerificationEntry
 from backend.infra.database.redis.adapters.config import VerificationConfig
 from backend.infra.database.redis.client import RedisClient
 from backend.internal.option import Option

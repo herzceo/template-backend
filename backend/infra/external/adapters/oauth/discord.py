@@ -1,22 +1,22 @@
 from typing import final
 from urllib.parse import urlencode
 
-from backend.app.ports.oauth_gateway import (
+from backend.app.shared.ports.auth.oauth_gateway import (
     AuthorizationURL,
     OAuthProviderAdapter,
     OAuthUserInfo,
 )
 from backend.domain.enums import IdentityProvider
 from backend.infra.external.http.discord import DiscordOAuthClient
-from backend.infra.external.http.discord.config import DiscordOAuthSettings
+from backend.infra.external.http.discord.config import DiscordOAuthConfig
 from backend.infra.external.http.discord.endpoints import Endpoint
 
 
 @final
 class ImplDiscordOAuthAdapter(OAuthProviderAdapter):
-    def __init__(self, client: DiscordOAuthClient, settings: DiscordOAuthSettings) -> None:
+    def __init__(self, client: DiscordOAuthClient, config: DiscordOAuthConfig) -> None:
         self._client = client
-        self._settings = settings
+        self._config = config
 
     @property
     def provider(self) -> IdentityProvider:
@@ -24,13 +24,13 @@ class ImplDiscordOAuthAdapter(OAuthProviderAdapter):
 
     def get_authorization_url(self, state: str) -> AuthorizationURL:
         params = {
-            "client_id": self._settings.CLIENT_ID,
-            "redirect_uri": self._settings.REDIRECT_URI,
+            "client_id": self._config.CLIENT_ID,
+            "redirect_uri": self._config.REDIRECT_URI,
             "response_type": "code",
-            "scope": " ".join(self._settings.SCOPES),
+            "scope": " ".join(self._config.SCOPES),
             "state": state,
         }
-        url = f"{self._settings.BASE_URL}{Endpoint.OAUTH_AUTHORIZE}?{urlencode(params)}"
+        url = f"{self._config.BASE_URL}{Endpoint.OAUTH_AUTHORIZE}?{urlencode(params)}"
         return AuthorizationURL(url=url)
 
     async def exchange_code(self, code: str) -> OAuthUserInfo:

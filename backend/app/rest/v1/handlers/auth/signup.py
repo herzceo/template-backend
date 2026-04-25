@@ -3,11 +3,11 @@ from dataclasses import dataclass
 from uuid_utils.compat import UUID
 
 from backend.app.errors import AlreadyExistsError
-from backend.app.ports.dbus import DBus
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested
+from backend.app.shared.ports.events.dbus import DBus
 from backend.domain.entities.user import User
 from backend.domain.enums import IdentityProvider
 from backend.domain.repos.database import Database

@@ -1,22 +1,22 @@
 from typing import final
 from urllib.parse import urlencode
 
-from backend.app.ports.oauth_gateway import (
+from backend.app.shared.ports.auth.oauth_gateway import (
     AuthorizationURL,
     OAuthProviderAdapter,
     OAuthUserInfo,
 )
 from backend.domain.enums import IdentityProvider
 from backend.infra.external.http.github import GitHubOAuthClient
-from backend.infra.external.http.github.config import GitHubOAuthSettings
+from backend.infra.external.http.github.config import GitHubOAuthConfig
 from backend.infra.external.http.github.endpoints import Endpoint
 
 
 @final
 class ImplGitHubOAuthAdapter(OAuthProviderAdapter):
-    def __init__(self, client: GitHubOAuthClient, settings: GitHubOAuthSettings) -> None:
+    def __init__(self, client: GitHubOAuthClient, config: GitHubOAuthConfig) -> None:
         self._client = client
-        self._settings = settings
+        self._config = config
 
     @property
     def provider(self) -> IdentityProvider:
@@ -24,12 +24,12 @@ class ImplGitHubOAuthAdapter(OAuthProviderAdapter):
 
     def get_authorization_url(self, state: str) -> AuthorizationURL:
         params = {
-            "client_id": self._settings.CLIENT_ID,
-            "redirect_uri": self._settings.REDIRECT_URI,
-            "scope": " ".join(self._settings.SCOPES),
+            "client_id": self._config.CLIENT_ID,
+            "redirect_uri": self._config.REDIRECT_URI,
+            "scope": " ".join(self._config.SCOPES),
             "state": state,
         }
-        url = f"{self._settings.OAUTH_BASE_URL}{Endpoint.OAUTH_AUTHORIZE}?{urlencode(params)}"
+        url = f"{self._config.OAUTH_BASE_URL}{Endpoint.OAUTH_AUTHORIZE}?{urlencode(params)}"
         return AuthorizationURL(url=url)
 
     async def exchange_code(self, code: str) -> OAuthUserInfo:

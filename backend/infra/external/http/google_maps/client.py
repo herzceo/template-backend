@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Unpack
 
 from backend.infra.external.http.client import HTTPClient
 from backend.infra.external.http.google_maps import io
-from backend.infra.external.http.google_maps.config import GoogleMapsSettings
+from backend.infra.external.http.google_maps.config import GoogleMapsConfig
 from backend.infra.external.http.google_maps.endpoints import Endpoint
 
 if TYPE_CHECKING:
@@ -12,10 +12,10 @@ if TYPE_CHECKING:
     from backend.internal.result import Result
 
 
-class GoogleMapsClient(HTTPClient[GoogleMapsSettings]):
+class GoogleMapsClient(HTTPClient[GoogleMapsConfig]):
     @property
     def _auth_params(self) -> dict[str, str]:
-        return {"key": self._settings.GOOGLE_MAPS_API_KEY}
+        return {"key": self._config.GOOGLE_MAPS_API_KEY}
 
     async def autocomplete(
         self,

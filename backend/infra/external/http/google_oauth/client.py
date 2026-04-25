@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from backend.infra.external.http.client import HTTPClient
 from backend.infra.external.http.google_oauth import io
-from backend.infra.external.http.google_oauth.config import GoogleOAuthSettings
+from backend.infra.external.http.google_oauth.config import GoogleOAuthConfig
 from backend.infra.external.http.google_oauth.endpoints import Endpoint
 
 if TYPE_CHECKING:
@@ -12,18 +12,18 @@ if TYPE_CHECKING:
     from backend.internal.result import Result
 
 
-class GoogleOAuthClient(HTTPClient[GoogleOAuthSettings]):
+class GoogleOAuthClient(HTTPClient[GoogleOAuthConfig]):
     def _accounts_url(self, endpoint: Endpoint, **path_params: str) -> str:
         path = endpoint.value.format(**path_params) if path_params else endpoint.value
-        return self._settings.ACCOUNTS_BASE_URL + path
+        return self._config.ACCOUNTS_BASE_URL + path
 
     def _oauth_url(self, endpoint: Endpoint, **path_params: str) -> str:
         path = endpoint.value.format(**path_params) if path_params else endpoint.value
-        return self._settings.OAUTH_BASE_URL + path
+        return self._config.OAUTH_BASE_URL + path
 
     def _api_url(self, endpoint: Endpoint, **path_params: str) -> str:
         path = endpoint.value.format(**path_params) if path_params else endpoint.value
-        return self._settings.API_BASE_URL + path
+        return self._config.API_BASE_URL + path
 
     @staticmethod
     def _bearer_headers(access_token: str) -> dict[str, str]:
@@ -33,11 +33,11 @@ class GoogleOAuthClient(HTTPClient[GoogleOAuthSettings]):
         response = await self._session.post(
             url=self._oauth_url(Endpoint.OAUTH_TOKEN),
             json={
-                "client_id": self._settings.CLIENT_ID,
-                "client_secret": self._settings.CLIENT_SECRET,
+                "client_id": self._config.CLIENT_ID,
+                "client_secret": self._config.CLIENT_SECRET,
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": self._settings.REDIRECT_URI,
+                "redirect_uri": self._config.REDIRECT_URI,
             },
         )
         return response.as_result(io.TokenResponse)

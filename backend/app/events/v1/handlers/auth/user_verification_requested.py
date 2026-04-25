@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from backend.app.events.v1.handlers.base import EventHandler
-from backend.app.ports.email import EmailSender, EmailType
-from backend.app.ports.verification import VerificationCodeStore
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested
+from backend.app.shared.ports.outreach.email import EmailSender, EmailType
+from backend.app.shared.ports.security.verification import VerificationCodeStore
 
 
 @dataclass

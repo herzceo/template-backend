@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from backend.infra.external.http.amplitude import io
-from backend.infra.external.http.amplitude.config import AmplitudeSettings
+from backend.infra.external.http.amplitude.config import AmplitudeConfig
 from backend.infra.external.http.amplitude.endpoints import Endpoint
 from backend.infra.external.http.client import HTTPClient
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from backend.internal.result import Result
 
 
-class AmplitudeClient(HTTPClient[AmplitudeSettings]):
+class AmplitudeClient(HTTPClient[AmplitudeConfig]):
     async def track(
         self,
         events: list[io.Event],
@@ -20,7 +20,7 @@ class AmplitudeClient(HTTPClient[AmplitudeSettings]):
         response = await self._session.post(
             url=Endpoint.TRACK,
             json={
-                "api_key": self._settings.AMPLITUDE_API_KEY,
+                "api_key": self._config.AMPLITUDE_API_KEY,
                 "events": events,
             },
         )
@@ -33,7 +33,7 @@ class AmplitudeClient(HTTPClient[AmplitudeSettings]):
         response = await self._session.post(
             url=Endpoint.IDENTIFY,
             json={
-                "api_key": self._settings.AMPLITUDE_API_KEY,
+                "api_key": self._config.AMPLITUDE_API_KEY,
                 "identification": identifications,
             },
         )

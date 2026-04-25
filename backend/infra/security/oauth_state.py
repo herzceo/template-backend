@@ -5,7 +5,7 @@ import hmac
 import time
 from typing import final
 
-from backend.app.ports.oauth_state import OAuthStateSigner
+from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.internal import Option
 
 _EXPECTED_PARTS = 3

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, final
 
 from sqlalchemy import text
 
-from backend.app.ports.dbus import DBus, PublishOptions
+from backend.app.shared.ports.events.dbus import DBus, PublishOptions
 from backend.domain.entities.queue.job import Job
 from backend.infra.dbus.psql.job_service import JobService
 

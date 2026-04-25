@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 
 from backend.infra.external.http.client import HTTPClient
 from backend.infra.external.http.discord import io
-from backend.infra.external.http.discord.config import DiscordOAuthSettings
+from backend.infra.external.http.discord.config import DiscordOAuthConfig
 from backend.infra.external.http.discord.endpoints import Endpoint
 
 if TYPE_CHECKING:
@@ -13,10 +13,10 @@ if TYPE_CHECKING:
     from backend.internal.result import Result
 
 
-class DiscordOAuthClient(HTTPClient[DiscordOAuthSettings]):
+class DiscordOAuthClient(HTTPClient[DiscordOAuthConfig]):
     def _url(self, endpoint: str, **path_params: str) -> str:
         path = endpoint.format(**path_params) if path_params else endpoint
-        return self._settings.BASE_URL + path
+        return self._config.BASE_URL + path
 
     @staticmethod
     def _bearer_headers(access_token: str) -> dict[str, str]:
@@ -28,11 +28,11 @@ class DiscordOAuthClient(HTTPClient[DiscordOAuthSettings]):
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             data=urlencode(
                 {
-                    "client_id": self._settings.CLIENT_ID,
-                    "client_secret": self._settings.CLIENT_SECRET,
+                    "client_id": self._config.CLIENT_ID,
+                    "client_secret": self._config.CLIENT_SECRET,
                     "grant_type": "authorization_code",
                     "code": code,
-                    "redirect_uri": self._settings.REDIRECT_URI,
+                    "redirect_uri": self._config.REDIRECT_URI,
                 }
             ).encode(),
         )

@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from backend.infra.database.redis import RedisConfig
     from backend.infra.database.redis.adapters.config import VerificationConfig
     from backend.infra.dbus.psql.config import QueueExecutorConfig
-    from backend.infra.external.http.resend.config import ResendSettings
+    from backend.infra.external.http.resend.config import ResendConfig
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ def _build_handlers(container: AsyncContainer) -> dict[str, HandlerDef]:
 def run_queue(
     config: QueueExecutorConfig,
     db_config: DatabaseConfig,
-    resend_settings: ResendSettings,
+    resend_config: ResendConfig,
     redis_config: RedisConfig,
     verification_config: VerificationConfig,
 ) -> None:
@@ -66,13 +66,13 @@ def run_queue(
         level=logging.INFO,
         format="%(asctime)s %(levelname)-8s %(name)s: %(message)s",
     )
-    asyncio.run(_run(config, db_config, resend_settings, redis_config, verification_config))
+    asyncio.run(_run(config, db_config, resend_config, redis_config, verification_config))
 
 
 async def _run(
     config: QueueExecutorConfig,
     db_config: DatabaseConfig,
-    resend_settings: ResendSettings,
+    resend_config: ResendConfig,
     redis_config: RedisConfig,
     verification_config: VerificationConfig,
 ) -> None:
@@ -83,7 +83,7 @@ async def _run(
     container = make_async_container(
         create_security_provider(),
         create_redis_provider(redis_config, verification_config),
-        create_email_provider(resend_settings, from_email="noreply@yourdomain.com"),
+        create_email_provider(resend_config, from_email="noreply@yourdomain.com"),
         create_event_handlers_provider(),
     )
 

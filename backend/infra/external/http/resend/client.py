@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Unpack
 
 from backend.infra.external.http.client import HTTPClient
 from backend.infra.external.http.resend import io
-from backend.infra.external.http.resend.config import ResendSettings
+from backend.infra.external.http.resend.config import ResendConfig
 from backend.infra.external.http.resend.endpoints import Endpoint
 
 if TYPE_CHECKING:
@@ -12,10 +12,10 @@ if TYPE_CHECKING:
     from backend.internal.result import Result
 
 
-class ResendClient(HTTPClient[ResendSettings]):
+class ResendClient(HTTPClient[ResendConfig]):
     @property
     def _auth_headers(self) -> dict[str, str]:
-        return {"Authorization": f"Bearer {self._settings.RESEND_API_KEY}"}
+        return {"Authorization": f"Bearer {self._config.RESEND_API_KEY}"}
 
     async def send(
         self,

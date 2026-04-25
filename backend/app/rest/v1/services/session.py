@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 from uuid_utils.compat import UUID
 
-from backend.app.ports.secret_token import SecretTokenGenerator
+from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.domain.entities.session import Session
 from backend.domain.repos.database import Database
 from backend.internal import Option

@@ -5,7 +5,7 @@ from backend.internal.dto import StructDTO
 type GitHubScope = Literal["read:user", "user:email", "repo", "gist"]
 
 
-class GitHubOAuthSettings(StructDTO):
+class GitHubOAuthConfig(StructDTO):
     CLIENT_ID: str
     CLIENT_SECRET: str
     REDIRECT_URI: str
