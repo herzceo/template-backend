@@ -1,18 +1,51 @@
+from typing import Any
 from uuid import UUID
 
 import msgspec.structs
-from litestar import Controller, delete, get, patch, post
+from litestar import Controller, Request, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import assets
 from backend.internal.di import Depends, inject
 
-from .dtos import UpdateAssetBody
+from .dtos import ConfirmAssetUploadBody, PresignAssetBody, UpdateAssetBody
 
 
 class AssetsController(Controller):
     path = "/assets"
     tags = ("Assets",)
+
+    @post("/presign")
+    @inject
+    async def presign_asset(
+        self,
+        data: PresignAssetBody,
+        handler: Depends[assets.PresignAssetHandler],
+        request: Request[Any, Any, Any],
+    ) -> dtos.PresignedUploadResponse:
+        return await handler(
+            assets.PresignAssetCommand(
+                user_id=UUID(request.auth.user_id),
+                original_filename=data.original_filename,
+            )
+        )
+
+    @post("/")
+    @inject
+    async def create_asset(
+        self,
+        data: ConfirmAssetUploadBody,
+        handler: Depends[assets.CreateAssetHandler],
+        request: Request[Any, Any, Any],
+    ) -> dtos.Asset:
+        return await handler(
+            assets.CreateAssetCommand(
+                temp_key=data.temp_key,
+                content_type=data.content_type,
+                original_filename=data.original_filename,
+                user_id=UUID(request.auth.user_id),
+            )
+        )
 
     @get("/")
     @inject
@@ -23,15 +56,6 @@ class AssetsController(Controller):
         limit: int = 50,
     ) -> dtos.PaginatedResponse[dtos.Asset]:
         return await handler(assets.ListAssetsCommand(offset=offset, limit=limit))
-
-    @post("/")
-    @inject
-    async def create_asset(
-        self,
-        data: assets.CreateAssetCommand,
-        handler: Depends[assets.CreateAssetHandler],
-    ) -> dtos.Asset:
-        return await handler(data)
 
     @get("/{id:str}")
     @inject

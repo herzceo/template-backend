@@ -29,3 +29,14 @@ class IdentityProvider(StrEnum):
     GOOGLE = "google"
     GITHUB = "github"
     DISCORD = "discord"
+
+
+class AssetContentType(StrEnum):
+    JPEG = "image/jpeg"
+    PNG = "image/png"
+    GIF = "image/gif"
+    WEBP = "image/webp"
+    SVG = "image/svg+xml"
+    PDF = "application/pdf"
+    MP4 = "video/mp4"
+    WEBM = "video/webm"

@@ -24,8 +24,10 @@ from backend.app.shared.ports.auth.password_hasher import PasswordHasher
 from backend.app.shared.ports.events.dbus import DBus
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
+from backend.app.shared.ports.storage import ObjectStore
 from backend.domain.repos.database import Database
 from backend.infra.database.config import DatabaseConfig
+from backend.infra.database.object import S3ObjectStore
 from backend.infra.database.psql.engine import (
     create_async_engine,
     create_async_session_maker,
@@ -176,6 +178,7 @@ def create_external_provider(
     if s3_config is not None:
         provider.provide(lambda: s3_config, provides=S3Config)
         provider.provide(_create_s3_client, provides=S3Client)
+        provider.provide(S3ObjectStore, provides=ObjectStore)
 
     return provider
 

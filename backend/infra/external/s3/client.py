@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from backend.infra.external.s3 import io
 from backend.infra.external.s3.errors import (
     BucketNotFoundError,
+    CopyError,
     DownloadError,
     ObjectNotFoundError,
     S3Error,
@@ -180,4 +181,49 @@ class S3Client:
             content_type=response.get("ContentType", ""),
             last_modified=str(response.get("LastModified", "")),
             etag=response.get("ETag", "").strip('"'),
+        )
+
+    async def copy(
+        self,
+        source_key: str,
+        destination_key: str,
+        *,
+        source_bucket: str | None = None,
+        destination_bucket: str | None = None,
+    ) -> io.CopyResult:
+        src_bucket = self._bucket(source_bucket)
+        dst_bucket = self._bucket(destination_bucket)
+        try:
+            response = await self._client.copy_object(
+                Bucket=dst_bucket,
+                Key=destination_key,
+                CopySource={"Bucket": src_bucket, "Key": source_key},
+            )
+        except self._client.exceptions.NoSuchBucket as e:
+            raise BucketNotFoundError(
+                message=f"Bucket not found: {dst_bucket}",
+                details={"bucket": dst_bucket},
+            ) from e
+        except self._client.exceptions.NoSuchKey as e:
+            raise ObjectNotFoundError(
+                message=f"Source object not found: {source_key}",
+                details={"key": source_key, "bucket": src_bucket},
+            ) from e
+        except Exception as e:
+            raise CopyError(
+                message=f"Copy failed from {source_key} to {destination_key}: {e}",
+                details={
+                    "source_key": source_key,
+                    "destination_key": destination_key,
+                    "source_bucket": src_bucket,
+                    "destination_bucket": dst_bucket,
+                },
+            ) from e
+
+        etag = response.get("CopyObjectResult", {}).get("ETag", "").strip('"')
+        return io.CopyResult(
+            source_key=source_key,
+            destination_key=destination_key,
+            bucket=dst_bucket,
+            etag=etag,
         )

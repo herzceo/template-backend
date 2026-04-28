@@ -16,6 +16,13 @@ class PresignedUrlResult(StructDTO):
     expires_in: int
 
 
+class CopyResult(StructDTO):
+    source_key: str
+    destination_key: str
+    bucket: str
+    etag: str = ""
+
+
 class ObjectMeta(StructDTO):
     key: str
     size: int = 0

@@ -2,6 +2,7 @@ from backend.infra.external.s3.client import S3Client
 from backend.infra.external.s3.config import S3Config
 from backend.infra.external.s3.errors import (
     BucketNotFoundError,
+    CopyError,
     DownloadError,
     ObjectNotFoundError,
     S3Error,
@@ -10,6 +11,7 @@ from backend.infra.external.s3.errors import (
 
 __all__ = [
     "BucketNotFoundError",
+    "CopyError",
     "DownloadError",
     "ObjectNotFoundError",
     "S3Client",

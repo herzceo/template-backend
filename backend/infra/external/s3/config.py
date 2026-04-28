@@ -10,3 +10,4 @@ class S3Config(StructDTO):
     S3_ENDPOINT_URL: str | None = None
     S3_BUCKET: str = ""
     S3_PRESIGNED_URL_EXPIRY: int = 3600
+    S3_UPLOAD_MAX_SIZE_BYTES: int = 52_428_800

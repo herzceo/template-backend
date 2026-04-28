@@ -26,3 +26,8 @@ class UploadError(S3Error):
 class DownloadError(S3Error):
     message = "Download failed"
     code = "s3_download_error"
+
+
+class CopyError(S3Error):
+    message = "Copy failed"
+    code = "s3_copy_error"

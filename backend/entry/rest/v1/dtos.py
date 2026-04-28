@@ -1,6 +1,7 @@
 from typing import Any
 from uuid import UUID
 
+from backend.domain.enums import AssetContentType
 from backend.internal.dto import StructDTO
 
 
@@ -31,6 +32,16 @@ class UpdatePermissionBody(StructDTO):
 class UpdateAssetBody(StructDTO):
     blurhash: str | None = None
     original_filename: str | None = None
+
+
+class PresignAssetBody(StructDTO):
+    original_filename: str
+
+
+class ConfirmAssetUploadBody(StructDTO):
+    temp_key: str
+    content_type: AssetContentType
+    original_filename: str
 
 
 class UpdateNotificationBody(StructDTO):
