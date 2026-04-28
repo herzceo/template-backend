@@ -5,6 +5,7 @@ from litestar import Controller, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import tenants
+from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
 from .dtos import UpdateTenantBody
@@ -16,6 +17,7 @@ class TenantsController(Controller):
 
     @get("/")
     @inject
+    @result
     async def list_tenants(
         self,
         handler: Depends[tenants.ListTenantsHandler],
@@ -26,6 +28,7 @@ class TenantsController(Controller):
 
     @post("/")
     @inject
+    @result
     async def create_tenant(
         self,
         data: tenants.CreateTenantCommand,
@@ -35,6 +38,7 @@ class TenantsController(Controller):
 
     @get("/{id:str}")
     @inject
+    @result
     async def get_tenant(
         self,
         id: str,
@@ -44,6 +48,7 @@ class TenantsController(Controller):
 
     @patch("/{id:str}")
     @inject
+    @result
     async def update_tenant(
         self,
         id: str,
@@ -56,6 +61,7 @@ class TenantsController(Controller):
 
     @delete("/{id:str}")
     @inject
+    @result
     async def delete_tenant(
         self,
         id: str,

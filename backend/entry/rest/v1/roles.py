@@ -5,6 +5,7 @@ from litestar import Controller, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import roles
+from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
 from .dtos import UpdateRoleBody
@@ -19,6 +20,7 @@ class RolesController(Controller):
 
     @get("/")
     @inject
+    @result
     async def list_roles(
         self,
         handler: Depends[roles.ListRolesHandler],
@@ -29,6 +31,7 @@ class RolesController(Controller):
 
     @post("/")
     @inject
+    @result
     async def create_role(
         self,
         data: roles.CreateRoleCommand,
@@ -38,6 +41,7 @@ class RolesController(Controller):
 
     @get("/{id:str}")
     @inject
+    @result
     async def get_role(
         self,
         id: str,
@@ -47,6 +51,7 @@ class RolesController(Controller):
 
     @patch("/{id:str}")
     @inject
+    @result
     async def update_role(
         self,
         id: str,
@@ -57,6 +62,7 @@ class RolesController(Controller):
 
     @delete("/{id:str}")
     @inject
+    @result
     async def delete_role(
         self,
         id: str,
@@ -66,6 +72,7 @@ class RolesController(Controller):
 
     @post("/{id:str}/permissions/{permission_id:str}")
     @inject
+    @result
     async def assign_permission(
         self,
         id: str,
@@ -78,6 +85,7 @@ class RolesController(Controller):
 
     @delete("/{id:str}/permissions/{permission_id:str}")
     @inject
+    @result
     async def revoke_permission(
         self,
         id: str,

@@ -4,6 +4,7 @@ from litestar import Controller, delete, get, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import sessions
+from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
 
@@ -13,6 +14,7 @@ class SessionsController(Controller):
 
     @get("/")
     @inject
+    @result
     async def list_sessions(
         self,
         handler: Depends[sessions.ListSessionsHandler],
@@ -23,6 +25,7 @@ class SessionsController(Controller):
 
     @post("/")
     @inject
+    @result
     async def create_session(
         self,
         data: sessions.CreateSessionCommand,
@@ -32,6 +35,7 @@ class SessionsController(Controller):
 
     @get("/{id:str}")
     @inject
+    @result
     async def get_session(
         self,
         id: str,
@@ -41,6 +45,7 @@ class SessionsController(Controller):
 
     @delete("/{id:str}")
     @inject
+    @result
     async def delete_session(
         self,
         id: str,

@@ -6,6 +6,7 @@ from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.dtos.identity import InitiateResult
 from backend.app.rest.v1.handlers import auth
 from backend.domain.enums import IdentityProvider
+from backend.entry.rest.common.response import result
 from backend.entry.rest.common.scope import set_session_token
 from backend.internal.di import Depends, inject
 
@@ -16,6 +17,7 @@ class AuthController(Controller):
 
     @post("/login", exclude_from_auth=True)
     @inject
+    @result
     async def login(
         self,
         data: auth.LoginCommand,
@@ -28,6 +30,7 @@ class AuthController(Controller):
 
     @post("/signup", exclude_from_auth=True)
     @inject
+    @result
     async def signup(
         self,
         data: auth.SignupCommand,
@@ -37,6 +40,7 @@ class AuthController(Controller):
 
     @post("/verify-email", exclude_from_auth=True)
     @inject
+    @result
     async def verify_email(
         self,
         data: auth.VerifyEmailCommand,
@@ -49,6 +53,7 @@ class AuthController(Controller):
 
     @post("/resend-verification", exclude_from_auth=True)
     @inject
+    @result
     async def resend_verification(
         self,
         data: auth.ResendVerificationCommand,
@@ -58,6 +63,7 @@ class AuthController(Controller):
 
     @get("/oauth/{provider:str}/initiate", exclude_from_auth=True)
     @inject
+    @result
     async def initiate_oauth(
         self,
         provider: IdentityProvider,
@@ -67,6 +73,7 @@ class AuthController(Controller):
 
     @get("/oauth/{provider:str}/callback", exclude_from_auth=True)
     @inject
+    @result
     async def oauth_callback(
         self,
         provider: IdentityProvider,

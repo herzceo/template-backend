@@ -1,29 +1,32 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import NoReturn, Protocol
+from typing import NoReturn, Protocol, runtime_checkable
+
+from backend.internal.dto import StructDTO
 
 
+@runtime_checkable
 class ToException(Protocol):
     def to_exception(self) -> Exception: ...
 
 
-@dataclass(slots=True, frozen=True)
-class Ok[T]:
-    value: T
+class Ok[T](StructDTO, tag="ok"):
+    data: T
 
     def raise_(self) -> T:
-        return self.value
+        return self.data
 
 
-@dataclass(slots=True, frozen=True)
-class Err[E: Exception | ToException]:
+class Err[E](StructDTO, tag="error"):
     error: E
 
     def raise_(self) -> NoReturn:
         if isinstance(self.error, Exception):
             raise self.error
-        raise self.error.to_exception()
+        if isinstance(self.error, ToException):
+            raise self.error.to_exception()
+        msg = f"Cannot raise error of type {type(self.error).__name__}"
+        raise TypeError(msg)
 
 
-type Result[T, E: Exception | ToException] = Ok[T] | Err[E]
+type Result[T, E] = Ok[T] | Err[E]

@@ -4,6 +4,7 @@ from litestar import Controller, get
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import audit_logs
+from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
 
@@ -13,6 +14,7 @@ class AuditLogsController(Controller):
 
     @get("/")
     @inject
+    @result
     async def list_audit_logs(
         self,
         handler: Depends[audit_logs.ListAuditLogsHandler],
@@ -23,6 +25,7 @@ class AuditLogsController(Controller):
 
     @get("/{id:str}")
     @inject
+    @result
     async def get_audit_log(
         self,
         id: str,

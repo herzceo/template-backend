@@ -5,6 +5,7 @@ from litestar import Controller, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import users
+from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
 from .dtos import UpdateUserBody
@@ -16,6 +17,7 @@ class UsersController(Controller):
 
     @get("/")
     @inject
+    @result
     async def list_users(
         self,
         handler: Depends[users.ListUsersHandler],
@@ -26,6 +28,7 @@ class UsersController(Controller):
 
     @post("/")
     @inject
+    @result
     async def create_user(
         self,
         data: users.CreateUserCommand,
@@ -35,6 +38,7 @@ class UsersController(Controller):
 
     @get("/{id:str}")
     @inject
+    @result
     async def get_user(
         self,
         id: str,
@@ -44,6 +48,7 @@ class UsersController(Controller):
 
     @patch("/{id:str}")
     @inject
+    @result
     async def update_user(
         self,
         id: str,
@@ -54,6 +59,7 @@ class UsersController(Controller):
 
     @delete("/{id:str}")
     @inject
+    @result
     async def delete_user(
         self,
         id: str,
@@ -63,6 +69,7 @@ class UsersController(Controller):
 
     @post("/{id:str}/roles/{role_id:str}", tags=["RBAC"])
     @inject
+    @result
     async def assign_role(
         self,
         id: str,
@@ -73,6 +80,7 @@ class UsersController(Controller):
 
     @delete("/{id:str}/roles/{role_id:str}", tags=["RBAC"])
     @inject
+    @result
     async def revoke_role(
         self,
         id: str,

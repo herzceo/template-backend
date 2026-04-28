@@ -5,6 +5,7 @@ from litestar import Controller, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import notifications
+from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
 from .dtos import ReactionBody, UpdateNotificationBody
@@ -16,6 +17,7 @@ class NotificationsController(Controller):
 
     @get("/")
     @inject
+    @result
     async def list_notifications(
         self,
         handler: Depends[notifications.ListNotificationsHandler],
@@ -26,6 +28,7 @@ class NotificationsController(Controller):
 
     @get("/for-user/{user_id:str}")
     @inject
+    @result
     async def list_for_user(
         self,
         user_id: str,
@@ -46,6 +49,7 @@ class NotificationsController(Controller):
 
     @post("/")
     @inject
+    @result
     async def create_notification(
         self,
         data: notifications.CreateNotificationCommand,
@@ -55,6 +59,7 @@ class NotificationsController(Controller):
 
     @get("/{id:str}")
     @inject
+    @result
     async def get_notification(
         self,
         id: str,
@@ -64,6 +69,7 @@ class NotificationsController(Controller):
 
     @patch("/{id:str}")
     @inject
+    @result
     async def update_notification(
         self,
         id: str,
@@ -76,6 +82,7 @@ class NotificationsController(Controller):
 
     @delete("/{id:str}")
     @inject
+    @result
     async def delete_notification(
         self,
         id: str,
@@ -85,6 +92,7 @@ class NotificationsController(Controller):
 
     @post("/{id:str}/read")
     @inject
+    @result
     async def mark_read(
         self,
         id: str,
@@ -97,6 +105,7 @@ class NotificationsController(Controller):
 
     @post("/{id:str}/dismiss")
     @inject
+    @result
     async def dismiss(
         self,
         id: str,
@@ -109,6 +118,7 @@ class NotificationsController(Controller):
 
     @post("/{id:str}/reaction")
     @inject
+    @result
     async def react(
         self,
         id: str,

@@ -1,9 +1,10 @@
 from litestar import status_codes as status
+from litestar.exceptions import HTTPException
 from litestar.types import ExceptionHandlersMap
 
 from backend.app import errors
 
-from .handler import generic_exc_handler_factory
+from .handler import fallback_exc_handler, generic_exc_handler_factory, http_exc_handler
 
 
 def create_exception_handlers() -> ExceptionHandlersMap:
@@ -19,4 +20,7 @@ def create_exception_handlers() -> ExceptionHandlersMap:
         errors.ValidationFailedError: generic_exc_handler_factory(
             status.HTTP_422_UNPROCESSABLE_ENTITY
         ),
+        errors.ApplicationError: generic_exc_handler_factory(status.HTTP_500_INTERNAL_SERVER_ERROR),
+        HTTPException: http_exc_handler,
+        Exception: fallback_exc_handler,
     }
