@@ -6,6 +6,7 @@ from backend.app.rest.v1.dtos.auth import AuthContext
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.services.session import SessionService
+from backend.app.rest.v1.validation import normalize_email, sanitize_username_chars
 from backend.domain.entities.user import User
 from backend.domain.enums import IdentityProvider
 from backend.domain.repos.database import Database
@@ -46,7 +47,7 @@ class OAuthCallbackHandler(
                 username = self._build_username(
                     cmd.provider, user_info.subject_id, user_info.display_name
                 )
-                email = user_info.email or f"{user_info.subject_id}@{cmd.provider}.oauth"
+                email = normalize_email(user_info.email) if user_info.email else None
 
                 user_entity = User(
                     username=username,
@@ -71,6 +72,6 @@ class OAuthCallbackHandler(
         provider: IdentityProvider, subject_id: str, display_name: str | None
     ) -> str:
         if display_name:
-            safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in display_name)
+            safe = sanitize_username_chars(display_name)
             return f"{safe}_{provider}_{subject_id}"
         return f"{provider}_{subject_id}"

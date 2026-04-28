@@ -4,6 +4,7 @@ from uuid import UUID
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
+from backend.app.rest.v1.validation import normalize_email
 from backend.domain.repos.database import Database
 
 
@@ -23,7 +24,7 @@ class UpdateUserHandler(Handler[UpdateUserCommand, dtos.User, None], type_=Handl
         async with self.db:
             entity = (await self.db.gateway.user.get_by_id(cmd.id)).some(NotFoundError())
             if cmd.email is not None:
-                entity.email = cmd.email
+                entity.email = normalize_email(cmd.email)
             if cmd.first_name is not None:
                 entity.first_name = cmd.first_name
             if cmd.last_name is not None:

@@ -6,6 +6,7 @@ from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.dtos.auth import AuthContext
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.session import SessionService
+from backend.app.rest.v1.validation import normalize_email
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.domain.repos.database import Database
 
@@ -24,8 +25,10 @@ class VerifyEmailHandler(
     verification_store: VerificationCodeStore
 
     async def __call__(self, cmd: VerifyEmailCommand, _ctx: None = None) -> AuthContext[dtos.User]:
+        email = normalize_email(cmd.email)
+
         async with self.db:
-            user = (await self.db.gateway.user.get_by_email(cmd.email)).some(
+            user = (await self.db.gateway.user.get_by_email(email)).some(
                 ValidationFailedError(message="Invalid email or code")
             )
 

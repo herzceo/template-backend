@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 
 from backend.app.errors import ValidationFailedError
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
+from backend.app.rest.v1.validation import normalize_email
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested
 from backend.app.shared.ports.events.dbus import DBus
 from backend.app.shared.ports.security.verification import VerificationCodeStore
@@ -24,8 +25,10 @@ class ResendVerificationHandler(
     verification_store: VerificationCodeStore
 
     async def __call__(self, cmd: ResendVerificationCommand, _ctx: None = None) -> None:
+        email = normalize_email(cmd.email)
+
         async with self.db:
-            user = (await self.db.gateway.user.get_by_email(cmd.email)).some(
+            user = (await self.db.gateway.user.get_by_email(email)).some(
                 ValidationFailedError(message="Invalid email")
             )
 
@@ -44,7 +47,7 @@ class ResendVerificationHandler(
         await self.dbus.publish(
             UserVerificationRequested(
                 user_id=user.id,
-                email=user.email,
+                email=email,
                 username=user.username,
             )
         )

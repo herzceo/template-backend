@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 class User(WithUUIDID, WithActive, WithTime, WithTenant, Base):
     username: Mapped[str] = mapped_column(String, index=True, unique=True, nullable=False)
-    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True, nullable=True)
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
     last_name: Mapped[str] = mapped_column(String(100), nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(String(512), nullable=True)

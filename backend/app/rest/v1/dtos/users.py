@@ -4,7 +4,7 @@ from backend.internal.dto import StructDTO
 class User(StructDTO):
     id: str
     username: str
-    email: str
+    email: str | None
     first_name: str
     last_name: str
     avatar_url: str | None

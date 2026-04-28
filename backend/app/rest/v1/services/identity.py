@@ -6,6 +6,7 @@ from backend.app.rest.v1.dtos.identity import (
     InitiateResult,
     Redirect,
 )
+from backend.app.rest.v1.validation import normalize_email, normalize_username
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway, OAuthUserInfo
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
@@ -21,6 +22,13 @@ class IdentityService:
     oauth_gateway: OAuthGateway
     state_signer: OAuthStateSigner
 
+    def _normalize_subject(self, provider: IdentityProvider, subject_id: str) -> str:
+        if provider == IdentityProvider.EMAIL_PASSWORD:
+            return normalize_email(subject_id)
+        if provider == IdentityProvider.USERNAME_PASSWORD:
+            return normalize_username(subject_id)
+        return subject_id
+
     async def verify_password(
         self, provider: IdentityProvider, subject_id: str, password: str
     ) -> Identity:
@@ -29,6 +37,7 @@ class IdentityService:
                 message="Password verification not supported for this provider"
             )
 
+        subject_id = self._normalize_subject(provider, subject_id)
         identity = (
             await self.db.gateway.identity.get_by_provider_subject(provider, subject_id)
         ).some(AuthenticationRequiredError(message="Invalid credentials"))
@@ -79,13 +88,14 @@ class IdentityService:
         return None, user_info
 
     async def link_oauth_identity(self, user_id: UUID, user_info: OAuthUserInfo) -> Identity:
+        provider_email = normalize_email(user_info.email) if user_info.email else None
         identity = Identity(
             user_id=user_id,
             provider=user_info.provider,
             provider_subject_id=user_info.subject_id,
             access_token_enc=user_info.access_token,
             refresh_token_enc=user_info.refresh_token,
-            provider_email=user_info.email,
+            provider_email=provider_email,
             provider_display_name=user_info.display_name,
             provider_avatar_url=user_info.avatar_url,
             scopes=user_info.scopes,
@@ -97,6 +107,7 @@ class IdentityService:
     async def link_password_identity(
         self, user_id: UUID, provider: IdentityProvider, subject_id: str, password: str
     ) -> Identity:
+        subject_id = self._normalize_subject(provider, subject_id)
         identity = Identity(
             user_id=user_id,
             provider=provider,
