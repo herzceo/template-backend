@@ -12,7 +12,7 @@ from .base import Base, WithTenant, WithTime, WithUUIDID
 
 
 class AuditLog(WithUUIDID, WithTime, WithTenant, Base):
-    __table_args__ = (Index("ix_audit_log_resource", "resource_type", "resource_id"),)
+    __table_args__ = (Index(None, "resource_type", "resource_id"),)
 
     actor_id: Mapped[UUID | None] = mapped_column(
         SQL_UUID(as_uuid=True),

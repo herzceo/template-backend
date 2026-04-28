@@ -15,19 +15,19 @@ class Job(Base):
     __tablename__ = "queue_job"
     __table_args__ = (
         Index(
-            "ix_queue_job_fetch",
+            None,
             "priority",
             "id",
             postgresql_where=text("status = 'todo'"),
         ),
         Index(
-            "ix_queue_job_queueing_lock",
+            None,
             "queueing_lock",
             unique=True,
             postgresql_where=text("status = 'todo'"),
         ),
         Index(
-            "ix_queue_job_execution_lock",
+            None,
             "execution_lock",
             unique=True,
             postgresql_where=text("status = 'doing'"),

@@ -16,9 +16,7 @@ if TYPE_CHECKING:
 
 
 class Identity(WithUUIDID, WithTime, Base):
-    __table_args__ = (
-        UniqueConstraint("provider", "provider_subject_id", name="uq_identity_provider_subject"),
-    )
+    __table_args__ = (UniqueConstraint("provider", "provider_subject_id"),)
 
     user_id: Mapped[UUID] = mapped_column(
         SQL_UUID(as_uuid=True),
