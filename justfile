@@ -4,7 +4,17 @@ check:
     set -e; \
     uv run ruff format; \
     uv run ruff check --fix; \
-    uv run mypy backend/ tests/
+    uv run mypy backend/ tests/; \
+    uv run python .claude/hooks/guard_layers.py
+
+guard-paths:
+    uv run python .claude/hooks/guard_paths.py
+
+status:
+    @echo "branch: $(git branch --show-current)"
+    @git diff --stat HEAD 2>/dev/null || true
+    @echo "---"
+    @docker compose -f {{ compose_file }} ps 2>/dev/null || echo "docker: not running"
 
 test:
     uv run nox

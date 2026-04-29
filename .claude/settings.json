@@ -1,5 +1,16 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "just guard-paths"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
@@ -7,6 +18,26 @@
           {
             "type": "command",
             "command": "just check"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "just status"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[workflow] 1) ask questions 2) /research 3) /plan 4) plan-reviewer agent 5) user approval 6) implement 7) implementation-verifier agent. Do NOT skip steps. Do NOT write code before plan is approved.'"
           }
         ]
       }
