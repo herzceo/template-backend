@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from aiobotocore.session import get_session
@@ -74,9 +75,13 @@ def create_psql_provider() -> Provider:
     return provider
 
 
+def _create_database(session_maker: async_sessionmaker[AsyncSession]) -> ImplDatabase:
+    return ImplDatabase(session_maker)
+
+
 def create_database_provider() -> Provider:
     provider = Provider(scope=Scope.REQUEST)
-    provider.provide(ImplDatabase, provides=Database)
+    provider.provide(_create_database, provides=Database)
     return provider
 
 
@@ -95,6 +100,10 @@ def _create_discord_client(config: DiscordOAuthConfig) -> DiscordOAuthClient:
     return DiscordOAuthClient(session=session, config=config)
 
 
+def _create_session_service(db: Database, token_generator: SecretTokenGenerator) -> SessionService:
+    return SessionService(db=db, token_generator=token_generator, session_ttl=timedelta(days=14))
+
+
 def create_auth_provider(
     *,
     oauth_state_config: OAuthStateConfig,
@@ -105,7 +114,7 @@ def create_auth_provider(
     provider = Provider(scope=Scope.APP)
     provider.provide(ImplSHA256SecretTokenGenerator, provides=SecretTokenGenerator)
     provider.provide(ImplArgon2PasswordHasher, provides=PasswordHasher)
-    provider.provide(SessionService, provides=SessionService, scope=Scope.REQUEST)
+    provider.provide(_create_session_service, provides=SessionService, scope=Scope.REQUEST)
 
     gateway = ImplOAuthGateway(
         google=ImplGoogleOAuthAdapter(

@@ -30,11 +30,12 @@ class CreateAssetHandler(
             user = (await self.db.gateway.user.get_by_id(cmd.user_id)).some(
                 NotFoundError(message="User not found")
             )
+            tenant_id = user.tenant_id
 
         confirmed = await self.store.confirm_upload(
             pending_key=cmd.temp_key,
             user_id=cmd.user_id,
-            tenant_id=user.tenant_id,
+            tenant_id=tenant_id,
             original_filename=cmd.original_filename,
         )
 
@@ -43,7 +44,7 @@ class CreateAssetHandler(
                 key=confirmed.key,
                 content_type=cmd.content_type,
                 size_bytes=confirmed.size,
-                tenant_id=user.tenant_id,
+                tenant_id=tenant_id,
                 uploader_id=cmd.user_id,
                 original_filename=cmd.original_filename,
                 blurhash=confirmed.blurhash,

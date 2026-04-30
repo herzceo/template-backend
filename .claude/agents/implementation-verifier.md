@@ -107,7 +107,18 @@ For each planned event:
 - [ ] All new services have `provider.provide(Service, provides=Service, scope=Scope.REQUEST)`
 - [ ] All new port bindings exist in the container
 
-### 9. Build verification
+### 9. Test coverage verification
+
+For each new handler or endpoint in the plan:
+
+- [ ] `tests/integration/api/v1/{domain}/test_{domain}.py` exists
+- [ ] File contains at least one test with `auth_user` fixture (happy path)
+- [ ] File contains at least one test without `auth_user` verifying 401 (auth guard)
+- [ ] Not-found tests exist for endpoints that look up by ID
+
+If a handler was added but no test file exists, mark as FAILED.
+
+### 10. Build verification
 
 ```bash
 just check
@@ -151,6 +162,9 @@ just check
 - {details if fail}
 
 ### DI Wiring: {PASS|FAIL}
+- {details if fail}
+
+### Tests: {PASS|FAIL}
 - {details if fail}
 
 ### Build: {PASS|FAIL}

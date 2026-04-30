@@ -25,8 +25,9 @@ class ListPermissionsHandler(
                 offset=cmd.offset, limit=cmd.limit
             )
             total = await self.db.gateway.permission.count()
+            item_dtos = [dtos.Permission.from_object(i) for i in items]
         return dtos.PaginatedResponse(
-            items=[dtos.Permission.from_object(i) for i in items],
+            items=item_dtos,
             total=total,
             offset=cmd.offset,
             limit=cmd.limit,

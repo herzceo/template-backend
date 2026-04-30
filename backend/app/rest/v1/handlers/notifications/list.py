@@ -26,8 +26,9 @@ class ListNotificationsHandler(
                 offset=cmd.offset, limit=cmd.limit
             )
             total = await self.db.gateway.notification.count()
+            item_dtos = [dtos.Notification.from_object(i) for i in items]
         return dtos.PaginatedResponse(
-            items=[dtos.Notification.from_object(i) for i in items],
+            items=item_dtos,
             total=total,
             offset=cmd.offset,
             limit=cmd.limit,
@@ -65,17 +66,17 @@ class ListUserNotificationsHandler(
             total = await self.db.gateway.notification.count_for_user(
                 cmd.user_id, include_dismissed=cmd.include_dismissed
             )
-        items = [
-            dtos.UserNotification(
-                notification=dtos.Notification.from_object(n),
-                interaction=(
-                    dtos.NotificationInteraction.from_object(i) if i is not None else None
-                ),
-            )
-            for n, i in rows
-        ]
+            item_dtos = [
+                dtos.UserNotification(
+                    notification=dtos.Notification.from_object(n),
+                    interaction=(
+                        dtos.NotificationInteraction.from_object(i) if i is not None else None
+                    ),
+                )
+                for n, i in rows
+            ]
         return dtos.PaginatedResponse(
-            items=items,
+            items=item_dtos,
             total=total,
             offset=cmd.offset,
             limit=cmd.limit,

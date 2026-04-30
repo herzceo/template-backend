@@ -45,7 +45,6 @@ class SessionsController(Controller):
 
     @delete("/{id:str}")
     @inject
-    @result
     async def delete_session(
         self,
         id: str,

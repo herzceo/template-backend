@@ -1,27 +1,30 @@
+from datetime import datetime
+from uuid import UUID
+
 from backend.internal.dto import StructDTO
 
 
 class Notification(StructDTO):
-    id: str
+    id: UUID
     title: str
     body: str
     audience: str
     urgency: int
-    target_id: str | None
-    sender_id: str | None
-    tenant_id: str
-    created_at: str
-    updated_at: str
+    target_id: UUID | None
+    sender_id: UUID | None
+    tenant_id: UUID
+    created_at: datetime
+    updated_at: datetime
 
 
 class NotificationInteraction(StructDTO):
-    notification_id: str
-    user_id: str
-    read_at: str | None
-    dismissed_at: str | None
+    notification_id: UUID
+    user_id: UUID
+    read_at: datetime | None
+    dismissed_at: datetime | None
     reaction: str | None
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
 
 
 class UserNotification(StructDTO):

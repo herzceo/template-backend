@@ -27,7 +27,7 @@ class AssetsController(Controller):
     ) -> dtos.PresignedUploadResponse:
         return await handler(
             assets.PresignAssetCommand(
-                user_id=UUID(request.auth.user_id),
+                user_id=request.auth.user_id,
                 original_filename=data.original_filename,
             )
         )
@@ -46,7 +46,7 @@ class AssetsController(Controller):
                 temp_key=data.temp_key,
                 content_type=data.content_type,
                 original_filename=data.original_filename,
-                user_id=UUID(request.auth.user_id),
+                user_id=request.auth.user_id,
             )
         )
 
@@ -84,7 +84,6 @@ class AssetsController(Controller):
 
     @delete("/{id:str}")
     @inject
-    @result
     async def delete_asset(
         self,
         id: str,

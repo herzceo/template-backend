@@ -3,6 +3,7 @@ from typing import ClassVar, TypeVar, get_args, get_origin
 from uuid import UUID
 
 from sqlalchemy import delete, func, insert, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.domain.entities.base import Base
@@ -40,7 +41,10 @@ class ImplCreateSupported[E: Base](ICreateSupported[E], BaseRepo[E]):
 
     async def create(self, entity: E, /) -> Option[E]:
         stmt = insert(self._entity).values(**entity.to_builtins()).returning(self._entity)
-        result = await self._session.execute(stmt)
+        try:
+            result = await self._session.execute(stmt)
+        except IntegrityError:
+            return Option(None)
         return Option(result.scalar_one_or_none())
 
 

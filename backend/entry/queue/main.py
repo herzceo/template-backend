@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _build_handlers(container: AsyncContainer) -> dict[str, HandlerDef]:
+def build_handlers(container: AsyncContainer) -> dict[str, HandlerDef]:
     registry = get_defined_event_handlers()
     handlers: dict[str, HandlerDef] = {}
 
@@ -91,7 +91,7 @@ async def _run(
         config=config,
         db=db,
         engine=engine,
-        handlers=_build_handlers(container),
+        handlers=build_handlers(container),
     )
     try:
         await executor.run()

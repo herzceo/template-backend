@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, Literal
 
+from dishka import AsyncContainer
+from dishka import Scope as DIScope
 from litestar import Request
 from litestar.exceptions import NotAuthorizedException
 from litestar.middleware.base import AbstractMiddleware
@@ -8,9 +12,9 @@ from litestar.types import ASGIApp, Empty, Message, Receive, Scope, Send
 from backend.app.rest.v1.dtos.sessions import Session as SessionDTO
 from backend.app.rest.v1.services.session import SessionService
 from backend.entry.rest.common.scope import get_session_token
-from backend.internal.di import Depends, from_di, inject
 
 if TYPE_CHECKING:
+    from litestar import Litestar
     from litestar.enums import ScopeType
 
 
@@ -21,7 +25,7 @@ class SessionMiddleware(AbstractMiddleware):
         session_cookie_key: str = "session",
         exclude: str | list[str] | None = None,
         exclude_opt_key: str | None = "exclude_from_auth",
-        scopes: "set[Literal[ScopeType.HTTP, ScopeType.WEBSOCKET]] | None" = None,
+        scopes: set[Literal[ScopeType.HTTP, ScopeType.WEBSOCKET]] | None = None,
         *,
         secure: bool = False,
         httponly: bool = True,
@@ -58,24 +62,21 @@ class SessionMiddleware(AbstractMiddleware):
             and request.route_handler.opt.get(self.exclude_from_auth_key)
         )
 
-    @inject
-    async def _authenticate(
-        self,
-        scope: Scope,
-        receive: Receive,
-        send: Send,
-        session_service: Depends[SessionService] = from_di(),
-    ) -> None:
+    async def _authenticate(self, scope: Scope, receive: Receive, send: Send) -> None:
         request: Request[Any, Any, Any] = Request(scope, receive, send)
         session_token = request.cookies.get(self.cookie_key)
         if not session_token:
             msg = "Session cookie not found"
             raise NotAuthorizedException(msg)
 
-        session = (await session_service.resolve_session(session_token)).some(
-            NotAuthorizedException("Invalid or expired session")
-        )
-        scope["auth"] = SessionDTO.from_object(session)
+        litestar_app: Litestar = scope["app"]
+        root_container: AsyncContainer = litestar_app.state.dishka_container
+        async with root_container(scope=DIScope.REQUEST) as container:
+            session_service = await container.get(SessionService)
+            session = (await session_service.resolve_session(session_token)).some(
+                NotAuthorizedException("Invalid or expired session")
+            )
+            scope["auth"] = SessionDTO.from_object(session)
 
         send_wrapper = self._create_send_wrapper(send, scope, session_token)
         await self.app(scope, receive, send_wrapper)

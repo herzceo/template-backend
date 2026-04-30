@@ -1,14 +1,17 @@
+from datetime import datetime
+from uuid import UUID
+
 from backend.internal.dto import StructDTO
 
 
 class Asset(StructDTO):
-    id: str
+    id: UUID
     key: str
     content_type: str
     size_bytes: int
     blurhash: str | None
     original_filename: str | None
-    uploader_id: str
-    tenant_id: str
-    created_at: str
-    updated_at: str
+    uploader_id: UUID
+    tenant_id: UUID
+    created_at: datetime
+    updated_at: datetime

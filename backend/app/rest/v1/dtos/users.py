@@ -1,14 +1,17 @@
+from datetime import datetime
+from uuid import UUID
+
 from backend.internal.dto import StructDTO
 
 
 class User(StructDTO):
-    id: str
+    id: UUID
     username: str
     email: str | None
     first_name: str
     last_name: str
     avatar_url: str | None
     active: bool
-    tenant_id: str
-    created_at: str
-    updated_at: str
+    tenant_id: UUID
+    created_at: datetime
+    updated_at: datetime

@@ -23,8 +23,9 @@ class ListRolesHandler(
         async with self.db:
             items = await self.db.gateway.role.list_with_offset(offset=cmd.offset, limit=cmd.limit)
             total = await self.db.gateway.role.count()
+            item_dtos = [dtos.Role.from_object(i) for i in items]
         return dtos.PaginatedResponse(
-            items=[dtos.Role.from_object(i) for i in items],
+            items=item_dtos,
             total=total,
             offset=cmd.offset,
             limit=cmd.limit,

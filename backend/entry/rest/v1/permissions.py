@@ -64,7 +64,6 @@ class PermissionsController(Controller):
 
     @delete("/{id:str}")
     @inject
-    @result
     async def delete_permission(
         self,
         id: str,

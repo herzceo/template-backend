@@ -45,7 +45,7 @@ class GetUserHandler(Handler[GetUserCommand, dtos.User, None], type_=HandlerType
             user = (await self.db.gateway.user.get_by_id(cmd.user_id)).some(
                 NotFoundError(message="User not found")
             )
-        return dtos.User.from_object(user)
+            return dtos.User.from_object(user)
 ```
 
 ## Key Rules
@@ -54,7 +54,7 @@ class GetUserHandler(Handler[GetUserCommand, dtos.User, None], type_=HandlerType
 - **`type_=HandlerType.READ`** for queries, **`type_=HandlerType.WRITE`** for mutations.
 - **Dependencies**: injected as `@dataclass` fields (not constructor args).
 - **Transaction scope**: always wrap DB work in `async with self.db:`.
-- **Return DTOs**: never return raw entities. Convert via `DTO.from_object(entity)`.
+- **Return DTOs inside the block**: call `DTO.from_object(entity)` INSIDE `async with self.db:`, never after it closes. SQLAlchemy `__aexit__` always calls `rollback()`, which expires all ORM attributes — any access on the entity after the block raises `DetachedInstanceError` or silently returns missing fields.
 - **Option unwrap**: use `.some(ErrorInstance)` on repo lookups, never manual `if x is None`.
 - **Auto-registration**: handlers register themselves via `__init_subclass__`. No manual wiring needed.
 

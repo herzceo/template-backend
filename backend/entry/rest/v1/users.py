@@ -59,7 +59,6 @@ class UsersController(Controller):
 
     @delete("/{id:str}")
     @inject
-    @result
     async def delete_user(
         self,
         id: str,
@@ -80,7 +79,6 @@ class UsersController(Controller):
 
     @delete("/{id:str}/roles/{role_id:str}", tags=["RBAC"])
     @inject
-    @result
     async def revoke_role(
         self,
         id: str,

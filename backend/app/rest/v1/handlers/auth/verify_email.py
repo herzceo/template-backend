@@ -31,25 +31,31 @@ class VerifyEmailHandler(
             user = (await self.db.gateway.user.get_by_email(email)).some(
                 ValidationFailedError(message="Invalid email or code")
             )
+            user_id = user.id
+            user_dto = dtos.User.from_object(user)
 
-        entry = (await self.verification_store.get(user.id)).some(
+        entry = (await self.verification_store.get(user_id)).some(
             ValidationFailedError(message="No pending verification")
         )
 
         if entry.attempts >= self.verification_store.max_attempts:
             raise ValidationFailedError(message="Too many attempts, request a new code")
 
-        if not await self.verification_store.verify(user.id, cmd.code):
-            updated = (await self.verification_store.get(user.id)).value
+        if not await self.verification_store.verify(user_id, cmd.code):
+            updated = (await self.verification_store.get(user_id)).value
             remaining = self.verification_store.max_attempts - (updated.attempts if updated else 0)
             if remaining <= 0:
                 raise ValidationFailedError(message="Too many attempts, request a new code")
             raise ValidationFailedError(message=f"Invalid code, {remaining} attempt(s) remaining")
 
         async with self.db:
+            user = (await self.db.gateway.user.get_by_id(user_id)).some(
+                ValidationFailedError(message="Invalid email or code")
+            )
             user.verified_at = datetime.now(UTC)
             (await self.db.gateway.user.update(user)).some(RuntimeError("Failed to verify user"))
             await self.db.commit()
+            user_dto = dtos.User.from_object(user)
 
-        raw_token, _ = await self.session_service.create_session(user.id)
-        return AuthContext(token=raw_token, data=dtos.User.from_object(user))
+        raw_token, _ = await self.session_service.create_session(user_id)
+        return AuthContext(token=raw_token, data=user_dto)

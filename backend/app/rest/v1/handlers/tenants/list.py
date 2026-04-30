@@ -25,8 +25,9 @@ class ListTenantsHandler(
                 offset=cmd.offset, limit=cmd.limit
             )
             total = await self.db.gateway.tenant.count()
+            item_dtos = [dtos.Tenant.from_object(i) for i in items]
         return dtos.PaginatedResponse(
-            items=[dtos.Tenant.from_object(i) for i in items],
+            items=item_dtos,
             total=total,
             offset=cmd.offset,
             limit=cmd.limit,

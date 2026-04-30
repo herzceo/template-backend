@@ -1,3 +1,5 @@
+import logging
+import traceback
 from collections.abc import Callable
 from functools import partial
 from typing import Any
@@ -8,6 +10,8 @@ from litestar.exceptions import HTTPException
 from backend.app import errors
 from backend.entry.rest.common.response import ErrorDetail
 from backend.internal.result import Err
+
+_log = logging.getLogger(__name__)
 
 HTTP_CODE_TO_ERROR_CODE: dict[int, str] = {
     400: "bad_request",
@@ -63,5 +67,10 @@ def fallback_exc_handler(
     _: Request[Any, Any, Any],
     _exc: Exception,
 ) -> Response[Any]:
+    _log.error(
+        "Unhandled exception: %s\n%s",
+        _exc,
+        "".join(traceback.format_exception(type(_exc), _exc, _exc.__traceback__)),
+    )
     detail = ErrorDetail(code="internal_error", message="Internal server error")
     return _err_response(detail, 500)

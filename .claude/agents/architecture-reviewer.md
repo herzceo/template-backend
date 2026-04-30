@@ -89,6 +89,18 @@ A hook catches obvious import violations. Your job is to catch subtler ones:
 - `@final` on all concrete implementations
 - `TYPE_CHECKING` imports where needed
 
+### 9. Test files (tests/)
+
+`tests/` is **exempt from the layer guard**. Test files may import from any `backend.*` layer.
+
+However, test files must follow their own conventions:
+- Test factories (`tests/integration/api/factories/`) write to DB via `RepoGateway`, not HTTP
+- Mock classes (`tests/integration/mocks/`) implement the port Protocol they mock
+- No cross-test state: no module-level mutable shared objects outside of session-scoped fixtures
+- `unique_email()` used for all test user email addresses (never hardcoded)
+
+Flag if: a mock class doesn't implement its Protocol, a factory bypasses the DB layer by calling HTTP instead, or a test imports from `tests/` in a circular manner.
+
 ## Output Format
 
 ```markdown

@@ -62,7 +62,6 @@ class RolesController(Controller):
 
     @delete("/{id:str}")
     @inject
-    @result
     async def delete_role(
         self,
         id: str,
@@ -85,7 +84,6 @@ class RolesController(Controller):
 
     @delete("/{id:str}/permissions/{permission_id:str}")
     @inject
-    @result
     async def revoke_permission(
         self,
         id: str,

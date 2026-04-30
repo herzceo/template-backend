@@ -4,4 +4,6 @@ from sqlalchemy.types import Boolean
 
 @declarative_mixin
 class WithActive:
-    active: Mapped[bool] = mapped_column(Boolean, default=True, index=True, nullable=False)
+    active: Mapped[bool] = mapped_column(
+        Boolean, default=True, server_default="true", index=True, nullable=False
+    )

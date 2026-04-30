@@ -18,4 +18,4 @@ class GetAuditLogHandler(Handler[GetAuditLogCommand, dtos.AuditLog, None], type_
     async def __call__(self, cmd: GetAuditLogCommand, _ctx: None = None) -> dtos.AuditLog:
         async with self.db:
             audit_log = (await self.db.gateway.audit_log.get_by_id(cmd.id)).some(NotFoundError())
-        return dtos.AuditLog.from_object(audit_log)
+            return dtos.AuditLog.from_object(audit_log)

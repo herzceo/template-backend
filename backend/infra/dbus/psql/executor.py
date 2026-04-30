@@ -259,6 +259,30 @@ class QueueExecutor:
 
         return True
 
+    async def process_one(self) -> bool:
+        """Fetch and execute one job synchronously. Returns True if a job was found.
+
+        Unlike _try_fetch_and_run, this awaits _execute_job inline (no create_task),
+        making execution deterministic. Does NOT add to _running_tasks.
+        """
+        await self._semaphore.acquire()
+        try:
+            async with self._db:
+                result = await self._job_service.fetch(self._queue_names, self._worker_id)
+                await self._db.commit()
+
+            if result.value is None:
+                self._semaphore.release()
+                return False
+
+            job = result.value
+        except Exception:
+            self._semaphore.release()
+            raise
+
+        await self._execute_job(job)
+        return True
+
     async def _execute_job(self, job: Job) -> None:
         try:
             hdef = self._handlers[job.queue_name]

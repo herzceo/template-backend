@@ -1,7 +1,8 @@
+import mimetypes
 from typing import final
 from uuid import UUID
 
-from backend.app.errors import NotFoundError, ValidationFailedError
+from backend.app.shared.errors import NotFoundError, ValidationFailedError
 from backend.app.shared.ports.storage import ConfirmedUpload, PendingUpload
 from backend.infra.database.object import blurhash, keys
 from backend.infra.external.s3.client import S3Client
@@ -43,12 +44,14 @@ class S3ObjectStore:
         await self._client.copy(pending_key, final_key)
         await self._client.delete(pending_key)
 
-        hash_ = await self._try_compute_blurhash(final_key, meta.content_type)
+        guessed, _ = mimetypes.guess_type(original_filename)
+        content_type = guessed or meta.content_type or "application/octet-stream"
+        hash_ = await self._try_compute_blurhash(final_key, content_type)
 
         return ConfirmedUpload(
             key=final_key,
             size=meta.size,
-            content_type=meta.content_type,
+            content_type=content_type,
             blurhash=hash_,
         )
 

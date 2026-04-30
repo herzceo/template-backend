@@ -32,13 +32,15 @@ dependencies = [
 [dependency-groups]
 dev = [
     "backend",
+    "httpx>=0.27.0",
     "mypy>=1.18.1",
     "nox>=2025.5.1",
     "pre-commit>=4.3.0",
     "pytest>=8.4.2",
+    "pytest-asyncio>=0.25.0",
     "pytest-cov>=7.0.0",
     "ruff>=0.13.0",
-    "testcontainers>=4.13.1",
+    "testcontainers[postgres,redis,minio]>=4.13.1",
 ]
 
 [project.scripts]
@@ -111,6 +113,13 @@ select = ["ALL"]
 "tests/**" = [
   "S101",         # assert (S101)
   "S106",         # hardcoded-password-func-arg (S106)
+  "S107",         # hardcoded-password-default-argument (test factories use fixed passwords)
+  "PLR2004",      # magic-value-comparison (HTTP status literals are readable in tests)
+  "ARG001",       # unused-function-argument (fixtures may be unused directly)
+  "SLF001",       # private-member-access (mocks access private state for assertions)
+  "TC001",        # typing-only-first-party-import -- pytest needs runtime fixture types
+  "TC002",        # typing-only-third-party-import -- pytest needs runtime fixture types
+  "TC003",        # typing-only-standard-library-import -- pytest needs runtime fixture types
 ]
 "backend/entry/rest/common/middlewares/**" = [
   "S105",         # false positive on scope key names containing "token"
@@ -135,16 +144,17 @@ convention = "google"
 
 
 [tool.pytest.ini_options]
-python_files = "tests/*.py"
+testpaths = ["tests"]
+python_files = "test_*.py"
 console_output_style = "progress"
-addopts = "-vs -rf --cov=src --no-cov-on-fail"
+addopts = "-vs -rf --cov=backend --no-cov-on-fail"
 asyncio_mode = "auto"
 
 
 [tool.coverage.run]
 parallel = true
 concurrency = ["thread", "greenlet"]
-source = ["src", "tests"]
+source = ["backend", "tests"]
 omit = []
 
 [tool.coverage.report]

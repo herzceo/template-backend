@@ -29,5 +29,16 @@ class Base(DeclarativeBase):
     def to_builtins(self) -> dict[str, Any]:
         d = {}
         for column in self.__table__.columns:
-            d[column.name] = getattr(self, column.name)
+            value = getattr(self, column.name)
+            if value is None:
+                if column.server_default is not None:
+                    continue
+                if column.autoincrement is True:
+                    continue
+                if column.default is not None:
+                    if column.default.is_callable:
+                        value = column.default.arg(None)
+                    else:
+                        value = column.default.arg
+            d[column.name] = value
         return d

@@ -44,7 +44,9 @@ The decorator stack MUST be in this exact order (outermost to innermost):
 
 1. `@get(...)` / `@post(...)` / `@patch(...)` / `@delete(...)` -- route definition
 2. `@inject` -- enables Dishka DI
-3. `@result` -- wraps return in `Ok(data=...)`
+3. `@result` -- wraps return in `Ok(data=...)` — **OMIT for `@delete`**
+
+**`@delete` routes must NOT use `@result`**. Litestar sets the default status code to 204 (No Content) for `@delete`, and HTTP 204 must have no response body. The `@result` decorator wraps even `None` returns in `Ok(data=None)`, which has a body and causes a 500 error at runtime.
 
 ## Primitive Conversion
 

@@ -94,9 +94,12 @@ SQLAlchemy `DeclarativeBase` with mixins: `WithUUIDID`, `WithActive`, `WithTime`
 - `just migrate` -- alembic upgrade head
 - `just migration "description"` -- autogenerate migration
 - `just start` / `just stop` / `just delete` -- Docker Compose
+- `just test` -- integration tests (testcontainers, requires Docker)
+- `just test-unit` -- unit tests (no Docker needed)
+- `just test-all` -- all test sessions
 
 ## Rules (`.claude/rules/`) -- loaded contextually by file path
-architecture, entities, handlers, repositories, dtos, controllers, ports-adapters, dependency-injection, error-handling, typing, database, events, external-services, code-style
+architecture, entities, handlers, repositories, dtos, controllers, ports-adapters, dependency-injection, error-handling, typing, database, events, external-services, code-style, testing
 
 ## Skills (`.claude/skills/`)
 
@@ -117,6 +120,7 @@ Implementation (use DURING coding):
 - `/add-http-client <service>` -- HTTP client + adapter
 - `/add-migration <description>` -- Alembic autogenerate
 - `/add-service <domain> <name>` -- application service
+- `/add-test <domain> <action>` -- integration test for an endpoint or event handler
 
 ## Agents (`.claude/agents/`)
 

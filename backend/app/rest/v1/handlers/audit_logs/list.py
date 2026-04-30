@@ -25,8 +25,9 @@ class ListAuditLogsHandler(
                 offset=cmd.offset, limit=cmd.limit
             )
             total = await self.db.gateway.audit_log.count()
+            item_dtos = [dtos.AuditLog.from_object(i) for i in items]
         return dtos.PaginatedResponse(
-            items=[dtos.AuditLog.from_object(i) for i in items],
+            items=item_dtos,
             total=total,
             offset=cmd.offset,
             limit=cmd.limit,

@@ -18,4 +18,4 @@ class GetTenantHandler(Handler[GetTenantCommand, dtos.Tenant, None], type_=Handl
     async def __call__(self, cmd: GetTenantCommand, _ctx: None = None) -> dtos.Tenant:
         async with self.db:
             tenant = (await self.db.gateway.tenant.get_by_id(cmd.id)).some(NotFoundError())
-        return dtos.Tenant.from_object(tenant)
+            return dtos.Tenant.from_object(tenant)

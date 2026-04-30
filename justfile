@@ -17,7 +17,16 @@ status:
     @docker compose -f {{ compose_file }} ps 2>/dev/null || echo "docker: not running"
 
 test:
-    uv run nox
+    uv run nox -s integration
+
+test-adapters:
+    uv run nox -s adapters
+
+test-unit:
+    uv run nox -s unit
+
+test-all:
+    uv run nox --tags tests
 
 run svc="api":
     uv run backend {{ svc }}

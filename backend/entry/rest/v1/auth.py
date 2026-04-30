@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Annotated, Any
 
 from litestar import Controller, Request, get, post
+from litestar.params import Parameter
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.dtos.identity import InitiateResult
@@ -15,7 +16,7 @@ class AuthController(Controller):
     path = "/auth"
     tags = ("Auth",)
 
-    @post("/login", exclude_from_auth=True)
+    @post("/login", exclude_from_auth=True, status_code=200)
     @inject
     @result
     async def login(
@@ -38,7 +39,7 @@ class AuthController(Controller):
     ) -> dtos.User:
         return await handler(data)
 
-    @post("/verify-email", exclude_from_auth=True)
+    @post("/verify-email", exclude_from_auth=True, status_code=200)
     @inject
     @result
     async def verify_email(
@@ -78,10 +79,12 @@ class AuthController(Controller):
         self,
         provider: IdentityProvider,
         code: str,
-        state: str,
+        oauth_state: Annotated[str, Parameter(query="state")],
         handler: Depends[auth.OAuthCallbackHandler],
         request: Request[Any, Any, Any],
     ) -> dtos.User:
-        ctx = await handler(auth.OAuthCallbackCommand(provider=provider, code=code, state=state))
+        ctx = await handler(
+            auth.OAuthCallbackCommand(provider=provider, code=code, state=oauth_state)
+        )
         set_session_token(request.scope, ctx.token)
         return ctx.data

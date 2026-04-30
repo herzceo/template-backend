@@ -18,4 +18,4 @@ class GetRoleHandler(Handler[GetRoleCommand, dtos.Role, None], type_=HandlerType
     async def __call__(self, cmd: GetRoleCommand, _ctx: None = None) -> dtos.Role:
         async with self.db:
             role = (await self.db.gateway.role.get_by_id(cmd.id)).some(NotFoundError())
-        return dtos.Role.from_object(role)
+            return dtos.Role.from_object(role)

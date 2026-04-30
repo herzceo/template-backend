@@ -52,15 +52,15 @@ class SessionService:
 
     async def resolve_session(self, raw_token: str) -> Option[Session]:
         token_hash = self.token_generator.hash(raw_token)
-        session_opt = await self.db.gateway.session_.get_by_token_hash(token_hash)
-        session = session_opt.value
-        if session is None:
-            return Option(None)
-
-        if session.expires_at <= datetime.now(UTC):
-            async with self.db:
+        async with self.db:
+            session_opt = await self.db.gateway.session_.get_by_token_hash(token_hash)
+            session = session_opt.value
+            if session is None:
+                await self.db.commit()
+                return Option(None)
+            if session.expires_at <= datetime.now(UTC):
                 await self.db.gateway.session_.delete_by_id(session.id)
                 await self.db.commit()
-            return Option(None)
-
+                return Option(None)
+            await self.db.commit()
         return Option(session)

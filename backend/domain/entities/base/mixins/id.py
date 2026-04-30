@@ -1,8 +1,8 @@
+from uuid import UUID, uuid4
+
 from sqlalchemy.orm import Mapped, declarative_mixin, mapped_column
 from sqlalchemy.types import UUID as SQL_UUID
 from sqlalchemy.types import Integer
-from uuid_utils import uuid4
-from uuid_utils.compat import UUID
 
 
 @declarative_mixin

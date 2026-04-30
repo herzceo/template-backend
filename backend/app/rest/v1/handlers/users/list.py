@@ -23,8 +23,9 @@ class ListUsersHandler(
         async with self.db:
             items = await self.db.gateway.user.list_with_offset(offset=cmd.offset, limit=cmd.limit)
             total = await self.db.gateway.user.count()
+            item_dtos = [dtos.User.from_object(i) for i in items]
         return dtos.PaginatedResponse(
-            items=[dtos.User.from_object(i) for i in items],
+            items=item_dtos,
             total=total,
             offset=cmd.offset,
             limit=cmd.limit,

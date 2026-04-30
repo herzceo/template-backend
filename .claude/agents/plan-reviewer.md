@@ -83,6 +83,18 @@ If the order is wrong, flag it — implementing out of order causes type errors.
 - Are there error cases listed for every lookup that could fail?
 - Is the file checklist complete (every file mentioned in components also listed in checklist)?
 
+### Test coverage check
+
+For every new handler or endpoint in the plan:
+
+- [ ] A test file is listed in the plan at `tests/integration/api/v1/{domain}/test_{domain}.py`
+- [ ] The plan specifies at minimum: happy-path test + unauthenticated test (401)
+- [ ] Any not-found case is covered by a test
+- [ ] Any business-rule failure (409, 422 with code) is covered by a test
+
+If the plan adds new endpoints but lists no corresponding tests, flag it as NEEDS REVISION.
+Exception: pure infrastructure changes (migrations, DI wiring only) do not require new tests.
+
 ### Naming check
 
 - Entity names: PascalCase, singular (`Invoice` not `Invoices`)
