@@ -52,6 +52,17 @@ Project abbreviation and ID are **optional** — omit them unless working from a
 
 For isolated Claude Code sessions, use `claude --worktree <name>` — it creates a git worktree with its own bootstrapped environment.
 
+### Worktree branch name gotcha
+
+Claude Code sanitizes the worktree path: slashes become dashes, so `fix/DEV-1-emails` lives at `.claude/worktrees/fix-DEV-1-emails`. The **git branch name is preserved correctly** inside the worktree, but the directory name does not reflect it faithfully.
+
+Before pushing to remote from a worktree session, always verify the actual branch name:
+
+```bash
+git branch --show-current   # use this — never infer from the directory path
+git push -u origin $(git branch --show-current)
+```
+
 ## What NOT to do
 
 - No `git add .` — stage specific files to avoid accidentally committing secrets or build artifacts
