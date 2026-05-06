@@ -13,6 +13,12 @@ check:
 guard-paths:
     uv run python .claude/hooks/guard_paths.py
 
+stop-reminder:
+    uv run python .claude/hooks/stop_reminder.py
+
+notify:
+    uv run python .claude/hooks/notify.py
+
 status:
     @echo "branch: $(git branch --show-current)"
     @git diff --stat HEAD 2>/dev/null || true

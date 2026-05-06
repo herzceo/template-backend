@@ -122,6 +122,10 @@ Implementation (use DURING coding):
 - `/add-service <domain> <name>` -- application service
 - `/add-test <domain> <action>` -- integration test for an endpoint or event handler
 
+Test feedback loop (use AFTER coding):
+- `/run-tests <domain | path | category> [pattern]` -- scoped pytest run, faster than `just test`
+- `/debug-failing-test <test-path>` -- decision-tree diagnosis using project test recipes
+
 ## Agents (`.claude/agents/`)
 
 Quality gates (enforce the workflow):
@@ -131,6 +135,7 @@ Quality gates (enforce the workflow):
 Review (catch issues):
 - **architecture-reviewer** -- audits layer violations, import direction, pattern adherence
 - **code-reviewer** -- quality, security, typing, pattern compliance review
+- **migration-reviewer** -- audits Alembic migrations for data loss, NOT NULL footguns, missing FK indexes, locking, entity drift
 
 Design (research and design):
 - **domain-designer** -- designs entities, repos, events, ports (read-only)
