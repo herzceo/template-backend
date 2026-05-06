@@ -27,6 +27,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "just init"
+          },
+          {
+            "type": "command",
             "command": "just status"
           }
         ]

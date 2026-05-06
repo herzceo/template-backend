@@ -1,5 +1,8 @@
 compose_file := "./docker-compose.local.yaml"
 
+init:
+    uv sync
+
 check:
     set -e; \
     uv run ruff format; \
