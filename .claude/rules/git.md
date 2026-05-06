@@ -26,9 +26,31 @@ refactor: extract password hashing into its own port
 test: add integration tests for the token refresh flow
 ```
 
-## Branching
+## Branching — trunk-based
 
-Work in feature branches; merge to `main` via PR. For isolated experiments, use `claude --worktree <name>` to get a git worktree with its own environment.
+`main` is the trunk. All branches are short-lived and merge back quickly via PR.
+
+Branch naming: `<type>/<name>`
+
+```
+feature/add-role-permissions
+fix/login-redirect
+hotfix/token-expiry
+```
+
+When a ticket exists, prefix the name with `{project-abbr}-{ID}`:
+
+```
+feature/AUTH-123-add-role-permissions
+fix/PROJ-456-login-redirect
+hotfix/BE-78-token-expiry
+```
+
+Types: `feature` | `fix` | `hotfix`
+
+Project abbreviation and ID are **optional** — omit them unless working from a tracked ticket.
+
+For isolated Claude Code sessions, use `claude --worktree <name>` — it creates a git worktree with its own bootstrapped environment.
 
 ## What NOT to do
 
