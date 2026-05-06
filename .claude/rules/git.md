@@ -69,3 +69,4 @@ git push -u origin $(git branch --show-current)
 - No `--no-verify` — if a hook fails, fix the root cause
 - No force-push to `main`
 - No amending published commits
+- No `Co-Authored-By` trailers — commit messages end after the body
