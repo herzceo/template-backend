@@ -28,11 +28,11 @@ class DiscordOAuthClient(HTTPClient[DiscordOAuthConfig]):
             headers={"Content-Type": "application/x-www-form-urlencoded"},
             data=urlencode(
                 {
-                    "client_id": self._config.CLIENT_ID,
-                    "client_secret": self._config.CLIENT_SECRET,
+                    "client_id": self._config.DISCORD_CLIENT_ID,
+                    "client_secret": self._config.DISCORD_CLIENT_SECRET,
                     "grant_type": "authorization_code",
                     "code": code,
-                    "redirect_uri": self._config.REDIRECT_URI,
+                    "redirect_uri": self._config.DISCORD_REDIRECT_URI,
                 }
             ).encode(),
         )

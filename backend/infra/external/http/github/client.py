@@ -32,8 +32,8 @@ class GitHubOAuthClient(HTTPClient[GitHubOAuthConfig]):
         response = await self._session.post(
             url=self._oauth_url(Endpoint.OAUTH_TOKEN),
             json={
-                "client_id": self._config.CLIENT_ID,
-                "client_secret": self._config.CLIENT_SECRET,
+                "client_id": self._config.GITHUB_CLIENT_ID,
+                "client_secret": self._config.GITHUB_CLIENT_SECRET,
                 "code": code,
             },
             headers={"Accept": "application/json"},

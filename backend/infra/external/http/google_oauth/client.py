@@ -33,11 +33,11 @@ class GoogleOAuthClient(HTTPClient[GoogleOAuthConfig]):
         response = await self._session.post(
             url=self._oauth_url(Endpoint.OAUTH_TOKEN),
             json={
-                "client_id": self._config.CLIENT_ID,
-                "client_secret": self._config.CLIENT_SECRET,
+                "client_id": self._config.GOOGLE_CLIENT_ID,
+                "client_secret": self._config.GOOGLE_CLIENT_SECRET,
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": self._config.REDIRECT_URI,
+                "redirect_uri": self._config.GOOGLE_REDIRECT_URI,
             },
         )
         return response.as_result(io.TokenResponse)

@@ -24,8 +24,8 @@ class ImplGoogleOAuthAdapter(OAuthProviderAdapter):
 
     def get_authorization_url(self, state: str) -> AuthorizationURL:
         params = {
-            "client_id": self._config.CLIENT_ID,
-            "redirect_uri": self._config.REDIRECT_URI,
+            "client_id": self._config.GOOGLE_CLIENT_ID,
+            "redirect_uri": self._config.GOOGLE_REDIRECT_URI,
             "response_type": "code",
             "scope": " ".join(self._config.SCOPES),
             "state": state,

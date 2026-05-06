@@ -6,8 +6,8 @@ type DiscordScope = Literal["identify", "email", "guilds", "bot", "connections"]
 
 
 class DiscordOAuthConfig(StructDTO):
-    CLIENT_ID: str
-    CLIENT_SECRET: str
-    REDIRECT_URI: str
+    DISCORD_CLIENT_ID: str
+    DISCORD_CLIENT_SECRET: str
+    DISCORD_REDIRECT_URI: str
     BASE_URL: str = "https://discord.com"
     SCOPES: tuple[DiscordScope, ...] = ("identify", "email")

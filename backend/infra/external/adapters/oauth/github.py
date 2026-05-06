@@ -24,8 +24,8 @@ class ImplGitHubOAuthAdapter(OAuthProviderAdapter):
 
     def get_authorization_url(self, state: str) -> AuthorizationURL:
         params = {
-            "client_id": self._config.CLIENT_ID,
-            "redirect_uri": self._config.REDIRECT_URI,
+            "client_id": self._config.GITHUB_CLIENT_ID,
+            "redirect_uri": self._config.GITHUB_REDIRECT_URI,
             "scope": " ".join(self._config.SCOPES),
             "state": state,
         }

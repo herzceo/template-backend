@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./Dockerfile
     ports:
-      - ${HTTP_PORT:-8000}:8000
+      - "${PORT:-8000}:${PORT:-8000}"
     networks:
       - internal
     command: ["backend", "api"]
@@ -17,7 +17,7 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-fsSL", "http://localhost:8000/api/v1/health"]
+      test: ["CMD-SHELL", "curl -fsSL http://localhost:${PORT:-8000}/v1/health"]
       interval: 10s
       timeout: 3s
       retries: 3
