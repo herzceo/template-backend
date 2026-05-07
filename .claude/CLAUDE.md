@@ -103,6 +103,9 @@ architecture, entities, handlers, repositories, dtos, controllers, ports-adapter
 
 ## Skills (`.claude/skills/`)
 
+Project setup (use when forking this template):
+- `/specialize` -- interactive session: asks about your domain, auth, infra, and MVP scope, then renames the package, prunes unused code, scaffolds your entities/endpoints, and replaces the init migration
+
 Planning (use BEFORE writing code):
 - `/plan <feature>` -- structured planning with questions, research, detailed component spec
 - `/research <topic>` -- investigate codebase before making changes

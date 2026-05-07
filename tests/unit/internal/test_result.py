@@ -21,6 +21,11 @@ def test_ok_with_none_data() -> None:
     assert result.raise_() is None
 
 
+def test_ok_with_integer_data() -> None:
+    result = Ok(data=42)
+    assert result.raise_() == 42
+
+
 def test_err_with_non_exception_raises_type_error() -> None:
     result: Err[str] = Err(error="not_an_exception")
     with pytest.raises(TypeError):
