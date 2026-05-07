@@ -1,27 +1,27 @@
+from pathlib import Path
 from typing import Literal, final
+
+import jinja2
 
 from backend.app.shared.ports.outreach.email import EmailSender, EmailType, VerificationEmailParams
 from backend.infra.external.http.resend.client import ResendClient
 
-_TEMPLATES: dict[EmailType, tuple[str, str]] = {
-    EmailType.EMAIL_VERIFICATION: (
-        "Verify your email",
-        (
-            "<p>Hi {username},</p>"
-            "<p>Your verification code is: <strong>{code}</strong></p>"
-            "<p>This code expires in 15 minutes.</p>"
-        ),
-    ),
+_SUBJECTS: dict[EmailType, str] = {
+    EmailType.EMAIL_VERIFICATION: "Verify your email",
 }
 
 
 @final
 class ImplResendEmailSender(EmailSender):
-    __slots__ = ("_client", "_from_email")
+    __slots__ = ("_client", "_env", "_from_email")
 
     def __init__(self, client: ResendClient, from_email: str) -> None:
         self._client = client
         self._from_email = from_email
+        self._env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(Path(__file__).parent / "templates"),
+            autoescape=jinja2.select_autoescape(["html"]),
+        )
 
     async def send(
         self,
@@ -30,10 +30,10 @@ class ImplResendEmailSender(EmailSender):
         type: Literal[EmailType.EMAIL_VERIFICATION],
         params: VerificationEmailParams,
     ) -> None:
-        subject_template, html_template = _TEMPLATES[type]
+        template = self._env.get_template(f"{type}.html")
         await self._client.send(
             from_=self._from_email,
             to=[to],
-            subject=subject_template.format(**params),
-            html=html_template.format(**params),
+            subject=_SUBJECTS[type],
+            html=template.render(**params),
         )
