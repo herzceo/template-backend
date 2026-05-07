@@ -1,6 +1,7 @@
 ---
 name: specialize
 description: One-shot guided session — renames the package, prunes unused code, scaffolds new entities/endpoints, and replaces the init migration for a specific project.
+disable-model-invocation: true
 ---
 
 # Specialize This Template

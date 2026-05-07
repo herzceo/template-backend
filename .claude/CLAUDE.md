@@ -106,6 +106,9 @@ architecture, entities, handlers, repositories, dtos, controllers, ports-adapter
 Project setup (use when forking this template):
 - `/specialize` -- interactive session: asks about your domain, auth, infra, and MVP scope, then renames the package, prunes unused code, scaffolds your entities/endpoints, and replaces the init migration
 
+Template orientation (use when you have a quick question):
+- `/explain <question>` -- quick answer from `.claude/` docs only; no codebase scan; for simple conceptual questions
+
 Planning (use BEFORE writing code):
 - `/plan <feature>` -- structured planning with questions, research, detailed component spec
 - `/research <topic>` -- investigate codebase before making changes
