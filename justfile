@@ -16,6 +16,12 @@ guard-paths:
 stop-reminder:
     uv run python .claude/hooks/stop_reminder.py
 
+stop-reflect:
+    uv run python .claude/hooks/stop_reflection.py
+
+plan-guard:
+    uv run python .claude/hooks/plan_guard.py
+
 notify:
     uv run python .claude/hooks/notify.py
 

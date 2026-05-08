@@ -20,6 +20,15 @@
             "command": "just check"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "just plan-guard"
+          }
+        ]
       }
     ],
     "SessionStart": [
@@ -49,6 +58,10 @@
     "Stop": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/stop_reflection.py"
+          },
           {
             "type": "command",
             "command": "just stop-reminder"
