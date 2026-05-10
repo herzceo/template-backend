@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from aiobotocore.session import get_session
@@ -18,7 +17,7 @@ if TYPE_CHECKING:
 
 from backend.app.rest.v1 import handlers
 from backend.app.rest.v1.services.identity import IdentityService
-from backend.app.rest.v1.services.session import SessionService
+from backend.app.rest.v1.services.session import SessionConfig, SessionService
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
@@ -108,18 +107,22 @@ def _create_discord_client(config: DiscordOAuthConfig) -> DiscordOAuthClient:
     return DiscordOAuthClient(session=session, config=config)
 
 
-def _create_session_service(db: Database, token_generator: SecretTokenGenerator) -> SessionService:
-    return SessionService(db=db, token_generator=token_generator, session_ttl=timedelta(days=14))
+def _create_session_service(
+    db: Database, token_generator: SecretTokenGenerator, session_config: SessionConfig
+) -> SessionService:
+    return SessionService(db=db, token_generator=token_generator, session_config=session_config)
 
 
 def create_auth_provider(
     *,
+    session_config: SessionConfig,
     oauth_state_config: OAuthStateConfig,
     google_oauth_config: GoogleOAuthConfig,
     github_config: GitHubOAuthConfig,
     discord_config: DiscordOAuthConfig,
 ) -> Provider:
     provider = Provider(scope=Scope.APP)
+    provider.provide(lambda: session_config, provides=SessionConfig)
     provider.provide(ImplSHA256SecretTokenGenerator, provides=SecretTokenGenerator)
     provider.provide(ImplArgon2PasswordHasher, provides=PasswordHasher)
     provider.provide(_create_session_service, provides=SessionService, scope=Scope.REQUEST)
@@ -222,6 +225,7 @@ def create_container(
     *,
     redis_config: RedisConfig,
     verification_config: VerificationConfig,
+    session_config: SessionConfig,
     oauth_state_config: OAuthStateConfig,
     google_oauth_config: GoogleOAuthConfig,
     github_config: GitHubOAuthConfig,
@@ -238,6 +242,7 @@ def create_container(
         create_dbus_provider(),
         create_redis_provider(redis_config, verification_config),
         create_auth_provider(
+            session_config=session_config,
             oauth_state_config=oauth_state_config,
             google_oauth_config=google_oauth_config,
             github_config=github_config,

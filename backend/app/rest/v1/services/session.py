@@ -7,13 +7,18 @@ from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.domain.entities.session import Session
 from backend.domain.repos.database import Database
 from backend.internal import Option
+from backend.internal.dto import StructDTO
+
+
+class SessionConfig(StructDTO):
+    SESSION_TTL_DAYS: int = 14
 
 
 @dataclass
 class SessionService:
     db: Database
     token_generator: SecretTokenGenerator
-    session_ttl: timedelta = timedelta(days=14)
+    session_config: SessionConfig
 
     async def create_session(
         self,
@@ -35,7 +40,7 @@ class SessionService:
             user_agent=user_agent,
             fingerprint=fingerprint,
             country_code=country_code,
-            expires_at=now + self.session_ttl,
+            expires_at=now + timedelta(days=self.session_config.SESSION_TTL_DAYS),
         )
 
         async with self.db:

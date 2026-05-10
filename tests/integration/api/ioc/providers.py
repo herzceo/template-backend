@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from datetime import timedelta
-
 from dishka import AsyncContainer, Provider, Scope, make_async_container
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine as _create_async_engine
 from sqlalchemy.pool import NullPool
 
 from backend.app.rest.v1.services.identity import IdentityService
-from backend.app.rest.v1.services.session import SessionService
+from backend.app.rest.v1.services.session import SessionConfig, SessionService
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
@@ -35,8 +33,10 @@ from tests.integration.mocks import (
 )
 
 
-def _create_session_service(db: Database, token_generator: SecretTokenGenerator) -> SessionService:
-    return SessionService(db=db, token_generator=token_generator, session_ttl=timedelta(days=14))
+def _create_session_service(
+    db: Database, token_generator: SecretTokenGenerator, session_config: SessionConfig
+) -> SessionService:
+    return SessionService(db=db, token_generator=token_generator, session_config=session_config)
 
 
 def create_test_container(*, postgres_url: str) -> AsyncContainer:
@@ -69,10 +69,13 @@ def create_test_container(*, postgres_url: str) -> AsyncContainer:
 
     state_signer = ImplHMACOAuthStateSigner(secret="test-oauth-state-secret-for-testing")
 
+    session_config = SessionConfig()
+
     auth_provider = Provider(scope=Scope.APP)
     auth_provider.provide(ImplArgon2PasswordHasher, provides=PasswordHasher)
     auth_provider.provide(ImplSHA256SecretTokenGenerator, provides=SecretTokenGenerator)
     auth_provider.provide(lambda: state_signer, provides=OAuthStateSigner)
+    auth_provider.provide(lambda: session_config, provides=SessionConfig)
 
     services_provider = Provider(scope=Scope.REQUEST)
     services_provider.provide(_create_session_service, provides=SessionService)

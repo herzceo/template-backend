@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from alembic.config import CommandLine as AlembicCLI
 from alembic.config import Config as AlembicConfig
 
+from backend.app.rest.v1.services.session import SessionConfig
 from backend.entry.queue import run_queue
 from backend.entry.rest.main import APIConfig, run_api
 from backend.infra.database.alembic import ALEMBIC_CONFIG
@@ -74,6 +75,7 @@ def cmd_run_api(_options: Namespace) -> None:
         load_from_env(DatabaseConfig),
         redis_config=load_from_env(RedisConfig),
         verification_config=load_from_env(VerificationConfig),
+        session_config=load_from_env(SessionConfig),
         oauth_state_config=load_from_env(OAuthStateConfig),
         google_oauth_config=load_from_env(GoogleOAuthConfig),
         github_config=load_from_env(GitHubOAuthConfig),

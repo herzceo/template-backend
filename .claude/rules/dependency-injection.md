@@ -79,3 +79,38 @@ async def login(self, handler: Depends[LoginHandler]) -> dtos.User:
 - Optional external services use conditional wiring: `if config is not None: provider.provide(...)`
 - Services go in `Scope.REQUEST`: `provider.provide(IdentityService, provides=IdentityService, scope=Scope.REQUEST)`
 - The `GlobalContainer` singleton manages container lifecycle via `backend/internal/di/container.py`
+
+## Config structs, not primitives
+
+Never inject a bare primitive (`int`, `str`, `timedelta`, etc.) through the DI container. The container cannot distinguish two `int` dependencies, and callers can substitute wrong values silently.
+
+Wrap configurable values in a typed `StructDTO` config class and inject that instead:
+
+```python
+# wrong — timedelta is ambiguous in the container
+@dataclass
+class SessionService:
+    session_ttl: timedelta
+
+# correct — SessionConfig is unambiguous; the service owns its config shape
+class SessionConfig(StructDTO):
+    SESSION_TTL_DAYS: int = 14
+
+@dataclass
+class SessionService:
+    session_config: SessionConfig
+```
+
+Place the config struct in the same file as the class that primarily uses it — not in a generic `infra/*/config.py` — so the dependency is obvious and co-located.
+
+Register it as a `Scope.APP` singleton via lambda in the provider that owns it:
+
+```python
+provider.provide(lambda: session_config, provides=SessionConfig)
+```
+
+Load it from the environment alongside the other configs in `main/cli.py`:
+
+```python
+session_config=load_from_env(SessionConfig),
+```
