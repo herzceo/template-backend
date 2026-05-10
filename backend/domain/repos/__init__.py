@@ -16,6 +16,7 @@ from .gateway import RepoGateway
 from .identity import IdentityRepo
 from .notification import NotificationRepo
 from .permission import PermissionRepo
+from .profile import ProfileRepo
 from .role import RoleRepo
 from .session import SessionRepo
 from .tenant import TenantRepo
@@ -35,6 +36,7 @@ __all__ = (
     "NotificationRepo",
     "OffsetPaginationSupported",
     "PermissionRepo",
+    "ProfileRepo",
     "RepoGateway",
     "RoleRepo",
     "SessionRepo",

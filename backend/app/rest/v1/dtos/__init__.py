@@ -6,6 +6,7 @@ from .notifications import Notification, NotificationInteraction, UserNotificati
 from .pagination import PaginatedResponse
 from .permissions import Permission
 from .presign import PresignedUploadResponse
+from .profile import Profile
 from .roles import Role
 from .sessions import Session
 from .tenants import Tenant
@@ -21,6 +22,7 @@ __all__ = (
     "PaginatedResponse",
     "Permission",
     "PresignedUploadResponse",
+    "Profile",
     "Role",
     "Session",
     "Tenant",

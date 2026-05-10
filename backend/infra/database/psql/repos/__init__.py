@@ -4,6 +4,7 @@ from .database import ImplDatabase
 from .gateway import ImplRepoGateway
 from .notification import ImplNotificationRepo
 from .permission import ImplPermissionRepo
+from .profile import ImplProfileRepo
 from .role import ImplRoleRepo
 from .session import ImplSessionRepo
 from .tenant import ImplTenantRepo
@@ -15,6 +16,7 @@ __all__ = (
     "ImplDatabase",
     "ImplNotificationRepo",
     "ImplPermissionRepo",
+    "ImplProfileRepo",
     "ImplRepoGateway",
     "ImplRoleRepo",
     "ImplSessionRepo",

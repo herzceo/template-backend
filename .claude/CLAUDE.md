@@ -73,7 +73,7 @@ All DTOs are `StructDTO` (msgspec.Struct). App DTOs = response shapes (`app/rest
 Litestar `Controller` subclass. Decorator order: `@get|@post` -> `@inject` -> `@result`. Handler injected via `Depends[HandlerType]`. Controllers convert `str` path params to `UUID`/`datetime`/enum before creating commands. Registered in `create_v1_router()`.
 
 ### Entities (domain/entities/)
-SQLAlchemy `DeclarativeBase` with mixins: `WithUUIDID`, `WithActive`, `WithTime`, `WithTenant`. Mixin order: `WithUUIDID, WithActive, WithTime, WithTenant, Base`. Auto table naming. `Mapped[T]` with `mapped_column()`. Relationships use `lazy="raise"`.
+SQLAlchemy `DeclarativeBase` with mixins: `WithUUIDID`, `WithActive`, `WithTime`, `WithTenant`. Mixin order: `WithUUIDID, WithActive, WithTime, WithTenant, Base`. Auto table naming. `Mapped[T]` with `mapped_column()`. Relationships use `lazy="raise"`. Companion entities (1:1 satellites of a primary entity) use only `WithUUIDID, WithTime, Base` and are always created in the same transaction as their primary — see `Profile` as the canonical example (`backend/domain/entities/profile.py`).
 
 ### Events (app/shared/events/ + app/events/ + infra/dbus/)
 `BaseEvent(StructDTO, kw_only=True)` with `name: ClassVar[str]`. Publish via `DBus.publish(event)`. `EventHandler[E]` with auto-registration keyed by event name. Background execution via PostgreSQL job queue.

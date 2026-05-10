@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
 from backend.domain.entities.identity import Identity
+from backend.domain.entities.profile import Profile
 from backend.domain.entities.user import User
 from backend.domain.enums import IdentityProvider
 from backend.domain.repos.database import Database
@@ -30,8 +31,6 @@ async def create_user(
     *,
     email: str | None = None,
     username: str | None = None,
-    first_name: str = "Test",
-    last_name: str = "User",
     password: str = "Test123!",
     is_active: bool = True,
     verified: bool = False,
@@ -48,13 +47,16 @@ async def create_user(
                 id=uuid4(),
                 username=resolved_username,
                 email=resolved_email,
-                first_name=first_name,
-                last_name=last_name,
                 tenant_id=tenant_id,
                 active=is_active,
             )
             created_user = (await db.gateway.user.create(user)).some(
                 RuntimeError("Failed to create user")
+            )
+
+            profile = Profile(user_id=created_user.id)
+            (await db.gateway.profile.create(profile)).some(
+                RuntimeError("Failed to create profile")
             )
 
             if verified:

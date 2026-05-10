@@ -7,6 +7,7 @@ from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.services.session import SessionService
 from backend.app.rest.v1.validation import normalize_email, sanitize_username_chars
+from backend.domain.entities.profile import Profile
 from backend.domain.entities.user import User
 from backend.domain.enums import IdentityProvider
 from backend.domain.repos.database import Database
@@ -52,13 +53,18 @@ class OAuthCallbackHandler(
                 user_entity = User(
                     username=username,
                     email=email,
-                    first_name=user_info.display_name or "",
-                    last_name="",
-                    avatar_url=user_info.avatar_url,
                     tenant_id=default_tenant.id,
                 )
                 user = (await self.db.gateway.user.create(user_entity)).some(
                     RuntimeError("Failed to create user")
+                )
+                profile = Profile(
+                    user_id=user.id,
+                    display_name=user_info.display_name,
+                    avatar_url=user_info.avatar_url,
+                )
+                (await self.db.gateway.profile.create(profile)).some(
+                    RuntimeError("Failed to create profile")
                 )
                 await self.identity_service.link_oauth_identity(user.id, user_info)
 

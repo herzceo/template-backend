@@ -5,6 +5,7 @@ from .identity import Identity
 from .notification import Notification
 from .notification_interaction import NotificationInteraction
 from .permission import Permission
+from .profile import Profile
 from .queue import Job, JobEvent, WorkerEvent
 from .queue import Worker as QueueWorker
 from .rbac import role_permission, user_role
@@ -23,6 +24,7 @@ __all__ = (
     "Notification",
     "NotificationInteraction",
     "Permission",
+    "Profile",
     "QueueWorker",
     "Role",
     "Session",
