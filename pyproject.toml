@@ -75,7 +75,7 @@ python_version = "3.12"
 exclude = "(\\.venv|\\.tox|build|dist)/"
 
 [tool.ruff]
-exclude = [".venv"]
+exclude = [".venv", ".claude"]
 fix = true
 unsafe-fixes = true
 line-length = 100

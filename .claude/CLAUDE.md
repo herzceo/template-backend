@@ -2,7 +2,7 @@
 
 ## Workflow — assess effort first, then act
 
-For any implementation request — whether a plain prompt or an explicit `/impl` call — classify the effort tier inline before acting. Do not invoke `/impl` as a skill; apply the pipeline directly. The user can type `/impl [small|mid|large]` to override the detected tier.
+For any implementation request — whether a plain prompt or an explicit `/impl` call — classify the effort tier inline before acting. Do not invoke `/impl` as a skill; apply the pipeline directly. The user can type `/impl [small|mid|tuff]` to override the detected tier.
 
 Classify the effort tier:
 
@@ -11,19 +11,19 @@ Classify the effort tier:
 - No new files, no new abstractions
 - Modifying a value, condition, field, or small logic block
 
-**mid** — any of these is true (and not large):
+**mid** — any of these is true (and not tuff):
 - Existing entity extended with new behavior (handler, endpoint, event, service)
 - New well described entity + CRUDs, following established patterns
 - One or more `/add-*` skills directly match the task
 - 3–8 files, all following established patterns
 
-**large** — any of these is true:
+**tuff** — any of these is true:
 - New port, adapter, repo, or event as a new abstraction
 - No existing `/add-*` skill covers the task
 - Request uses "new domain", "from scratch", "design", or "architect"
 - Implementation is multi-layered and requires architectural decisions
 
-When ambiguous between mid and large → mid. Between small and mid → mid.
+When ambiguous between mid and tuff → mid. Between small and mid → mid.
 
 ### small pipeline
 1. Read the affected file(s)
@@ -40,7 +40,7 @@ When ambiguous between mid and large → mid. Between small and mid → mid.
 
 No plan file. No approval step.
 
-### large pipeline
+### tuff pipeline
 1. **Understand**: ask clarifying questions — business rules, scope, data model, side effects, error cases, naming (at least 2–3 questions)
 2. **Research**: use `/research <topic>` — read all existing code that touches the domain
 3. **Plan**: use `/plan <feature>` — every file, field, method signature, error case; no hand-waving
@@ -50,7 +50,7 @@ No plan file. No approval step.
 7. **Verify**: use the implementation-verifier agent — every planned file must exist, `just check` must pass
 8. **Audit**: use the architecture-reviewer agent — fix any layer violations or pattern drift before reporting done
 
-The user can type `/impl [small|mid|large] <description>` to explicitly force a tier.
+The user can type `/impl [small|mid|tuff] <description>` to explicitly force a tier.
 
 ## Knowledge Maintenance — keep `.claude/` in sync with the project
 
@@ -146,7 +146,7 @@ architecture, entities, handlers, repositories, dtos, controllers, ports-adapter
 ## Skills (`.claude/skills/`)
 
 User-invoked overrides:
-- `/impl [small|mid|large] <change>` -- forces a specific effort tier; omit the tier to confirm auto-detection
+- `/impl [small|mid|tuff] <change>` -- forces a specific effort tier; omit the tier to confirm auto-detection
 - `/chat <problem>` -- design consultation before committing to an approach; outputs options + trade-offs + recommendation; no code written
 
 Project setup (use when forking this template):

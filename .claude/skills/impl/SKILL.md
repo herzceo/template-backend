@@ -1,7 +1,7 @@
 ---
 name: impl
-description: Implement a change with a pipeline scaled to its complexity. Single entry point for all code changes — auto-detects effort or accepts small|mid|large override.
-argument-hint: [small|mid|large] <description>
+description: Implement a change with a pipeline scaled to its complexity. Single entry point for all code changes — auto-detects effort or accepts small|mid|tuff override.
+argument-hint: [small|mid|tuff] <description>
 ---
 
 # Implement a Change
@@ -10,7 +10,7 @@ Single entry point for all code changes. Select effort explicitly or let Claude 
 
 ## Arguments
 
-- `$0` -- (optional) Effort tier override: `small`, `mid`, or `large`. Omit to auto-detect.
+- `$0` -- (optional) Effort tier override: `small`, `mid`, or `tuff`. Omit to auto-detect.
 - All remaining words form the change description.
 
 ## Effort Tiers
@@ -19,11 +19,11 @@ Single entry point for all code changes. Select effort explicitly or let Claude 
 |------|-------|----------|
 | `small` | 1–2 files, modifying existing logic, no new abstractions | Read → 1 question max → implement → `just check` |
 | `mid` | Existing pattern, chain of `/add-*` skills, 3–8 files | Quick research → chain `/add-*` skills in order → `just check` |
-| `large` | New domain, new abstractions, or no prior pattern to follow | Full pipeline: questions → research → plan → plan-review → user-approval → implement → verifier |
+| `tuff` | New domain, new abstractions, or no prior pattern to follow | Full pipeline: questions → research → plan → plan-review → user-approval → implement → verifier |
 
 ## Auto-Detection Rules
 
-Choose **large** if any of:
+Choose **tuff** if any of:
 - New entity or Alembic migration is required
 - New port, adapter, repo, or event (new abstraction, not adding to an existing one)
 - No existing `/add-*` skill covers the task
@@ -39,7 +39,7 @@ Choose **small** if all of:
 - No new files, no new abstractions
 - Modifying a value, condition, field, or small logic block
 
-When ambiguous between mid and large, choose **mid**. When ambiguous between small and mid, choose **mid**.
+When ambiguous between mid and tuff, choose **mid**. When ambiguous between small and mid, choose **mid**.
 
 ## small pipeline
 
@@ -60,7 +60,7 @@ No planning. No agents. No approval step.
 
 No plan file. No approval step.
 
-## large pipeline
+## tuff pipeline
 
 Follow the full workflow — no steps may be skipped:
 
