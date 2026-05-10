@@ -5,6 +5,7 @@ from litestar import Controller, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import users
+from backend.app.shared.query_services.user import UserWithRoles
 from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
@@ -25,6 +26,26 @@ class UsersController(Controller):
         limit: int = 50,
     ) -> dtos.PaginatedResponse[dtos.User]:
         return await handler(users.ListUsersCommand(offset=offset, limit=limit))
+
+    @get("/with-roles")
+    @inject
+    @result
+    async def list_users_with_roles(
+        self,
+        handler: Depends[users.ListUsersWithRolesHandler],
+        tenant_id: UUID | None = None,
+        verified: bool | None = None,  # noqa: FBT001
+        offset: int = 0,
+        limit: int = 50,
+    ) -> dtos.PaginatedResponse[UserWithRoles]:
+        return await handler(
+            users.ListUsersWithRolesCommand(
+                tenant_id=tenant_id,
+                verified=verified,
+                offset=offset,
+                limit=limit,
+            )
+        )
 
     @post("/")
     @inject
