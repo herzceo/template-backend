@@ -7,8 +7,10 @@ from backend.internal.dto import StructDTO
 
 class UpdateUserBody(StructDTO):
     email: str | None = None
-    first_name: str | None = None
-    last_name: str | None = None
+
+
+class UpdateProfileBody(StructDTO, kw_only=True):
+    display_name: str | None = None
     avatar_url: str | None = None
 
 

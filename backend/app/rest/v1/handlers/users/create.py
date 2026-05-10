@@ -6,6 +6,7 @@ from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.validation import normalize_email, normalize_username
+from backend.domain.entities.profile import Profile
 from backend.domain.entities.user import User
 from backend.domain.enums import IdentityProvider
 from backend.domain.repos.database import Database
@@ -15,10 +16,7 @@ class CreateUserCommand(Command):
     username: str
     email: str
     password: str
-    first_name: str
-    last_name: str
     tenant_id: UUID
-    avatar_url: str | None = None
 
 
 @dataclass
@@ -34,13 +32,14 @@ class CreateUserHandler(Handler[CreateUserCommand, dtos.User, None], type_=Handl
             entity = User(
                 username=username,
                 email=email,
-                first_name=cmd.first_name,
-                last_name=cmd.last_name,
                 tenant_id=cmd.tenant_id,
             )
-            if cmd.avatar_url is not None:
-                entity.avatar_url = cmd.avatar_url
             created = (await self.db.gateway.user.create(entity)).some(AlreadyExistsError())
+
+            profile = Profile(user_id=created.id)
+            (await self.db.gateway.profile.create(profile)).some(
+                RuntimeError("Failed to create profile")
+            )
 
             await self.identity_service.link_password_identity(
                 created.id, IdentityProvider.EMAIL_PASSWORD, email, cmd.password

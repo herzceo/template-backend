@@ -10,6 +10,7 @@ from .audit_log import ImplAuditLogRepo
 from .identity import ImplIdentityRepo
 from .notification import ImplNotificationRepo
 from .permission import ImplPermissionRepo
+from .profile import ImplProfileRepo
 from .queue import (
     ImplJobEventRepo,
     ImplJobRepo,
@@ -30,6 +31,10 @@ class ImplRepoGateway(RepoGateway):
     @cached_property
     def user(self) -> ImplUserRepo:
         return ImplUserRepo(self._session)
+
+    @cached_property
+    def profile(self) -> ImplProfileRepo:
+        return ImplProfileRepo(self._session)
 
     @cached_property
     def tenant(self) -> ImplTenantRepo:

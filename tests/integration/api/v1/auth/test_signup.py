@@ -27,8 +27,6 @@ async def test_signup_creates_user_and_publishes_event(
             "username": f"user_{uuid4().hex[:8]}",
             "email": email,
             "password": "Test123!",
-            "first_name": "Alice",
-            "last_name": "Smith",
             "tenant_id": str(tenant.id),
         },
     )
@@ -52,15 +50,12 @@ async def test_signup_returns_user_data(
             "username": f"user_{uuid4().hex[:8]}",
             "email": f"data+{uuid4().hex[:8]}@example.com",
             "password": "Test123!",
-            "first_name": "Bob",
-            "last_name": "Jones",
             "tenant_id": str(tenant.id),
         },
     )
     assert r.status_code == HTTPStatus.CREATED
     data = r.json()
-    assert data["data"]["first_name"] == "Bob"
-    assert data["data"]["last_name"] == "Jones"
+    assert "id" in data["data"]
 
 
 async def test_signup_duplicate_email_returns_conflict(
@@ -71,8 +66,6 @@ async def test_signup_duplicate_email_returns_conflict(
     payload = {
         "email": email,
         "password": "Test123!",
-        "first_name": "A",
-        "last_name": "B",
         "tenant_id": str(tenant.id),
     }
     r1 = await client.post(

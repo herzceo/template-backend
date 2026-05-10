@@ -5,6 +5,7 @@ from .audit_logs import AuditLogsController
 from .auth import AuthController
 from .notifications import NotificationsController
 from .permissions import PermissionsController
+from .profile import ProfileController
 from .roles import RolesController
 from .sessions import SessionsController
 from .tenants import TenantsController
@@ -30,5 +31,6 @@ def create_v1_router() -> Router:
             AssetsController,
             NotificationsController,
             AuditLogsController,
+            ProfileController,
         ],
     )

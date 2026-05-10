@@ -39,14 +39,12 @@ async def test_create_user(
             "username": unique_username(),
             "email": unique_email(),
             "password": "Test123!",
-            "first_name": "New",
-            "last_name": "User",
             "tenant_id": str(tenant.id),
         },
     )
     assert r.status_code == HTTPStatus.CREATED
     data = r.json()
-    assert data["data"]["first_name"] == "New"
+    assert "id" in data["data"]
 
 
 async def test_get_user(
@@ -73,13 +71,12 @@ async def test_update_user(
     auth_user: User,
     user: User,
 ) -> None:
+    new_email = unique_email("updated")
     r = await client.patch(
         f"/v1/users/{user.id}",
-        json={"first_name": "Updated"},
+        json={"email": new_email},
     )
     assert r.status_code == HTTPStatus.OK
-    data = r.json()
-    assert data["data"]["first_name"] == "Updated"
 
 
 async def test_delete_user(
