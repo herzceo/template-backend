@@ -26,6 +26,7 @@ from backend.app.shared.ports.events.dbus import DBus
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.app.shared.ports.storage import ObjectStore
+from backend.app.shared.query_services.gateway import QueryServiceGateway
 from backend.domain.repos.database import Database
 from backend.infra.database.config import DatabaseConfig
 from backend.infra.database.object import S3ObjectStore
@@ -33,6 +34,7 @@ from backend.infra.database.psql.engine import (
     create_async_engine,
     create_async_session_maker,
 )
+from backend.infra.database.psql.queries import ImplQueryServiceGateway
 from backend.infra.database.psql.repos import ImplDatabase
 from backend.infra.database.redis import RedisClient
 from backend.infra.database.redis.adapters.config import VerificationConfig
@@ -82,6 +84,12 @@ def _create_database(session_maker: async_sessionmaker[AsyncSession]) -> ImplDat
 def create_database_provider() -> Provider:
     provider = Provider(scope=Scope.REQUEST)
     provider.provide(_create_database, provides=Database)
+    return provider
+
+
+def create_query_services_provider() -> Provider:
+    provider = Provider(scope=Scope.REQUEST)
+    provider.provide(ImplQueryServiceGateway, provides=QueryServiceGateway)
     return provider
 
 
@@ -226,6 +234,7 @@ def create_container(
         create_utils_provider(db_config),
         create_psql_provider(),
         create_database_provider(),
+        create_query_services_provider(),
         create_dbus_provider(),
         create_redis_provider(redis_config, verification_config),
         create_auth_provider(

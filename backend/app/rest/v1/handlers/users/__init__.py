@@ -3,6 +3,7 @@ from .create import CreateUserCommand, CreateUserHandler
 from .delete import DeleteUserCommand, DeleteUserHandler
 from .get import GetUserCommand, GetUserHandler
 from .list import ListUsersCommand, ListUsersHandler
+from .list_with_roles import ListUsersWithRolesCommand, ListUsersWithRolesHandler
 from .revoke_role import RevokeRoleCommand, RevokeRoleHandler
 from .update import UpdateUserCommand, UpdateUserHandler
 
@@ -17,6 +18,8 @@ __all__ = (
     "GetUserHandler",
     "ListUsersCommand",
     "ListUsersHandler",
+    "ListUsersWithRolesCommand",
+    "ListUsersWithRolesHandler",
     "RevokeRoleCommand",
     "RevokeRoleHandler",
     "UpdateUserCommand",

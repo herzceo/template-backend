@@ -24,7 +24,7 @@ This project follows hexagonal (ports & adapters) architecture with strict layer
 domain/   -> domain/, internal/
 app/      -> app/, domain/, internal/
 entry/    -> anything in backend.*
-infra/    -> infra/, domain/, backend.app.shared.* (ports only), internal/
+infra/    -> infra/, domain/, backend.app.shared.* (ports + query_services), internal/
 internal/ -> internal/
 main/     -> anything in backend.*
 ```
@@ -46,9 +46,10 @@ from backend.app.shared.ports.auth.password_hasher import PasswordHasher     # c
 from backend.app.rest.v1.handlers.auth.login import LoginHandler  # wrong
 from backend.app.rest.v1.services.identity import IdentityService # wrong
 
-# infra/ may only import from app.shared (ports, events)
+# infra/ may only import from app.shared (ports, events, query_services)
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher  # correct
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested  # correct
+from backend.app.shared.query_services.user import UserQueryService  # correct
 ```
 
 ```python

@@ -57,6 +57,9 @@ backend/
 ### Repository (domain/repos/ + infra/database/psql/repos/)
 Protocol interface in `domain/repos/` extending `CRUDSupported[Entity]`. Implementation in `infra/` via `ImplCRUDSupported[Entity]`. All lookups return `Option[T]` -- unwrap with `.some(ExceptionInstance)`. Central access via `RepoGateway` Protocol + `ImplRepoGateway` with `@cached_property`.
 
+### Query Service (app/shared/query_services/ + infra/database/psql/queries/)
+Read-only interfaces for complex queries that repositories can't serve efficiently (joins, aggregations, multi-table projections). Protocol in `app/shared/query_services/{domain}.py` — defines a `TypedDict` filter type and a `Protocol` returning shaped data. Implementation in `infra/database/psql/queries/{domain}.py` — `@final` class taking `async_sessionmaker[AsyncSession]`, opens a context-managed session per call. `ImplQueryServiceGateway` aggregates all services via `@cached_property`, mirrors `ImplRepoGateway`. Wired as `Scope.REQUEST` in `ioc.py` via `create_query_services_provider()`. Handlers that only read inject `QueryServiceGateway` instead of `Database`.
+
 ### Port / Adapter (app/shared/ports/ + infra/external/adapters/)
 Port = `Protocol` in `app/shared/ports/{category}/`. Adapter = `@final` class in `infra/external/adapters/`. Naming: port = `PasswordHasher`, adapter = `ImplArgon2PasswordHasher`. Adapters never imported by `app/`.
 

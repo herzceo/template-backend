@@ -17,9 +17,11 @@ from backend.app.shared.ports.outreach.email import EmailSender
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.app.shared.ports.storage import ObjectStore
+from backend.app.shared.query_services.gateway import QueryServiceGateway
 from backend.domain.repos.database import Database
 from backend.entry.rest.main.ioc import create_handlers_provider
 from backend.infra.database.psql.engine import create_async_session_maker
+from backend.infra.database.psql.queries import ImplQueryServiceGateway
 from backend.infra.database.psql.repos import ImplDatabase
 from backend.infra.security.oauth_state import ImplHMACOAuthStateSigner
 from backend.infra.security.password_hasher import ImplArgon2PasswordHasher
@@ -63,6 +65,7 @@ def create_test_container(*, postgres_url: str) -> AsyncContainer:
 
     req_provider = Provider(scope=Scope.REQUEST)
     req_provider.provide(_create_database, provides=Database)
+    req_provider.provide(ImplQueryServiceGateway, provides=QueryServiceGateway)
 
     state_signer = ImplHMACOAuthStateSigner(secret="test-oauth-state-secret-for-testing")
 
