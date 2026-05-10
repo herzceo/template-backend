@@ -1,21 +1,60 @@
 # Python Backend Template
 
-## Workflow — ALWAYS follow this before writing code
+## Workflow — assess effort first, then act
 
-1. **Understand**: read the request carefully. Identify ambiguities, edge cases, missing details.
-2. **Ask questions**: do NOT assume. Ask about business rules, expected behavior, error cases, naming, scope boundaries. Ask at least 2-3 clarifying questions before any non-trivial feature.
-3. **Research**: use `/research <topic>` or the domain-designer agent. Read existing code that touches the same domain. Find patterns to reuse.
-4. **Plan**: use `/plan <feature>` to produce a structured plan. Every file, every field, every method signature, every error case. No hand-waving.
-5. **Review plan**: use the plan-reviewer agent to verify the plan is complete. Fix any gaps it finds. The plan MUST pass review before coding.
-6. **Confirm**: present the reviewed plan to the user. Wait for explicit approval. Never start coding on assumption.
-7. **Implement**: follow the plan exactly, in dependency order (inner layers first). Run `just check` after each major step. Do not deviate from the plan without asking.
-8. **Verify**: use the implementation-verifier agent to check the result matches the plan. Every planned file must exist, every pattern must be followed, `just check` must pass.
+For any implementation request — whether a plain prompt or an explicit `/impl` call — classify the effort tier inline before acting. Do not invoke `/impl` as a skill; apply the pipeline directly. The user can type `/impl [small|mid|large]` to override the detected tier.
 
-For trivial changes (typo fix, single-line edit), skip to step 7. For everything else, steps 1-6 are mandatory. Skipping planning is not allowed.
+Classify the effort tier:
+
+**small** — all of these are true:
+- Scoped to 1–2 existing files
+- No new files, no new abstractions
+- Modifying a value, condition, field, or small logic block
+
+**mid** — any of these is true (and not large):
+- Existing entity extended with new behavior (handler, endpoint, event, service)
+- New well described entity + CRUDs, following established patterns
+- One or more `/add-*` skills directly match the task
+- 3–8 files, all following established patterns
+
+**large** — any of these is true:
+- New port, adapter, repo, or event as a new abstraction
+- No existing `/add-*` skill covers the task
+- Request uses "new domain", "from scratch", "design", or "architect"
+- Implementation is multi-layered and requires architectural decisions
+
+When ambiguous between mid and large → mid. Between small and mid → mid.
+
+### small pipeline
+1. Read the affected file(s)
+2. Ask at most one clarifying question if genuinely ambiguous — otherwise proceed immediately
+3. Make the change
+4. Run `just check` — fix all issues before reporting done
+
+### mid pipeline
+1. Identify which `/add-*` skills apply and their execution order
+2. Run `/research <domain>` — confirm existing patterns, never invent when an example exists
+3. Execute the `/add-*` skills in dependency order (entity → repo → handler → controller → test)
+4. Run `just check` — fix all issues
+5. Delegate to **implementation-verifier** agent — fix any drift before reporting done
+
+No plan file. No approval step.
+
+### large pipeline
+1. **Understand**: ask clarifying questions — business rules, scope, data model, side effects, error cases, naming (at least 2–3 questions)
+2. **Research**: use `/research <topic>` — read all existing code that touches the domain
+3. **Plan**: use `/plan <feature>` — every file, field, method signature, error case; no hand-waving
+4. **Review plan**: use the plan-reviewer agent — fix every gap before proceeding
+5. **Confirm**: present the reviewed plan to the user — wait for explicit approval; never infer it
+6. **Implement**: follow the plan exactly, in dependency order — run `just check` after each major step
+7. **Verify**: use the implementation-verifier agent — every planned file must exist, `just check` must pass
+8. **Audit**: use the architecture-reviewer agent — fix any layer violations or pattern drift before reporting done
+
+The user can type `/impl [small|mid|large] <description>` to explicitly force a tier.
 
 ## Knowledge Maintenance — keep `.claude/` in sync with the project
 
-The `.claude/` configuration is a living document. As the project evolves, propose updates:
+The `.claude/` configuration is a living document. Knowledge updates can happen at any point in any pipeline tier — during research, mid-implementation, or after verification. As the project evolves, propose updates:
 
 - **New pattern discovered** during implementation? Propose adding it to the relevant rule in `rules/` or to CLAUDE.md Key Patterns.
 - **New convention agreed** with the user (naming, structure, approach)? Propose updating the relevant rule.
@@ -106,10 +145,15 @@ architecture, entities, handlers, repositories, dtos, controllers, ports-adapter
 
 ## Skills (`.claude/skills/`)
 
+User-invoked overrides:
+- `/impl [small|mid|large] <change>` -- forces a specific effort tier; omit the tier to confirm auto-detection
+- `/chat <problem>` -- design consultation before committing to an approach; outputs options + trade-offs + recommendation; no code written
+
 Project setup (use when forking this template):
 - `/specialize` -- interactive session: asks about your domain, auth, infra, and MVP scope, then renames the package, prunes unused code, scaffolds your entities/endpoints, and replaces the init migration
 
-Template orientation (use when you have a quick question):
+Template orientation:
+- `/help` -- overview of the template, all commands, and how to start
 - `/explain <question>` -- quick answer from `.claude/` docs only; no codebase scan; for simple conceptual questions
 
 Planning (use BEFORE writing code):
