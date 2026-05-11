@@ -32,7 +32,6 @@ class VerifyEmailHandler(
                 ValidationFailedError(message="Invalid email or code")
             )
             user_id = user.id
-            user_dto = dtos.User.from_object(user)
 
         entry = (await self.verification_store.get(user_id)).some(
             ValidationFailedError(message="No pending verification")
@@ -55,7 +54,6 @@ class VerifyEmailHandler(
             user.verified_at = datetime.now(UTC)
             (await self.db.gateway.user.update(user)).some(RuntimeError("Failed to verify user"))
             await self.db.commit()
-            user_dto = dtos.User.from_object(user)
 
         raw_token, _ = await self.session_service.create_session(user_id)
-        return AuthContext(token=raw_token, data=user_dto)
+        return AuthContext(token=raw_token, data=dtos.User.from_object(user))

@@ -18,4 +18,4 @@ class GetUserHandler(Handler[GetUserCommand, dtos.User, None], type_=HandlerType
     async def __call__(self, cmd: GetUserCommand, _ctx: None = None) -> dtos.User:
         async with self.db:
             user = (await self.db.gateway.user.get_by_id(cmd.id)).some(NotFoundError())
-            return dtos.User.from_object(user)
+        return dtos.User.from_object(user)

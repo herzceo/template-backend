@@ -32,4 +32,4 @@ class UpdateProfileHandler(
                 NotFoundError(message="Profile not found")
             )
             await self.db.commit()
-            return dtos.Profile.from_object(updated)
+        return dtos.Profile.from_object(updated)

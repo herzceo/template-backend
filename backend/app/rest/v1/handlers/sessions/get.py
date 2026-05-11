@@ -18,4 +18,4 @@ class GetSessionHandler(Handler[GetSessionCommand, dtos.Session, None], type_=Ha
     async def __call__(self, cmd: GetSessionCommand, _ctx: None = None) -> dtos.Session:
         async with self.db:
             session = (await self.db.gateway.session_.get_by_id(cmd.id)).some(NotFoundError())
-            return dtos.Session.from_object(session)
+        return dtos.Session.from_object(session)

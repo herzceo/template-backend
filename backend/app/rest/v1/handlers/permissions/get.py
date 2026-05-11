@@ -20,4 +20,4 @@ class GetPermissionHandler(
     async def __call__(self, cmd: GetPermissionCommand, _ctx: None = None) -> dtos.Permission:
         async with self.db:
             permission = (await self.db.gateway.permission.get_by_id(cmd.id)).some(NotFoundError())
-            return dtos.Permission.from_object(permission)
+        return dtos.Permission.from_object(permission)

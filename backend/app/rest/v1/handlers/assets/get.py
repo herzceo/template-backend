@@ -18,4 +18,4 @@ class GetAssetHandler(Handler[GetAssetCommand, dtos.Asset, None], type_=HandlerT
     async def __call__(self, cmd: GetAssetCommand, _ctx: None = None) -> dtos.Asset:
         async with self.db:
             asset = (await self.db.gateway.asset.get_by_id(cmd.id)).some(NotFoundError())
-            return dtos.Asset.from_object(asset)
+        return dtos.Asset.from_object(asset)
