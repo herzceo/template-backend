@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
+
+from backend.internal.dto import StructDTO
 
 if TYPE_CHECKING:
     from backend.infra.external.http.sessions.middleware.rate_limit.storage import RateLimitStorage
 
 
-@dataclass(slots=True, frozen=True)
-class RateLimitResult:
+class RateLimitResult(StructDTO):
     allowed: bool
     retry_after: float | None = None
 
