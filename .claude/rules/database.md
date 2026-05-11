@@ -81,7 +81,7 @@ async def get_by_username(self, username: str) -> Option[User]:
 
 ## Alembic Migrations
 
-- Migrations in `backend/infra/database/alembic/migrations/versions/`
+- Migrations in `backend/infra/database/psql/alembic/migrations/versions/`
 - Generate: `just migration "add users table"`
 - Apply: `just migrate`
 - `env.py` imports all entities to register metadata
