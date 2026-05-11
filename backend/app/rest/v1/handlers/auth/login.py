@@ -37,7 +37,6 @@ class LoginHandler(Handler[LoginCommand, AuthContext[dtos.User], None], type_=Ha
             if not user.is_verified:
                 raise ValidationFailedError(message="Email not verified")
             user_id = user.id
-            user_dto = dtos.User.from_object(user)
             await self.db.commit()
         raw_token, _ = await self.session_service.create_session(user_id)
-        return AuthContext(token=raw_token, data=user_dto)
+        return AuthContext(token=raw_token, data=dtos.User.from_object(user))

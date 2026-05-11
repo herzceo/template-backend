@@ -20,4 +20,4 @@ class GetProfileHandler(Handler[GetProfileCommand, dtos.Profile, None], type_=Ha
             profile = (await self.db.gateway.profile.get_by_user_id(cmd.user_id)).some(
                 NotFoundError(message="Profile not found")
             )
-            return dtos.Profile.from_object(profile)
+        return dtos.Profile.from_object(profile)

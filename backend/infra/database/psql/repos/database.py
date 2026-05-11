@@ -66,6 +66,8 @@ class ImplDatabase(Database):
     ) -> None:
         txn = self._txn_stack.pop()
         if txn.is_active:
+            if not self._txn_stack and self._session is not None:
+                self._session.expunge_all()
             await txn.rollback()
         if not self._txn_stack and self._session is not None:
             await self._session.close()

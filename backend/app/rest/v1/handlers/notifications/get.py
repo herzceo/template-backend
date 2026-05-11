@@ -22,4 +22,4 @@ class GetNotificationHandler(
             notification = (await self.db.gateway.notification.get_by_id(cmd.id)).some(
                 NotFoundError()
             )
-            return dtos.Notification.from_object(notification)
+        return dtos.Notification.from_object(notification)

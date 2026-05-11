@@ -23,9 +23,8 @@ class ListAssetsHandler(
         async with self.db:
             items = await self.db.gateway.asset.list_with_offset(offset=cmd.offset, limit=cmd.limit)
             total = await self.db.gateway.asset.count()
-            item_dtos = [dtos.Asset.from_object(i) for i in items]
         return dtos.PaginatedResponse(
-            items=item_dtos,
+            items=[dtos.Asset.from_object(i) for i in items],
             total=total,
             offset=cmd.offset,
             limit=cmd.limit,
