@@ -112,7 +112,7 @@ Dishka `Provider(scope=Scope.APP|REQUEST)`. Bind impl to Protocol: `provider.pro
 All DTOs are `StructDTO` (msgspec.Struct). App DTOs = response shapes (`app/rest/v1/dtos/`). Entry DTOs = request bodies (`entry/rest/v1/dtos.py`). Conversion: `DTO.from_object(entity)`.
 
 ### Controllers (entry/rest/v1/)
-Litestar `Controller` subclass. Decorator order: `@get|@post` -> `@inject` -> `@result`. Handler injected via `Depends[HandlerType]`. Controllers convert `str` path params to `UUID`/`datetime`/enum before creating commands. Registered in `create_v1_router()`.
+Litestar `Controller` subclass. Decorator order: `@get|@post` -> `@inject` -> `@result`. Handler injected via `Depends[HandlerType]`. Controllers convert `str` path params to `UUID`/`datetime`/enum before creating commands. Registered in `create_v1_router()`. Non-CRUD operations use Google-style `:camelCaseVerb` suffix (`@post("/{id:str}:assignRole")`). List endpoints use `page_size: int = 50, page_token: str | None = None` query params. Controllers needing collection-level custom methods (e.g., `/auth:signIn`) set `path = ""` and use explicit full paths.
 
 ### Entities (domain/entities/)
 SQLAlchemy `DeclarativeBase` with mixins: `WithUUIDID`, `WithActive`, `WithTime`, `WithTenant`. Mixin order: `WithUUIDID, WithActive, WithTime, WithTenant, Base`. Auto table naming. `Mapped[T]` with `mapped_column()`. Relationships use `lazy="raise"`. Companion entities (1:1 satellites of a primary entity) use only `WithUUIDID, WithTime, Base` and are always created in the same transaction as their primary — see `Profile` as the canonical example (`backend/domain/entities/profile.py`).

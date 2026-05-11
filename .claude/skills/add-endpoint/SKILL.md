@@ -29,6 +29,12 @@ Is this a read or write operation?
 ├── Read (GET, no side effects) -> type_=HandlerType.READ
 └── Write (POST/PATCH/DELETE, mutations) -> type_=HandlerType.WRITE
 
+Is this a standard CRUD operation or a custom action?
+├── CRUD (create/get/update/delete/list) -> use standard REST paths
+└── Custom action (assign, revoke, markRead, signIn, etc.) -> use :camelCaseVerb suffix
+    ├── Mutation: @post("/{id:str}:assignRole") with body DTO in entry/rest/v1/dtos.py
+    └── Custom read: @get(":listForUser") with query params
+
 Does the handler need path parameters?
 ├── Yes -> Controller converts str to UUID/enum before creating command
 └── No -> Command fields come from request body
@@ -36,6 +42,10 @@ Does the handler need path parameters?
 Does this return data?
 ├── Yes -> Define/reuse a response DTO in app/rest/v1/dtos/
 └── No -> Handler returns None, controller returns None
+
+Is this a list endpoint?
+├── Yes -> Use offset: int = 0, limit: int = 50
+└── No -> N/A
 ```
 
 ## Implementation Steps
@@ -94,16 +104,45 @@ class {Entity}(StructDTO):
 
 File: `backend/entry/rest/v1/{domain}.py`
 
+Standard CRUD:
 ```python
-@{method}("/{path}", exclude_from_auth=False)
+@{method}("/{entity_id:str}", exclude_from_auth=False)
 @inject
 @result
 async def {action}_{entity}(
     self,
-    {entity}_id: UUID,  # path param, Litestar auto-converts
+    entity_id: str,
     handler: Depends[{domain}.Get{Entity}Handler],
 ) -> dtos.{Entity}:
-    return await handler({domain}.Get{Entity}Command({entity}_id={entity}_id))
+    return await handler({domain}.Get{Entity}Command({entity}_id=UUID(entity_id)))
+```
+
+Custom method (non-CRUD action):
+```python
+@post("/{id:str}:assignRole")
+@inject
+@result
+async def assign_role(
+    self,
+    id: str,
+    data: AssignRoleBody,
+    handler: Depends[users.AssignRoleHandler],
+) -> None:
+    return await handler(users.AssignRoleCommand(user_id=UUID(id), role_id=data.role_id))
+```
+
+List endpoint:
+```python
+@get("/{entities}/")
+@inject
+@result
+async def list_{entities}(
+    self,
+    handler: Depends[{domain}.List{Entities}Handler],
+    offset: int = 0,
+    limit: int = 50,
+) -> dtos.PaginatedResponse[dtos.{Entity}]:
+    return await handler({domain}.List{Entities}Command(offset=offset, limit=limit))
 ```
 
 ### 5. Register controller (if new domain)

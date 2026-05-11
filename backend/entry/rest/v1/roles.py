@@ -8,7 +8,7 @@ from backend.app.rest.v1.handlers import roles
 from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
-from .dtos import UpdateRoleBody
+from .dtos import AssignPermissionBody, RevokePermissionBody, UpdateRoleBody
 
 
 class RolesController(Controller):
@@ -69,27 +69,28 @@ class RolesController(Controller):
     ) -> None:
         return await handler(roles.DeleteRoleCommand(id=UUID(id)))
 
-    @post("/{id:str}/permissions/{permission_id:str}")
+    @post("/{id:str}:assignPermission")
     @inject
     @result
     async def assign_permission(
         self,
         id: str,
-        permission_id: str,
+        data: AssignPermissionBody,
         handler: Depends[roles.AssignPermissionHandler],
     ) -> None:
         return await handler(
-            roles.AssignPermissionCommand(role_id=UUID(id), permission_id=UUID(permission_id))
+            roles.AssignPermissionCommand(role_id=UUID(id), permission_id=data.permission_id)
         )
 
-    @delete("/{id:str}/permissions/{permission_id:str}")
+    @post("/{id:str}:revokePermission")
     @inject
+    @result
     async def revoke_permission(
         self,
         id: str,
-        permission_id: str,
+        data: RevokePermissionBody,
         handler: Depends[roles.RevokePermissionHandler],
     ) -> None:
         return await handler(
-            roles.RevokePermissionCommand(role_id=UUID(id), permission_id=UUID(permission_id))
+            roles.RevokePermissionCommand(role_id=UUID(id), permission_id=data.permission_id)
         )

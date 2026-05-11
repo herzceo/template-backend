@@ -57,7 +57,37 @@ user = result.raise_()  # returns T if Ok, raises if Err
 
 ## Exception Mapping (entry/rest/main/exc/)
 
-Exception handlers in `entry/rest/main/exc/` map `ApplicationError` subclasses to HTTP responses with `ErrorDetail(code, message, details)`. The response wrapper returns `Err(error=ErrorDetail(...))`.
+Exception handlers in `entry/rest/main/exc/` map `ApplicationError` subclasses to HTTP responses following the `google.rpc.Status` shape:
+
+```python
+class ErrorDetail(StructDTO):
+    code: int        # HTTP status code as integer (e.g. 404)
+    message: str     # human-readable message
+    status: str      # gRPC status name (e.g. "NOT_FOUND", "INVALID_ARGUMENT")
+    details: list[dict[str, Any]]  # list of google.rpc typed error details
+```
+
+The response wrapper returns `Err(error=ErrorDetail(...))`. Domain error `code` strings (e.g., `"not_found"`) appear inside `details` as an `ErrorInfo` entry:
+
+```json
+{
+  "error": {
+    "code": 404,
+    "message": "User not found",
+    "status": "NOT_FOUND",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "NOT_FOUND",
+        "domain": "api",
+        "metadata": {}
+      }
+    ]
+  }
+}
+```
+
+The mapping from domain error codes to gRPC status names lives in `ERROR_CODE_TO_GRPC_STATUS` in `entry/rest/main/exc/handler.py`.
 
 ## Key Rules
 

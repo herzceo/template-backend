@@ -13,10 +13,10 @@ from .dtos import ConfirmAssetUploadBody, PresignAssetBody, UpdateAssetBody
 
 
 class AssetsController(Controller):
-    path = "/assets"
+    path = ""
     tags = ("Assets",)
 
-    @post("/presign")
+    @post("/assets:presign")
     @inject
     @result
     async def presign_asset(
@@ -32,7 +32,7 @@ class AssetsController(Controller):
             )
         )
 
-    @post("/")
+    @post("/assets/")
     @inject
     @result
     async def create_asset(
@@ -50,7 +50,7 @@ class AssetsController(Controller):
             )
         )
 
-    @get("/")
+    @get("/assets/")
     @inject
     @result
     async def list_assets(
@@ -61,7 +61,7 @@ class AssetsController(Controller):
     ) -> dtos.PaginatedResponse[dtos.Asset]:
         return await handler(assets.ListAssetsCommand(offset=offset, limit=limit))
 
-    @get("/{id:str}")
+    @get("/assets/{id:str}")
     @inject
     @result
     async def get_asset(
@@ -71,7 +71,7 @@ class AssetsController(Controller):
     ) -> dtos.Asset:
         return await handler(assets.GetAssetCommand(id=UUID(id)))
 
-    @patch("/{id:str}")
+    @patch("/assets/{id:str}")
     @inject
     @result
     async def update_asset(
@@ -82,7 +82,7 @@ class AssetsController(Controller):
     ) -> dtos.Asset:
         return await handler(assets.UpdateAssetCommand(id=UUID(id), **msgspec.structs.asdict(data)))
 
-    @delete("/{id:str}")
+    @delete("/assets/{id:str}")
     @inject
     async def delete_asset(
         self,

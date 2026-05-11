@@ -13,13 +13,13 @@ from backend.internal.di import Depends, inject
 
 
 class AuthController(Controller):
-    path = "/auth"
+    path = ""
     tags = ("Auth",)
 
-    @post("/login", exclude_from_auth=True, status_code=200)
+    @post("/auth:signIn", exclude_from_auth=True, status_code=200)
     @inject
     @result
-    async def login(
+    async def sign_in(
         self,
         data: auth.LoginCommand,
         handler: Depends[auth.LoginHandler],
@@ -29,17 +29,17 @@ class AuthController(Controller):
         set_session_token(request.scope, ctx.token)
         return ctx.data
 
-    @post("/signup", exclude_from_auth=True)
+    @post("/auth:signUp", exclude_from_auth=True)
     @inject
     @result
-    async def signup(
+    async def sign_up(
         self,
         data: auth.SignupCommand,
         handler: Depends[auth.SignupHandler],
     ) -> dtos.User:
         return await handler(data)
 
-    @post("/verify-email", exclude_from_auth=True, status_code=200)
+    @post("/auth:verifyEmail", exclude_from_auth=True, status_code=200)
     @inject
     @result
     async def verify_email(
@@ -52,7 +52,7 @@ class AuthController(Controller):
         set_session_token(request.scope, ctx.token)
         return ctx.data
 
-    @post("/resend-verification", exclude_from_auth=True)
+    @post("/auth:resendVerification", exclude_from_auth=True)
     @inject
     @result
     async def resend_verification(
@@ -62,7 +62,7 @@ class AuthController(Controller):
     ) -> None:
         await handler(data)
 
-    @get("/oauth/{provider:str}/initiate", exclude_from_auth=True)
+    @get("/auth/oauth:initiate", exclude_from_auth=True)
     @inject
     @result
     async def initiate_oauth(
@@ -72,7 +72,7 @@ class AuthController(Controller):
     ) -> InitiateResult:
         return await handler(auth.InitiateOAuthCommand(provider=provider))
 
-    @get("/oauth/{provider:str}/callback", exclude_from_auth=True)
+    @get("/auth/oauth:callback", exclude_from_auth=True)
     @inject
     @result
     async def oauth_callback(

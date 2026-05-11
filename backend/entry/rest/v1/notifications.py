@@ -8,14 +8,14 @@ from backend.app.rest.v1.handlers import notifications
 from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
-from .dtos import ReactionBody, UpdateNotificationBody
+from .dtos import DismissBody, MarkReadBody, ReactionBody, UpdateNotificationBody
 
 
 class NotificationsController(Controller):
-    path = "/notifications"
+    path = ""
     tags = ("Notifications",)
 
-    @get("/")
+    @get("/notifications/")
     @inject
     @result
     async def list_notifications(
@@ -26,7 +26,7 @@ class NotificationsController(Controller):
     ) -> dtos.PaginatedResponse[dtos.Notification]:
         return await handler(notifications.ListNotificationsCommand(offset=offset, limit=limit))
 
-    @get("/for-user/{user_id:str}")
+    @get("/notifications:listForUser")
     @inject
     @result
     async def list_for_user(
@@ -35,8 +35,7 @@ class NotificationsController(Controller):
         handler: Depends[notifications.ListUserNotificationsHandler],
         offset: int = 0,
         limit: int = 50,
-        *,
-        include_dismissed: bool = False,
+        include_dismissed: bool = False,  # noqa: FBT001, FBT002
     ) -> dtos.PaginatedResponse[dtos.UserNotification]:
         return await handler(
             notifications.ListUserNotificationsCommand(
@@ -47,7 +46,7 @@ class NotificationsController(Controller):
             )
         )
 
-    @post("/")
+    @post("/notifications/")
     @inject
     @result
     async def create_notification(
@@ -57,7 +56,7 @@ class NotificationsController(Controller):
     ) -> dtos.Notification:
         return await handler(data)
 
-    @get("/{id:str}")
+    @get("/notifications/{id:str}")
     @inject
     @result
     async def get_notification(
@@ -67,7 +66,7 @@ class NotificationsController(Controller):
     ) -> dtos.Notification:
         return await handler(notifications.GetNotificationCommand(id=UUID(id)))
 
-    @patch("/{id:str}")
+    @patch("/notifications/{id:str}")
     @inject
     @result
     async def update_notification(
@@ -80,7 +79,7 @@ class NotificationsController(Controller):
             notifications.UpdateNotificationCommand(id=UUID(id), **msgspec.structs.asdict(data))
         )
 
-    @delete("/{id:str}")
+    @delete("/notifications/{id:str}")
     @inject
     async def delete_notification(
         self,
@@ -89,33 +88,33 @@ class NotificationsController(Controller):
     ) -> None:
         return await handler(notifications.DeleteNotificationCommand(id=UUID(id)))
 
-    @post("/{id:str}/read")
+    @post("/notifications/{id:str}:markRead")
     @inject
     @result
     async def mark_read(
         self,
         id: str,
-        user_id: str,
+        data: MarkReadBody,
         handler: Depends[notifications.MarkReadHandler],
     ) -> None:
         return await handler(
-            notifications.MarkReadCommand(notification_id=UUID(id), user_id=UUID(user_id))
+            notifications.MarkReadCommand(notification_id=UUID(id), user_id=data.user_id)
         )
 
-    @post("/{id:str}/dismiss")
+    @post("/notifications/{id:str}:dismiss")
     @inject
     @result
     async def dismiss(
         self,
         id: str,
-        user_id: str,
+        data: DismissBody,
         handler: Depends[notifications.DismissHandler],
     ) -> None:
         return await handler(
-            notifications.DismissCommand(notification_id=UUID(id), user_id=UUID(user_id))
+            notifications.DismissCommand(notification_id=UUID(id), user_id=data.user_id)
         )
 
-    @post("/{id:str}/reaction")
+    @post("/notifications/{id:str}:react")
     @inject
     @result
     async def react(

@@ -102,6 +102,7 @@ ignore = [
   "S105",         # hardcoded-password-string (S105)
   # Typing
   "ANN401",       # any-type (ANN401)
+  "TCH",          # flake8-type-checking (TCH) -- SQLAlchemy resolves annotations at runtime
   # Incompatible
   "D203",         # incorrect-blank-line-before-class (D203)
   "D212",         # multi-line-summary-first-line (D212)

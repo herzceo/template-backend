@@ -55,3 +55,27 @@ class UpdateNotificationBody(StructDTO):
 class ReactionBody(StructDTO):
     user_id: UUID
     reaction: str | None
+
+
+class AssignRoleBody(StructDTO):
+    role_id: UUID
+
+
+class RevokeRoleBody(StructDTO):
+    role_id: UUID
+
+
+class AssignPermissionBody(StructDTO):
+    permission_id: UUID
+
+
+class RevokePermissionBody(StructDTO):
+    permission_id: UUID
+
+
+class MarkReadBody(StructDTO):
+    user_id: UUID
+
+
+class DismissBody(StructDTO):
+    user_id: UUID
