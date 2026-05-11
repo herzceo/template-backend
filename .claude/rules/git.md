@@ -52,21 +52,37 @@ Project abbreviation and ID are **optional** — omit them unless working from a
 
 For isolated Claude Code sessions, use `claude --worktree <name>` — it creates a git worktree with its own bootstrapped environment.
 
-### Worktree branch name gotcha
+### Worktree branch naming
 
-Claude Code sanitizes the worktree path: slashes become dashes, so `fix/DEV-1-emails` lives at `.claude/worktrees/fix-DEV-1-emails`. The **git branch name is preserved correctly** inside the worktree, but the directory name does not reflect it faithfully.
+Claude Code creates worktree branches with an internal naming scheme: `worktree-` prefix and `+` replacing `/`. For example, starting a worktree named `feature/MN-20-fingerprint` produces the local branch `worktree-feature+MN-20-fingerprint`.
 
-Before pushing to remote from a worktree session, always verify the actual branch name:
+This internal name is an implementation detail — **never push it to origin as-is**. When pushing from a worktree session, translate back to the proper branch name:
 
 ```bash
-git branch --show-current   # use this — never infer from the directory path
-git push -u origin $(git branch --show-current)
+LOCAL=$(git branch --show-current)
+REMOTE=$(echo "$LOCAL" | sed 's/^worktree-//; s/+/\//g')
+git push -u origin "$LOCAL:$REMOTE"
+# worktree-feature+MN-20-fingerprint → feature/MN-20-fingerprint on origin
 ```
+
+The worktree cannot check out `main` (it is already checked out in the parent repo). To merge into `main` after the feature branch is on origin, use the parent repo:
+
+```bash
+# parent repo is always the project root — two levels above the worktree dir
+git -C /path/to/parent/repo fetch origin
+git -C /path/to/parent/repo merge origin/"$REMOTE" --no-ff
+git -C /path/to/parent/repo push origin main
+```
+
+**All commits — including docs/knowledge updates made during the session — must be committed on the feature branch before merging. Never commit directly to `main` in the parent repo mid-session.**
 
 ## What NOT to do
 
 - No `git add .` — stage specific files to avoid accidentally committing secrets or build artifacts
 - No `--no-verify` — if a hook fails, fix the root cause
-- No force-push to `main`
+- No force-push to `main` — ever, under any circumstances
+- No cherry-picks — if history diverges, it means commits were made in the wrong place; fix the workflow, not the history
 - No amending published commits
 - No `Co-Authored-By` trailers — commit messages end after the body
+- No pushing the raw worktree branch name (`worktree-feature+...`) to origin — translate it to the proper name first
+- No committing directly to `main` in the parent repo during a worktree session — all work goes on the feature branch

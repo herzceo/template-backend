@@ -140,8 +140,29 @@ SQLAlchemy `DeclarativeBase` with mixins: `WithUUIDID`, `WithActive`, `WithTime`
 - `just test-unit` -- unit tests (no Docker needed)
 - `just test-all` -- all test sessions
 
+## Git — worktree workflow
+All commits made during a worktree session (code, fixes, docs, knowledge updates) go on the **feature branch**. Never commit directly to `main` in the parent repo mid-session.
+
+End-of-session flow:
+```bash
+# 1. Push feature branch with translated name
+LOCAL=$(git branch --show-current)
+REMOTE=$(echo "$LOCAL" | sed 's/^worktree-//; s/+/\//g')
+git push -u origin "$LOCAL:$REMOTE"
+
+# 2. Merge into main via parent repo (fetch first so origin/REMOTE is known)
+git -C /path/to/parent fetch origin
+git -C /path/to/parent merge origin/"$REMOTE" --no-ff
+git -C /path/to/parent push origin main
+```
+
+Hard rules — no exceptions:
+- Never force-push `main`
+- Never cherry-pick commits between branches
+- Never push the raw `worktree-*` branch name to origin
+
 ## Rules (`.claude/rules/`) -- loaded contextually by file path
-architecture, entities, handlers, repositories, dtos, controllers, ports-adapters, dependency-injection, error-handling, typing, database, events, external-services, code-style, testing
+architecture, entities, handlers, repositories, dtos, controllers, ports-adapters, dependency-injection, error-handling, typing, database, events, external-services, code-style, testing, git
 
 ## Skills (`.claude/skills/`)
 
