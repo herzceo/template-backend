@@ -5,6 +5,7 @@ from uuid import UUID
 from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
+from backend.app.rest.v1.services.types import ClientDeviceInfo, ServerDeviceInfo
 from backend.domain.entities.session import Session
 from backend.domain.repos.database import Database
 
@@ -15,8 +16,9 @@ class CreateSessionCommand(Command):
     expires_at: datetime
     ip: str | None = None
     user_agent: str | None = None
-    fingerprint: str | None = None
     country_code: str | None = None
+    client_device: ClientDeviceInfo | None = None
+    server_device: ServerDeviceInfo | None = None
 
 
 @dataclass
@@ -32,9 +34,10 @@ class CreateSessionHandler(
                 token_hash=cmd.token_hash,
                 ip=cmd.ip,
                 user_agent=cmd.user_agent,
-                fingerprint=cmd.fingerprint,
                 country_code=cmd.country_code,
                 expires_at=cmd.expires_at,
+                **(cmd.client_device or {}),
+                **(cmd.server_device or {}),
             )
             created = (await self.db.gateway.session_.create(entity)).some(AlreadyExistsError())
             await self.db.commit()

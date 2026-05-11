@@ -1,8 +1,21 @@
 from typing import Any
 from uuid import UUID
 
+from backend.app.rest.v1.services.types import ClientDeviceInfo
 from backend.domain.enums import AssetContentType
 from backend.internal.dto import StructDTO
+
+
+class SignInBody(StructDTO):
+    username: str
+    password: str
+    client_device: ClientDeviceInfo | None = None
+
+
+class VerifyEmailBody(StructDTO):
+    email: str
+    code: str
+    client_device: ClientDeviceInfo | None = None
 
 
 class UpdateUserBody(StructDTO):

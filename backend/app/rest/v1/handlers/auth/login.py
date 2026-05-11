@@ -6,6 +6,7 @@ from backend.app.rest.v1.dtos.auth import AuthContext
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.services.session import SessionService
+from backend.app.rest.v1.services.types import ClientDeviceInfo
 from backend.domain.enums import IdentityProvider
 from backend.domain.repos.database import Database
 
@@ -13,6 +14,9 @@ from backend.domain.repos.database import Database
 class LoginCommand(Command):
     username: str
     password: str
+    ip: str | None = None
+    user_agent: str | None = None
+    client_device: ClientDeviceInfo | None = None
 
 
 @dataclass
@@ -38,5 +42,10 @@ class LoginHandler(Handler[LoginCommand, AuthContext[dtos.User], None], type_=Ha
                 raise ValidationFailedError(message="Email not verified")
             user_id = user.id
             await self.db.commit()
-        raw_token, _ = await self.session_service.create_session(user_id)
+        raw_token, _ = await self.session_service.create_session(
+            user_id,
+            ip=cmd.ip,
+            user_agent=cmd.user_agent,
+            client_device=cmd.client_device,
+        )
         return AuthContext(token=raw_token, data=dtos.User.from_object(user))

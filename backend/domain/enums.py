@@ -31,6 +31,21 @@ class IdentityProvider(StrEnum):
     DISCORD = "discord"
 
 
+class IpType(StrEnum):
+    RESIDENTIAL = "residential"
+    DATACENTER = "datacenter"
+    VPN = "vpn"
+    TOR = "tor"
+    MOBILE = "mobile"
+
+
+class DeviceType(StrEnum):
+    DESKTOP = "desktop"
+    MOBILE = "mobile"
+    TABLET = "tablet"
+    API = "api"
+
+
 class AssetContentType(StrEnum):
     JPEG = "image/jpeg"
     PNG = "image/png"

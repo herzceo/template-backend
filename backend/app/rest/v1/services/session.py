@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 from uuid_utils.compat import UUID
 
+from backend.app.rest.v1.services.types import ClientDeviceInfo, ServerDeviceInfo
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.domain.entities.session import Session
 from backend.domain.repos.database import Database
@@ -26,8 +27,8 @@ class SessionService:
         *,
         ip: str | None = None,
         user_agent: str | None = None,
-        fingerprint: str | None = None,
-        country_code: str | None = None,
+        client_device: ClientDeviceInfo | None = None,
+        server_device: ServerDeviceInfo | None = None,
     ) -> tuple[str, Session]:
         raw_token = self.token_generator.generate()
         token_hash = self.token_generator.hash(raw_token)
@@ -38,9 +39,9 @@ class SessionService:
             token_hash=token_hash,
             ip=ip,
             user_agent=user_agent,
-            fingerprint=fingerprint,
-            country_code=country_code,
             expires_at=now + timedelta(days=self.session_config.SESSION_TTL_DAYS),
+            **(client_device or {}),
+            **(server_device or {}),
         )
 
         async with self.db:
@@ -67,5 +68,7 @@ class SessionService:
                 await self.db.gateway.session_.delete_by_id(session.id)
                 await self.db.commit()
                 return Option(None)
+            session.last_active_at = datetime.now(UTC)
+            await self.db.gateway.session_.update(session)
             await self.db.commit()
         return Option(session)

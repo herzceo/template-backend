@@ -6,6 +6,7 @@ from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.dtos.auth import AuthContext
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.session import SessionService
+from backend.app.rest.v1.services.types import ClientDeviceInfo
 from backend.app.rest.v1.validation import normalize_email
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.domain.repos.database import Database
@@ -14,6 +15,9 @@ from backend.domain.repos.database import Database
 class VerifyEmailCommand(Command):
     email: str
     code: str
+    ip: str | None = None
+    user_agent: str | None = None
+    client_device: ClientDeviceInfo | None = None
 
 
 @dataclass
@@ -55,5 +59,10 @@ class VerifyEmailHandler(
             (await self.db.gateway.user.update(user)).some(RuntimeError("Failed to verify user"))
             await self.db.commit()
 
-        raw_token, _ = await self.session_service.create_session(user_id)
+        raw_token, _ = await self.session_service.create_session(
+            user_id,
+            ip=cmd.ip,
+            user_agent=cmd.user_agent,
+            client_device=cmd.client_device,
+        )
         return AuthContext(token=raw_token, data=dtos.User.from_object(user))

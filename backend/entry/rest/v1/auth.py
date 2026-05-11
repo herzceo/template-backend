@@ -9,6 +9,7 @@ from backend.app.rest.v1.handlers import auth
 from backend.domain.enums import IdentityProvider
 from backend.entry.rest.common.response import result
 from backend.entry.rest.common.scope import set_session_token
+from backend.entry.rest.v1.dtos import SignInBody, VerifyEmailBody
 from backend.internal.di import Depends, inject
 
 
@@ -21,11 +22,21 @@ class AuthController(Controller):
     @result
     async def sign_in(
         self,
-        data: auth.LoginCommand,
+        data: SignInBody,
         handler: Depends[auth.LoginHandler],
         request: Request[Any, Any, Any],
     ) -> dtos.User:
-        ctx = await handler(data)
+        ip = request.client.host if request.client else None
+        user_agent = request.headers.get("user-agent")
+        ctx = await handler(
+            auth.LoginCommand(
+                username=data.username,
+                password=data.password,
+                ip=ip,
+                user_agent=user_agent,
+                client_device=data.client_device,
+            )
+        )
         set_session_token(request.scope, ctx.token)
         return ctx.data
 
@@ -44,11 +55,21 @@ class AuthController(Controller):
     @result
     async def verify_email(
         self,
-        data: auth.VerifyEmailCommand,
+        data: VerifyEmailBody,
         handler: Depends[auth.VerifyEmailHandler],
         request: Request[Any, Any, Any],
     ) -> dtos.User:
-        ctx = await handler(data)
+        ip = request.client.host if request.client else None
+        user_agent = request.headers.get("user-agent")
+        ctx = await handler(
+            auth.VerifyEmailCommand(
+                email=data.email,
+                code=data.code,
+                ip=ip,
+                user_agent=user_agent,
+                client_device=data.client_device,
+            )
+        )
         set_session_token(request.scope, ctx.token)
         return ctx.data
 
