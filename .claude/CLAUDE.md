@@ -141,19 +141,13 @@ SQLAlchemy `DeclarativeBase` with mixins: `WithUUIDID`, `WithActive`, `WithTime`
 - `just test-all` -- all test sessions
 
 ## Git — worktree workflow
-All commits made during a worktree session (code, fixes, docs, knowledge updates) go on the **feature branch**. Never commit directly to `main` in the parent repo mid-session.
+All commits made during a worktree session (code, fixes, docs, knowledge updates) go on the **feature branch**. All git operations stay inside the worktree — never use `git -C` to operate on the parent repo.
 
-End-of-session flow:
+End-of-session: push the feature branch with the translated name, then ask the user to merge it into `main`:
 ```bash
-# 1. Push feature branch with translated name
 LOCAL=$(git branch --show-current)
 REMOTE=$(echo "$LOCAL" | sed 's/^worktree-//; s/+/\//g')
 git push -u origin "$LOCAL:$REMOTE"
-
-# 2. Merge into main via parent repo (fetch first so origin/REMOTE is known)
-git -C /path/to/parent fetch origin
-git -C /path/to/parent merge origin/"$REMOTE" --no-ff
-git -C /path/to/parent push origin main
 ```
 
 Hard rules — no exceptions:
