@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Protocol, Required, Self, TypedDict, Unpack
 
 import msgspec
+from msgspec import field
 
 from backend.infra.external.errors import DecodeError
 from backend.infra.external.http.errors import HTTPError, http_response_to_error
@@ -16,8 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 
-@dataclass(slots=True)
-class Request:
+class Request(StructDTO):
     method: str
     url: str
     headers: dict[str, str] = field(default_factory=dict)
