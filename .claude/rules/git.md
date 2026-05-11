@@ -69,15 +69,20 @@ The worktree cannot check out `main` (it is already checked out in the parent re
 
 ```bash
 # parent repo is always the project root — two levels above the worktree dir
-git -C /path/to/parent/repo merge "$REMOTE" --ff-only
+git -C /path/to/parent/repo fetch origin
+git -C /path/to/parent/repo merge origin/"$REMOTE" --no-ff
 git -C /path/to/parent/repo push origin main
 ```
+
+**All commits — including docs/knowledge updates made during the session — must be committed on the feature branch before merging. Never commit directly to `main` in the parent repo mid-session.**
 
 ## What NOT to do
 
 - No `git add .` — stage specific files to avoid accidentally committing secrets or build artifacts
 - No `--no-verify` — if a hook fails, fix the root cause
-- No force-push to `main`
+- No force-push to `main` — ever, under any circumstances
+- No cherry-picks — if history diverges, it means commits were made in the wrong place; fix the workflow, not the history
 - No amending published commits
 - No `Co-Authored-By` trailers — commit messages end after the body
 - No pushing the raw worktree branch name (`worktree-feature+...`) to origin — translate it to the proper name first
+- No committing directly to `main` in the parent repo during a worktree session — all work goes on the feature branch
