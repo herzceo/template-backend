@@ -12,13 +12,13 @@ from .dtos import AssignPermissionBody, RevokePermissionBody, UpdateRoleBody
 
 
 class RolesController(Controller):
-    path = "/roles"
+    path = ""
     tags = (
         "Roles",
         "RBAC",
     )
 
-    @get("/")
+    @get("/roles/")
     @inject
     @result
     async def list_roles(
@@ -29,7 +29,7 @@ class RolesController(Controller):
     ) -> dtos.PaginatedResponse[dtos.Role]:
         return await handler(roles.ListRolesCommand(offset=offset, limit=limit))
 
-    @post("/")
+    @post("/roles/")
     @inject
     @result
     async def create_role(
@@ -39,58 +39,56 @@ class RolesController(Controller):
     ) -> dtos.Role:
         return await handler(data)
 
-    @get("/{id:str}")
+    @get("/roles/{id:uuid}")
     @inject
     @result
     async def get_role(
         self,
-        id: str,
+        id: UUID,
         handler: Depends[roles.GetRoleHandler],
     ) -> dtos.Role:
-        return await handler(roles.GetRoleCommand(id=UUID(id)))
+        return await handler(roles.GetRoleCommand(id=id))
 
-    @patch("/{id:str}")
+    @patch("/roles/{id:uuid}")
     @inject
     @result
     async def update_role(
         self,
-        id: str,
+        id: UUID,
         data: UpdateRoleBody,
         handler: Depends[roles.UpdateRoleHandler],
     ) -> dtos.Role:
-        return await handler(roles.UpdateRoleCommand(id=UUID(id), **msgspec.structs.asdict(data)))
+        return await handler(roles.UpdateRoleCommand(id=id, **msgspec.structs.asdict(data)))
 
-    @delete("/{id:str}")
+    @delete("/roles/{id:uuid}")
     @inject
     async def delete_role(
         self,
-        id: str,
+        id: UUID,
         handler: Depends[roles.DeleteRoleHandler],
     ) -> None:
-        return await handler(roles.DeleteRoleCommand(id=UUID(id)))
+        return await handler(roles.DeleteRoleCommand(id=id))
 
-    @post("/{id:str}:assignPermission")
+    @post("/roles:assignPermission")
     @inject
     @result
     async def assign_permission(
         self,
-        id: str,
         data: AssignPermissionBody,
         handler: Depends[roles.AssignPermissionHandler],
     ) -> None:
         return await handler(
-            roles.AssignPermissionCommand(role_id=UUID(id), permission_id=data.permission_id)
+            roles.AssignPermissionCommand(role_id=data.role_id, permission_id=data.permission_id)
         )
 
-    @post("/{id:str}:revokePermission")
+    @post("/roles:revokePermission")
     @inject
     @result
     async def revoke_permission(
         self,
-        id: str,
         data: RevokePermissionBody,
         handler: Depends[roles.RevokePermissionHandler],
     ) -> None:
         return await handler(
-            roles.RevokePermissionCommand(role_id=UUID(id), permission_id=data.permission_id)
+            roles.RevokePermissionCommand(role_id=data.role_id, permission_id=data.permission_id)
         )

@@ -97,8 +97,14 @@ async def test_assign_and_revoke_permission(
     role = await create_role(container, tenant.id)
     permission = await create_permission(container)
 
-    r = await client.post(f"/v1/roles/{role.id}/permissions/{permission.id}")
+    r = await client.post(
+        "/v1/roles:assignPermission",
+        json={"role_id": str(role.id), "permission_id": str(permission.id)},
+    )
     assert r.status_code == HTTPStatus.CREATED
 
-    r = await client.delete(f"/v1/roles/{role.id}/permissions/{permission.id}")
-    assert r.status_code == HTTPStatus.NO_CONTENT
+    r = await client.post(
+        "/v1/roles:revokePermission",
+        json={"role_id": str(role.id), "permission_id": str(permission.id)},
+    )
+    assert r.status_code == HTTPStatus.CREATED

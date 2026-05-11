@@ -66,10 +66,12 @@ class RevokeRoleBody(StructDTO):
 
 
 class AssignPermissionBody(StructDTO):
+    role_id: UUID
     permission_id: UUID
 
 
 class RevokePermissionBody(StructDTO):
+    role_id: UUID
     permission_id: UUID
 
 

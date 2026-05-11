@@ -20,7 +20,7 @@ async def test_login_with_email_succeeds(
     email = unique_email()
     await create_user(container, tenant.id, email=email, verified=True)
 
-    r = await client.post("/v1/auth/login", json={"username": email, "password": "Test123!"})
+    r = await client.post("/v1/auth:signIn", json={"username": email, "password": "Test123!"})
 
     assert r.status_code == HTTPStatus.OK
     data = r.json()
@@ -35,7 +35,7 @@ async def test_login_with_username_succeeds(
     username = unique_username()
     await create_user(container, tenant.id, username=username, verified=True)
 
-    r = await client.post("/v1/auth/login", json={"username": username, "password": "Test123!"})
+    r = await client.post("/v1/auth:signIn", json={"username": username, "password": "Test123!"})
 
     assert r.status_code == HTTPStatus.OK
     data = r.json()
@@ -50,7 +50,7 @@ async def test_login_wrong_password_returns_401(
     email = unique_email()
     await create_user(container, tenant.id, email=email, verified=True)
 
-    r = await client.post("/v1/auth/login", json={"username": email, "password": "WrongPass1!"})
+    r = await client.post("/v1/auth:signIn", json={"username": email, "password": "WrongPass1!"})
 
     assert r.status_code == HTTPStatus.UNAUTHORIZED
 
@@ -63,7 +63,7 @@ async def test_login_unverified_user_returns_422(
     email = unique_email()
     await create_user(container, tenant.id, email=email, verified=False)
 
-    r = await client.post("/v1/auth/login", json={"username": email, "password": "Test123!"})
+    r = await client.post("/v1/auth:signIn", json={"username": email, "password": "Test123!"})
 
     assert r.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
@@ -72,7 +72,7 @@ async def test_login_unknown_user_returns_401(
     client: AsyncTestClient[Any],
 ) -> None:
     r = await client.post(
-        "/v1/auth/login",
+        "/v1/auth:signIn",
         json={"username": "nobody@example.com", "password": "Test123!"},
     )
 
@@ -87,7 +87,7 @@ async def test_login_sets_session_cookie(
     email = unique_email()
     await create_user(container, tenant.id, email=email, verified=True)
 
-    r = await client.post("/v1/auth/login", json={"username": email, "password": "Test123!"})
+    r = await client.post("/v1/auth:signIn", json={"username": email, "password": "Test123!"})
 
     assert r.status_code == HTTPStatus.OK
     assert "session" in r.cookies

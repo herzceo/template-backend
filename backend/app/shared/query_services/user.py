@@ -11,9 +11,6 @@ class UserWithRoles(StructDTO):
     id: UUID
     username: str
     email: str | None
-    first_name: str
-    last_name: str
-    avatar_url: str | None
     active: bool
     tenant_id: UUID
     created_at: datetime

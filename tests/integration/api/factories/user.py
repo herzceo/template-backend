@@ -93,7 +93,7 @@ async def login_user(
     email: str,
     password: str = "Test123!",
 ) -> None:
-    r = await client.post("/v1/auth/login", json={"username": email, "password": password})
+    r = await client.post("/v1/auth:signIn", json={"username": email, "password": password})
     assert r.status_code == 200, f"login failed ({r.status_code}): {r.text}"
 
 
