@@ -65,7 +65,18 @@ git push -u origin "$LOCAL:$REMOTE"
 # worktree-feature+MN-20-fingerprint → feature/MN-20-fingerprint on origin
 ```
 
-When the feature branch is ready, push it and ask the user to merge it into `main`. Do not attempt to merge into `main` yourself from within the worktree — all git operations stay inside the worktree.
+When the feature branch is ready, push it and ask the user to merge it into `main`. All git operations stay inside the worktree.
+
+**Exception — merging into main on explicit user request:** if the user explicitly asks to merge into `main` AND `git -C /path/to/parent status` confirms the parent repo is clean (no uncommitted changes, no commits ahead of `origin/main`), it is acceptable to run the merge from the parent repo:
+
+```bash
+REMOTE=$(echo "$(git branch --show-current)" | sed 's/^worktree-//; s/+/\//g')
+git -C /path/to/parent fetch origin
+git -C /path/to/parent merge origin/"$REMOTE" --no-ff
+git -C /path/to/parent push origin main
+```
+
+If the parent repo has any uncommitted changes or is ahead of `origin/main`, stop and tell the user — do not merge.
 
 **All commits — including docs/knowledge updates made during the session — go on the feature branch.**
 
