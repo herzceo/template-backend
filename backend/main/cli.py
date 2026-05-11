@@ -7,8 +7,8 @@ from alembic.config import Config as AlembicConfig
 from backend.app.rest.v1.services.session import SessionConfig
 from backend.entry.queue import run_queue
 from backend.entry.rest.main import APIConfig, run_api
-from backend.infra.database.alembic import ALEMBIC_CONFIG
 from backend.infra.database.config import DatabaseConfig
+from backend.infra.database.psql.alembic import ALEMBIC_CONFIG
 from backend.infra.database.redis import RedisConfig
 from backend.infra.database.redis.adapters.config import VerificationConfig
 from backend.infra.dbus.psql.config import QueueExecutorConfig

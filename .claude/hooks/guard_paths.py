@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 FORBIDDEN = [
-    r"^backend/infra/database/alembic/migrations/versions/.+\.py$",
+    r"^backend/infra/database/psql/alembic/migrations/versions/.+\.py$",
     r"^uv\.lock$",
     r"^\.env(\..*)?$",
     r"^\.claude/hooks/.+\.py$",

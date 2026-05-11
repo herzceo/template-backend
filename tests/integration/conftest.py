@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 _PROJECT_ROOT = Path(__file__).parent.parent.parent
-_ALEMBIC_INI = _PROJECT_ROOT / "backend" / "infra" / "database" / "alembic" / "alembic.ini"
+_ALEMBIC_INI = _PROJECT_ROOT / "backend" / "infra" / "database" / "psql" / "alembic" / "alembic.ini"
 
 
 @pytest.fixture(scope="session")
