@@ -9,14 +9,14 @@ from backend.app.shared.query_services.user import UserWithRoles
 from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 
-from .dtos import UpdateUserBody
+from .dtos import AssignRoleBody, RevokeRoleBody, UpdateUserBody
 
 
 class UsersController(Controller):
-    path = "/users"
+    path = ""
     tags = ("Users",)
 
-    @get("/")
+    @get("/users/")
     @inject
     @result
     async def list_users(
@@ -27,7 +27,7 @@ class UsersController(Controller):
     ) -> dtos.PaginatedResponse[dtos.User]:
         return await handler(users.ListUsersCommand(offset=offset, limit=limit))
 
-    @get("/with-roles")
+    @get("/users:listWithRoles", tags=["RBAC"])
     @inject
     @result
     async def list_users_with_roles(
@@ -47,7 +47,7 @@ class UsersController(Controller):
             )
         )
 
-    @post("/")
+    @post("/users/")
     @inject
     @result
     async def create_user(
@@ -57,7 +57,7 @@ class UsersController(Controller):
     ) -> dtos.User:
         return await handler(data)
 
-    @get("/{id:str}")
+    @get("/users/{id:str}")
     @inject
     @result
     async def get_user(
@@ -67,7 +67,7 @@ class UsersController(Controller):
     ) -> dtos.User:
         return await handler(users.GetUserCommand(id=UUID(id)))
 
-    @patch("/{id:str}")
+    @patch("/users/{id:str}")
     @inject
     @result
     async def update_user(
@@ -78,7 +78,7 @@ class UsersController(Controller):
     ) -> dtos.User:
         return await handler(users.UpdateUserCommand(id=UUID(id), **msgspec.structs.asdict(data)))
 
-    @delete("/{id:str}")
+    @delete("/users/{id:str}")
     @inject
     async def delete_user(
         self,
@@ -87,23 +87,24 @@ class UsersController(Controller):
     ) -> None:
         return await handler(users.DeleteUserCommand(id=UUID(id)))
 
-    @post("/{id:str}/roles/{role_id:str}", tags=["RBAC"])
+    @post("/users/{id:str}:assignRole", tags=["RBAC"])
     @inject
     @result
     async def assign_role(
         self,
         id: str,
-        role_id: str,
+        data: AssignRoleBody,
         handler: Depends[users.AssignRoleHandler],
     ) -> None:
-        return await handler(users.AssignRoleCommand(user_id=UUID(id), role_id=UUID(role_id)))
+        return await handler(users.AssignRoleCommand(user_id=UUID(id), role_id=data.role_id))
 
-    @delete("/{id:str}/roles/{role_id:str}", tags=["RBAC"])
+    @post("/users/{id:str}:revokeRole", tags=["RBAC"])
     @inject
+    @result
     async def revoke_role(
         self,
         id: str,
-        role_id: str,
+        data: RevokeRoleBody,
         handler: Depends[users.RevokeRoleHandler],
     ) -> None:
-        return await handler(users.RevokeRoleCommand(user_id=UUID(id), role_id=UUID(role_id)))
+        return await handler(users.RevokeRoleCommand(user_id=UUID(id), role_id=data.role_id))

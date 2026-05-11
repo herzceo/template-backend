@@ -13,16 +13,28 @@ from backend.internal.result import Err
 
 _log = logging.getLogger(__name__)
 
-HTTP_CODE_TO_ERROR_CODE: dict[int, str] = {
-    400: "bad_request",
-    401: "unauthorized",
-    403: "forbidden",
-    404: "not_found",
-    405: "method_not_allowed",
-    409: "conflict",
-    422: "validation_error",
-    429: "too_many_requests",
-    500: "internal_error",
+HTTP_CODE_TO_GRPC_STATUS: dict[int, str] = {
+    400: "INVALID_ARGUMENT",
+    401: "UNAUTHENTICATED",
+    403: "PERMISSION_DENIED",
+    404: "NOT_FOUND",
+    405: "UNIMPLEMENTED",
+    409: "ALREADY_EXISTS",
+    422: "INVALID_ARGUMENT",
+    429: "RESOURCE_EXHAUSTED",
+    500: "INTERNAL",
+}
+
+ERROR_CODE_TO_GRPC_STATUS: dict[str, str] = {
+    "not_found": "NOT_FOUND",
+    "invalid_input": "INVALID_ARGUMENT",
+    "validation_failed": "INVALID_ARGUMENT",
+    "already_exists": "ALREADY_EXISTS",
+    "conflict": "ABORTED",
+    "permission_denied": "PERMISSION_DENIED",
+    "authentication_required": "UNAUTHENTICATED",
+    "internal_error": "INTERNAL",
+    "application_error": "INTERNAL",
 }
 
 
@@ -46,10 +58,27 @@ def error_handler(
     status_code: int,
 ) -> Response[Any]:
     if isinstance(exc, errors.DetailedError):
-        detail = ErrorDetail(code=exc.code, message=exc.message, details=exc.details)
+        grpc_status = ERROR_CODE_TO_GRPC_STATUS.get(exc.code, "INTERNAL")
+        details: list[dict[str, Any]] = [
+            {
+                "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+                "reason": exc.code.upper(),
+                "domain": "api",
+                "metadata": exc.details,
+            }
+        ]
+        detail = ErrorDetail(
+            code=status_code,
+            message=exc.message,
+            status=grpc_status,
+            details=details,
+        )
     else:
-        detail = ErrorDetail(code="application_error", message=str(exc))
-
+        detail = ErrorDetail(
+            code=status_code,
+            message=str(exc),
+            status="INTERNAL",
+        )
     return _err_response(detail, status_code)
 
 
@@ -57,9 +86,16 @@ def http_exc_handler(
     _: Request[Any, Any, Any],
     exc: HTTPException,
 ) -> Response[Any]:
-    code = HTTP_CODE_TO_ERROR_CODE.get(exc.status_code, f"http_{exc.status_code}")
+    grpc_status = HTTP_CODE_TO_GRPC_STATUS.get(exc.status_code, "INTERNAL")
     extra = exc.extra if isinstance(exc.extra, dict) else {}
-    detail = ErrorDetail(code=code, message=exc.detail, details=extra)
+    detail = ErrorDetail(
+        code=exc.status_code,
+        message=exc.detail,
+        status=grpc_status,
+        details=[{"@type": "type.googleapis.com/google.rpc.ErrorInfo", "metadata": extra}]
+        if extra
+        else [],
+    )
     return _err_response(detail, exc.status_code)
 
 
@@ -72,5 +108,5 @@ def fallback_exc_handler(
         _exc,
         "".join(traceback.format_exception(type(_exc), _exc, _exc.__traceback__)),
     )
-    detail = ErrorDetail(code="internal_error", message="Internal server error")
+    detail = ErrorDetail(code=500, message="Internal server error", status="INTERNAL")
     return _err_response(detail, 500)

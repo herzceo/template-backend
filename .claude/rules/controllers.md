@@ -38,6 +38,65 @@ class AuthController(Controller):
         return ctx.data
 ```
 
+## Custom Methods (Google-style)
+
+Non-CRUD operations use `:camelCaseVerb` suffix following the Google API Design Guide:
+
+- **Mutations** use `@post`: `@post("/{id:str}:assignRole")`, `@post("/{id:str}:markRead")`
+- **Custom reads** use `@get`: `@get(":listForUser")`
+- **Request params** that were previously URL path segments move to a request body DTO: `data: AssignRoleBody`
+- Body DTOs for custom methods live in `entry/rest/v1/dtos.py`
+
+**Litestar path joining with colons**: if a controller's `path` is non-empty (e.g., `path = "/roles"`), route-level paths like `/{id:str}:assignPermission` join correctly as `/roles/{id:str}:assignPermission`. For collection-level custom methods (e.g., `/auth:signIn`), set `path = ""` and use explicit full paths like `@post("/auth:signIn")` — a non-empty `path = "/auth"` would produce `/auth/:signIn` (wrong).
+
+Custom methods converted from `@delete` to `@post` MUST use `@result` (returns HTTP 200 with body, not 204).
+
+```python
+# Collection-level custom method — path = "" required
+class AuthController(Controller):
+    path = ""
+    tags = ("Auth",)
+
+    @post("/auth:signIn", exclude_from_auth=True)
+    @inject
+    @result
+    async def sign_in(self, data: auth.SignInCommand, handler: Depends[auth.SignInHandler]) -> dtos.Session:
+        return await handler(data)
+
+# Resource-level custom method — controller path = "/roles" works fine
+class RolesController(Controller):
+    path = "/roles"
+    tags = ("Roles",)
+
+    @post("/{id:str}:assignPermission")
+    @inject
+    @result
+    async def assign_permission(
+        self,
+        id: str,
+        data: AssignPermissionBody,
+        handler: Depends[roles.AssignPermissionHandler],
+    ) -> None:
+        return await handler(roles.AssignPermissionCommand(role_id=UUID(id), permission_id=data.permission_id))
+```
+
+## Pagination Parameters
+
+List endpoints use offset-based pagination:
+
+```python
+@get("/users/")
+@inject
+@result
+async def list_users(
+    self,
+    handler: Depends[users.ListUsersHandler],
+    offset: int = 0,
+    limit: int = 50,
+) -> dtos.PaginatedResponse[dtos.User]:
+    return await handler(users.ListUsersCommand(offset=offset, limit=limit))
+```
+
 ## Decorator Order (critical)
 
 The decorator stack MUST be in this exact order (outermost to innermost):
@@ -97,3 +156,4 @@ def create_v1_router() -> Router:
 - One controller per domain (auth, users, roles, etc.)
 - Controllers contain NO business logic -- only routing and type conversion
 - Command DTOs can be used directly as request body: `data: auth.LoginCommand`
+- For controllers with collection-level custom methods, set `path = ""` and use full explicit paths

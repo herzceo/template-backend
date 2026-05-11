@@ -9,9 +9,10 @@ from backend.internal.result import Ok, Result
 
 
 class ErrorDetail(StructDTO):
-    code: str
+    code: int
     message: str
-    details: dict[str, Any] = field(default_factory=dict)
+    status: str
+    details: list[dict[str, Any]] = field(default_factory=list)
 
 
 type ResultResponse[T] = Result[T, ErrorDetail]
