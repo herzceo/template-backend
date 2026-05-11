@@ -65,16 +65,9 @@ git push -u origin "$LOCAL:$REMOTE"
 # worktree-feature+MN-20-fingerprint → feature/MN-20-fingerprint on origin
 ```
 
-The worktree cannot check out `main` (it is already checked out in the parent repo). To merge into `main` after the feature branch is on origin, use the parent repo:
+When the feature branch is ready, push it and ask the user to merge it into `main`. Do not attempt to merge into `main` yourself from within the worktree — all git operations stay inside the worktree.
 
-```bash
-# parent repo is always the project root — two levels above the worktree dir
-git -C /path/to/parent/repo fetch origin
-git -C /path/to/parent/repo merge origin/"$REMOTE" --no-ff
-git -C /path/to/parent/repo push origin main
-```
-
-**All commits — including docs/knowledge updates made during the session — must be committed on the feature branch before merging. Never commit directly to `main` in the parent repo mid-session.**
+**All commits — including docs/knowledge updates made during the session — go on the feature branch.**
 
 ## What NOT to do
 
