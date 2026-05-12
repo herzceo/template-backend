@@ -11,7 +11,6 @@ from backend.entry.queue.main import build_handlers
 from backend.infra.database.psql.engine import create_async_session_maker
 from backend.infra.database.psql.repos import ImplDatabase
 from backend.infra.dbus.psql.config import QueueExecutorConfig
-from backend.infra.dbus.psql.dbus import ImplDBus
 from backend.infra.dbus.psql.executor import QueueExecutor
 from tests.integration.events.ioc.providers import create_test_queue_container
 
@@ -48,6 +47,7 @@ async def executor(
     )
     exec_ = QueueExecutor(db=db, config=config, engine=engine, handlers=handlers)
     yield exec_
+    await db.close()
     await engine.dispose()
 
 
@@ -58,11 +58,12 @@ async def publish(postgres_url: str) -> AsyncIterator[Callable[[BaseEvent], Awai
 
     async def _publish(event: BaseEvent) -> None:
         db = ImplDatabase(session_maker)
-        async with session_maker() as notify_session:
-            dbus = ImplDBus(db=db, session=notify_session)
+        try:
             async with db:
-                await dbus.publish(event)
+                await db.dbus.publish(event)
                 await db.commit()
+        finally:
+            await db.close()
 
     yield _publish
     await engine.dispose()

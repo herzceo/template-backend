@@ -40,7 +40,7 @@ from dataclasses import dataclass
 from backend.app.errors import AuthenticationRequiredError, ValidationFailedError
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
 from backend.domain.enums import IdentityProvider
-from backend.domain.repos.database import Database
+from backend.app.shared.db.database import Database
 
 
 @dataclass

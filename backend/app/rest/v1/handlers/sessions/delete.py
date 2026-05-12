@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.database import Database
+from backend.app.shared.db.database import Database
 
 
 class DeleteSessionCommand(Command):

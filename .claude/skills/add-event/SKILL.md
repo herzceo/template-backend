@@ -51,7 +51,7 @@ Add to imports and `__all__`.
 In the handler that triggers the event, inject `dbus: DBus` and publish:
 
 ```python
-from backend.app.shared.ports.events.dbus import DBus
+from backend.app.shared.db.dbus import DBus
 from backend.app.shared.events.v1.{name} import {EventName}
 
 @dataclass

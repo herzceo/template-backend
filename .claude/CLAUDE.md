@@ -84,7 +84,7 @@ backend/
 - `domain/` imports only from `domain/`, `internal/`
 - `app/` imports only from `app/`, `domain/`, `internal/` -- NEVER from `infra/` or `entry/`
 - `entry/` imports from anything in `backend.*`
-- `infra/` imports from `infra/`, `domain/`, `backend.app.shared.*` (ports only), `internal/`
+- `infra/` imports from `infra/`, `domain/`, `backend.app.shared.*` (ports, db), `internal/`
 - `internal/` imports only from `internal/`
 - Dependency inversion: `app/` defines Protocols in `app/shared/ports/`, `infra/` implements them
 
@@ -96,8 +96,8 @@ backend/
 ### Repository (domain/repos/ + infra/database/psql/repos/)
 Protocol interface in `domain/repos/` extending `CRUDSupported[Entity]`. Implementation in `infra/` via `ImplCRUDSupported[Entity]`. All lookups return `Option[T]` -- unwrap with `.some(ExceptionInstance)`. Central access via `RepoGateway` Protocol + `ImplRepoGateway` with `@cached_property`.
 
-### Query Service (app/shared/query_services/ + infra/database/psql/queries/)
-Read-only interfaces for complex queries that repositories can't serve efficiently (joins, aggregations, multi-table projections). Protocol in `app/shared/query_services/{domain}.py` — defines a `TypedDict` filter type and a `Protocol` returning shaped data. Implementation in `infra/database/psql/queries/{domain}.py` — `@final` class taking `async_sessionmaker[AsyncSession]`, opens a context-managed session per call. `ImplQueryServiceGateway` aggregates all services via `@cached_property`, mirrors `ImplRepoGateway`. Wired as `Scope.REQUEST` in `ioc.py` via `create_query_services_provider()`. Handlers that only read inject `QueryServiceGateway` instead of `Database`.
+### Query Service (app/shared/db/query_services/ + infra/database/psql/queries/)
+Read-only interfaces for complex queries that repositories can't serve efficiently (joins, aggregations, multi-table projections). Protocol in `app/shared/db/query_services/{domain}.py` — defines a `TypedDict` filter type and a `Protocol` returning shaped data. Implementation in `infra/database/psql/queries/{domain}.py` — `@final` class taking `async_sessionmaker[AsyncSession]`, opens a context-managed session per call. `ImplQueryServiceGateway` aggregates all services via `@cached_property`, mirrors `ImplRepoGateway`. Wired as `Scope.REQUEST` in `ioc.py` via `create_query_services_provider()`. Handlers that only read inject `QueryServiceGateway` instead of `Database`.
 
 ### Port / Adapter (app/shared/ports/ + infra/external/adapters/)
 Port = `Protocol` in `app/shared/ports/{category}/`. Adapter = `@final` class in `infra/external/adapters/`. Naming: port = `PasswordHasher`, adapter = `ImplArgon2PasswordHasher`. Adapters never imported by `app/`.
@@ -116,6 +116,9 @@ Litestar `Controller` subclass. Decorator order: `@get|@post` -> `@inject` -> `@
 
 ### Entities (domain/entities/)
 SQLAlchemy `DeclarativeBase` with mixins: `WithUUIDID`, `WithActive`, `WithTime`, `WithTenant`. Mixin order: `WithUUIDID, WithActive, WithTime, WithTenant, Base`. Auto table naming. `Mapped[T]` with `mapped_column()`. Relationships use `lazy="raise"`. Companion entities (1:1 satellites of a primary entity) use only `WithUUIDID, WithTime, Base` and are always created in the same transaction as their primary — see `Profile` as the canonical example (`backend/domain/entities/profile.py`).
+
+### Database / DBus (app/shared/db/)
+`Database` Protocol (UoW + `RepoGateway` access) and `DBus` Protocol (transactional outbox publish) live in `app/shared/db/`. Both are always published within an `async with self.db:` block so they share the same transaction.
 
 ### Events (app/shared/events/ + app/events/ + infra/dbus/)
 `BaseEvent(StructDTO, kw_only=True)` with `name: ClassVar[str]`. Publish via `DBus.publish(event)`. `EventHandler[E]` with auto-registration keyed by event name. Background execution via PostgreSQL job queue.

@@ -4,7 +4,7 @@ from uuid import UUID
 from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.database import Database
+from backend.app.shared.db.database import Database
 
 
 class GetAuditLogCommand(Command):

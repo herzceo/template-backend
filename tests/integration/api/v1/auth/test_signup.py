@@ -4,8 +4,8 @@ from http import HTTPStatus
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
+from backend.app.shared.db.dbus import DBus
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested
-from backend.app.shared.ports.events.dbus import DBus
 from tests.integration.mocks import MockDBus
 
 if TYPE_CHECKING:

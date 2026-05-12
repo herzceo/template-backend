@@ -5,8 +5,8 @@ from uuid import UUID
 from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
+from backend.app.shared.db.database import Database
 from backend.domain.entities.tenant import Tenant
-from backend.domain.repos.database import Database
 
 
 class CreateTenantCommand(Command):

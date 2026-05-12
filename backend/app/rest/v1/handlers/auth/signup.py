@@ -7,12 +7,11 @@ from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.validation import normalize_email, normalize_username
+from backend.app.shared.db.database import Database
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested
-from backend.app.shared.ports.events.dbus import DBus
 from backend.domain.entities.profile import Profile
 from backend.domain.entities.user import User
 from backend.domain.enums import IdentityProvider
-from backend.domain.repos.database import Database
 
 
 class SignupCommand(Command):
@@ -26,7 +25,6 @@ class SignupCommand(Command):
 class SignupHandler(Handler[SignupCommand, dtos.User, None], type_=HandlerType.WRITE):
     db: Database
     identity_service: IdentityService
-    dbus: DBus
 
     async def __call__(self, cmd: SignupCommand, _ctx: None = None) -> dtos.User:
         username = normalize_username(cmd.username)
@@ -52,7 +50,7 @@ class SignupHandler(Handler[SignupCommand, dtos.User, None], type_=HandlerType.W
                 created.id, IdentityProvider.USERNAME_PASSWORD, username, cmd.password
             )
 
-            await self.dbus.publish(
+            await self.db.dbus.publish(
                 UserVerificationRequested(
                     user_id=created.id,
                     email=email,

@@ -96,5 +96,6 @@ async def _run(
     try:
         await executor.run()
     finally:
+        await db.close()
         await container.close()
         await engine.dispose()

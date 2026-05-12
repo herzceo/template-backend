@@ -6,8 +6,8 @@ from backend.domain.entities.queue.enums import JobEventType, JobStatus
 from backend.domain.entities.queue.job_event import JobEvent
 
 if TYPE_CHECKING:
+    from backend.app.shared.db.database import Database
     from backend.domain.entities.queue.job import Job
-    from backend.domain.repos.database import Database
     from backend.internal import Option
 
 

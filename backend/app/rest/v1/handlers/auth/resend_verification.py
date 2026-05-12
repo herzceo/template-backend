@@ -4,10 +4,9 @@ from datetime import UTC, datetime
 from backend.app.errors import ValidationFailedError
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.validation import normalize_email
+from backend.app.shared.db.database import Database
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested
-from backend.app.shared.ports.events.dbus import DBus
 from backend.app.shared.ports.security.verification import VerificationCodeStore
-from backend.domain.repos.database import Database
 
 RESEND_COOLDOWN_SECONDS = 60
 
@@ -21,7 +20,6 @@ class ResendVerificationHandler(
     Handler[ResendVerificationCommand, None, None], type_=HandlerType.WRITE
 ):
     db: Database
-    dbus: DBus
     verification_store: VerificationCodeStore
 
     async def __call__(self, cmd: ResendVerificationCommand, _ctx: None = None) -> None:
@@ -44,10 +42,12 @@ class ResendVerificationHandler(
                     message=f"Please wait {wait} seconds before requesting a new code"
                 )
 
-        await self.dbus.publish(
-            UserVerificationRequested(
-                user_id=user.id,
-                email=email,
-                username=user.username,
+        async with self.db:
+            await self.db.dbus.publish(
+                UserVerificationRequested(
+                    user_id=user.id,
+                    email=email,
+                    username=user.username,
+                )
             )
-        )
+            await self.db.commit()

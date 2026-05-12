@@ -3,8 +3,8 @@ from uuid import UUID
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.app.shared.query_services.gateway import QueryServiceGateway
-from backend.app.shared.query_services.user import UserWithRoles
+from backend.app.shared.db.query_services.gateway import QueryServiceGateway
+from backend.app.shared.db.query_services.user import UserWithRoles
 
 
 class ListUsersWithRolesCommand(Command):

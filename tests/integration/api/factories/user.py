@@ -4,12 +4,12 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
+from backend.app.shared.db.database import Database
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
 from backend.domain.entities.identity import Identity
 from backend.domain.entities.profile import Profile
 from backend.domain.entities.user import User
 from backend.domain.enums import IdentityProvider
-from backend.domain.repos.database import Database
 
 if TYPE_CHECKING:
     from dishka import AsyncContainer

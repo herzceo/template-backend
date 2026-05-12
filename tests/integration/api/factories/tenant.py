@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
+from backend.app.shared.db.database import Database
 from backend.domain.entities.tenant import Tenant
-from backend.domain.repos.database import Database
 
 if TYPE_CHECKING:
     from dishka import AsyncContainer

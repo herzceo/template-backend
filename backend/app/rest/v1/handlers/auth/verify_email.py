@@ -8,8 +8,8 @@ from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.session import SessionService
 from backend.app.rest.v1.services.types import ClientDeviceInfo
 from backend.app.rest.v1.validation import normalize_email
+from backend.app.shared.db.database import Database
 from backend.app.shared.ports.security.verification import VerificationCodeStore
-from backend.domain.repos.database import Database
 
 
 class VerifyEmailCommand(Command):

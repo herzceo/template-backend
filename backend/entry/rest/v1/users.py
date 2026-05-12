@@ -5,7 +5,7 @@ from litestar import Controller, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import users
-from backend.app.shared.query_services.user import UserWithRoles
+from backend.app.shared.db.query_services.user import UserWithRoles
 from backend.entry.rest.common.response import result
 from backend.internal.di import Depends, inject
 

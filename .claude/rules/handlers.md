@@ -31,7 +31,7 @@ Commands contain fully-typed fields. Never `str` for UUIDs or enums -- the contr
 from dataclasses import dataclass
 
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
-from backend.domain.repos.database import Database
+from backend.app.shared.db.database import Database
 
 class GetUserCommand(Command):
     user_id: UUID

@@ -4,9 +4,9 @@ from datetime import UTC, datetime, timedelta
 from uuid_utils.compat import UUID
 
 from backend.app.rest.v1.services.types import ClientDeviceInfo, ServerDeviceInfo
+from backend.app.shared.db.database import Database
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.domain.entities.session import Session
-from backend.domain.repos.database import Database
 from backend.internal import Option
 from backend.internal.dto import StructDTO
 

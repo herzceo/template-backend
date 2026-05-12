@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+from backend.app.shared.db.database import Database
 from backend.domain.entities.notification import Notification
 from backend.domain.enums import NotificationAudience
-from backend.domain.repos.database import Database
 
 if TYPE_CHECKING:
     from dishka import AsyncContainer

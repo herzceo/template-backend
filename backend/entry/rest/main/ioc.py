@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING
 
 from aiobotocore.session import get_session
@@ -7,8 +8,6 @@ from dishka import AsyncContainer, Provider, Scope, make_async_container
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
-
     from backend.infra.database.redis import RedisConfig
     from backend.infra.external.http.discord.config import DiscordOAuthConfig
     from backend.infra.external.http.github.config import GitHubOAuthConfig
@@ -18,17 +17,16 @@ if TYPE_CHECKING:
 from backend.app.rest.v1 import handlers
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.services.session import SessionConfig, SessionService
+from backend.app.shared.db.database import Database
+from backend.app.shared.db.query_services.gateway import QueryServiceGateway
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
-from backend.app.shared.ports.events.dbus import DBus
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.app.shared.ports.storage import ObjectStore
-from backend.app.shared.query_services.gateway import QueryServiceGateway
-from backend.domain.repos.database import Database
 from backend.infra.database.config import DatabaseConfig
-from backend.infra.database.object import S3ObjectStore
+from backend.infra.database.object import NullObjectStore, S3ObjectStore
 from backend.infra.database.psql.engine import (
     create_async_engine,
     create_async_session_maker,
@@ -38,7 +36,6 @@ from backend.infra.database.psql.repos import ImplDatabase
 from backend.infra.database.redis import RedisClient
 from backend.infra.database.redis.adapters.config import VerificationConfig
 from backend.infra.database.redis.adapters.verification_code import ImplVerificationCodeStore
-from backend.infra.dbus.psql import ImplDBus
 from backend.infra.external.adapters.oauth import (
     ImplDiscordOAuthAdapter,
     ImplGitHubOAuthAdapter,
@@ -76,13 +73,19 @@ def create_psql_provider() -> Provider:
     return provider
 
 
-def _create_database(session_maker: async_sessionmaker[AsyncSession]) -> ImplDatabase:
-    return ImplDatabase(session_maker)
+async def _create_impl_database(
+    session_maker: async_sessionmaker[AsyncSession],
+) -> AsyncIterator[ImplDatabase]:
+    db = ImplDatabase(session_maker)
+    try:
+        yield db
+    finally:
+        await db.close()
 
 
 def create_database_provider() -> Provider:
     provider = Provider(scope=Scope.REQUEST)
-    provider.provide(_create_database, provides=Database)
+    provider.provide(_create_impl_database, provides=Database)
     return provider
 
 
@@ -127,23 +130,25 @@ def create_auth_provider(
     provider.provide(ImplArgon2PasswordHasher, provides=PasswordHasher)
     provider.provide(_create_session_service, provides=SessionService, scope=Scope.REQUEST)
 
-    gateway = ImplOAuthGateway(
-        google=ImplGoogleOAuthAdapter(
-            _create_google_oauth_client(google_oauth_config),
-            google_oauth_config,
-        ),
-        github=ImplGitHubOAuthAdapter(
-            _create_github_client(github_config),
-            github_config,
-        ),
-        discord=ImplDiscordOAuthAdapter(
-            _create_discord_client(discord_config),
-            discord_config,
-        ),
-    )
+    def _build_gateway() -> ImplOAuthGateway:
+        return ImplOAuthGateway(
+            google=ImplGoogleOAuthAdapter(
+                _create_google_oauth_client(google_oauth_config),
+                google_oauth_config,
+            ),
+            github=ImplGitHubOAuthAdapter(
+                _create_github_client(github_config),
+                github_config,
+            ),
+            discord=ImplDiscordOAuthAdapter(
+                _create_discord_client(discord_config),
+                discord_config,
+            ),
+        )
+
     state_signer = ImplHMACOAuthStateSigner(secret=oauth_state_config.OAUTH_STATE_SECRET)
 
-    provider.provide(lambda: gateway, provides=OAuthGateway)
+    provider.provide(_build_gateway, provides=OAuthGateway)
     provider.provide(lambda: state_signer, provides=OAuthStateSigner)
     provider.provide(IdentityService, provides=IdentityService, scope=Scope.REQUEST)
 
@@ -199,13 +204,9 @@ def create_external_provider(
         provider.provide(lambda: s3_config, provides=S3Config)
         provider.provide(_create_s3_client, provides=S3Client)
         provider.provide(S3ObjectStore, provides=ObjectStore)
+    else:
+        provider.provide(NullObjectStore, provides=ObjectStore)
 
-    return provider
-
-
-def create_dbus_provider() -> Provider:
-    provider = Provider(scope=Scope.REQUEST)
-    provider.provide(ImplDBus, provides=DBus)
     return provider
 
 
@@ -239,7 +240,6 @@ def create_container(
         create_psql_provider(),
         create_database_provider(),
         create_query_services_provider(),
-        create_dbus_provider(),
         create_redis_provider(redis_config, verification_config),
         create_auth_provider(
             session_config=session_config,

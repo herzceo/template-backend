@@ -6,8 +6,8 @@ from backend.app.errors import AlreadyExistsError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.types import ClientDeviceInfo, ServerDeviceInfo
+from backend.app.shared.db.database import Database
 from backend.domain.entities.session import Session
-from backend.domain.repos.database import Database
 
 
 class CreateSessionCommand(Command):

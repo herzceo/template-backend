@@ -31,7 +31,7 @@ class UserVerificationRequested(BaseEvent):
 ## Publishing (in handlers)
 
 ```python
-from backend.app.shared.ports.events.dbus import DBus
+from backend.app.shared.db.dbus import DBus
 
 @dataclass
 class SignupHandler(Handler[...]):

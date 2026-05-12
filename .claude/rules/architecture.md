@@ -24,7 +24,7 @@ This project follows hexagonal (ports & adapters) architecture with strict layer
 domain/   -> domain/, internal/
 app/      -> app/, domain/, internal/
 entry/    -> anything in backend.*
-infra/    -> infra/, domain/, backend.app.shared.* (ports + query_services), internal/
+infra/    -> infra/, domain/, backend.app.shared.* (ports + db), internal/
 internal/ -> internal/
 main/     -> anything in backend.*
 ```
@@ -37,7 +37,7 @@ from backend.infra.database.psql.repos import ImplUserRepo      # wrong
 from backend.infra.security.password_hasher import ImplArgon2PasswordHasher  # wrong
 
 # app/ must use Protocol ports instead
-from backend.domain.repos.database import Database               # correct
+from backend.app.shared.db.database import Database              # correct
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher     # correct
 ```
 
@@ -46,10 +46,10 @@ from backend.app.shared.ports.auth.password_hasher import PasswordHasher     # c
 from backend.app.rest.v1.handlers.auth.login import LoginHandler  # wrong
 from backend.app.rest.v1.services.identity import IdentityService # wrong
 
-# infra/ may only import from app.shared (ports, events, query_services)
+# infra/ may only import from app.shared (ports, db, events)
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher  # correct
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested  # correct
-from backend.app.shared.query_services.user import UserQueryService  # correct
+from backend.app.shared.db.query_services.user import UserQueryService  # correct
 ```
 
 ```python

@@ -1,14 +1,14 @@
 ---
 paths:
   - "backend/infra/database/**/*.py"
-  - "backend/domain/repos/database.py"
+  - "backend/app/shared/db/**/*.py"
 ---
 
 # Database Rules
 
 PostgreSQL with SQLAlchemy 2.0 async ORM. Transaction management via `Database` Protocol.
 
-## Database Protocol (domain/repos/database.py)
+## Database Protocol (app/shared/db/database.py)
 
 ```python
 class Database(Protocol):

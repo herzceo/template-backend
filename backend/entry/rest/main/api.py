@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, Any
 
 from dishka.integrations.litestar import setup_dishka
@@ -33,7 +34,7 @@ def create_api(
     app = Litestar(
         path="",
         route_handlers=[create_router()],
-        middleware=[DefineMiddleware(SessionMiddleware)],
+        middleware=[DefineMiddleware(SessionMiddleware, exclude=config.OPENAPI_PATH)],
         openapi_config=create_openapi(config),
         cors_config=create_cors(config),
         exception_handlers=create_exception_handlers(),
@@ -52,7 +53,4 @@ def run_api(
     db_config: DatabaseConfig,
     **kwargs: Any,
 ) -> None:
-    def app_factory() -> Litestar:
-        return create_api(config, db_config, **kwargs)
-
-    create_server(app_factory, config).run()
+    create_server(partial(create_api, config, db_config, **kwargs), config).run()

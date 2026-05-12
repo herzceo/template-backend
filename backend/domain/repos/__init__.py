@@ -11,7 +11,6 @@ from .base import (
     StreamSupported,
     UpdateSupported,
 )
-from .database import Database
 from .gateway import RepoGateway
 from .identity import IdentityRepo
 from .notification import NotificationRepo
@@ -28,7 +27,6 @@ __all__ = (
     "CRUDSupported",
     "CountSupported",
     "CreateSupported",
-    "Database",
     "DeleteByIdSupported",
     "GetByIdSupported",
     "GetForUpdateSupported",

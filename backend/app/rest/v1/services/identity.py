@@ -7,12 +7,12 @@ from backend.app.rest.v1.dtos.identity import (
     Redirect,
 )
 from backend.app.rest.v1.validation import normalize_email, normalize_username
+from backend.app.shared.db.database import Database
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway, OAuthUserInfo
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
 from backend.domain.entities.identity import Identity
 from backend.domain.enums import IdentityProvider
-from backend.domain.repos.database import Database
 
 
 @dataclass

@@ -4,6 +4,7 @@ from abc import abstractmethod
 from typing import TYPE_CHECKING, Protocol, Self
 
 if TYPE_CHECKING:
+    from backend.app.shared.db.dbus import DBus
     from backend.domain.repos.gateway import RepoGateway
 
 
@@ -13,6 +14,10 @@ class Database(Protocol):
     @property
     @abstractmethod
     def gateway(self) -> RepoGateway: ...
+
+    @property
+    @abstractmethod
+    def dbus(self) -> DBus: ...
 
     @abstractmethod
     async def commit(self) -> None: ...

@@ -4,10 +4,10 @@ from uuid import UUID
 from backend.app.errors import AlreadyExistsError, NotFoundError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
+from backend.app.shared.db.database import Database
 from backend.app.shared.ports.storage import ObjectStore
 from backend.domain.entities.asset import Asset
 from backend.domain.enums import AssetContentType
-from backend.domain.repos.database import Database
 
 
 class CreateAssetCommand(Command):

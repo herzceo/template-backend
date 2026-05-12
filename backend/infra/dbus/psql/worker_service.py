@@ -6,8 +6,8 @@ from backend.domain.entities.queue.enums import WorkerEventType
 from backend.domain.entities.queue.worker_event import WorkerEvent
 
 if TYPE_CHECKING:
+    from backend.app.shared.db.database import Database
     from backend.domain.entities.queue.worker import Worker
-    from backend.domain.repos.database import Database
 
 
 @final

@@ -5,7 +5,7 @@ from backend.app.errors import NotFoundError
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.validation import normalize_email
-from backend.domain.repos.database import Database
+from backend.app.shared.db.database import Database
 
 
 class UpdateUserCommand(Command):

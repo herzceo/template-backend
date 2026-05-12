@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     from sqlalchemy.ext.asyncio import AsyncEngine
 
-    from backend.domain.repos.database import Database
+    from backend.app.shared.db.database import Database
     from backend.infra.dbus.psql.config import QueueExecutorConfig
 
 logger = logging.getLogger(__name__)

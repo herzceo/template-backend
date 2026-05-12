@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, final
 
-from backend.app.shared.ports.events.dbus import PublishOptions
+from backend.app.shared.db.dbus import PublishOptions
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

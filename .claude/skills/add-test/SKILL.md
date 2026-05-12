@@ -103,7 +103,7 @@ Always use `unique_email()` when specifying an email address. Never hardcode `te
 
 **Events published to DBus:**
 ```python
-from backend.app.shared.ports.dbus import DBus
+from backend.app.shared.db.dbus import DBus
 from backend.app.shared.events.v1.auth import UserVerificationRequested
 
 async with container() as c:

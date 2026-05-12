@@ -2,26 +2,41 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Self, final
 
-from backend.domain.repos.database import Database
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+from backend.app.shared.db.database import Database
+from backend.infra.dbus.psql.dbus import ImplDBus
 
 from .gateway import ImplRepoGateway
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession, AsyncSessionTransaction, async_sessionmaker
+    from sqlalchemy.ext.asyncio import AsyncSessionTransaction
 
 
 @final
 class ImplDatabase(Database):
-    __slots__ = ("_session", "_session_maker", "_txn_stack")
+    __slots__ = ("_dbus", "_session", "_txn_stack")
 
     def __init__(self, session_maker: async_sessionmaker[AsyncSession]) -> None:
-        self._session_maker = session_maker
-        self._session: AsyncSession | None = None
+        self._session: AsyncSession = session_maker()
         self._txn_stack: list[AsyncSessionTransaction] = []
+        self._dbus: ImplDBus | None = None
+
+    @property
+    def dbus(self) -> ImplDBus:
+        if not self._txn_stack:
+            msg = "Database.dbus accessed outside of an `async with db:` block"
+            raise RuntimeError(msg)
+        if self._dbus is None:
+            self._dbus = ImplDBus(db=self, session=self._session)
+        return self._dbus
+
+    async def close(self) -> None:
+        await self._session.close()
 
     @property
     def gateway(self) -> ImplRepoGateway:
-        if self._session is None:
+        if not self._txn_stack:
             msg = "Database.gateway accessed outside of an `async with db:` block"
             raise RuntimeError(msg)
         return ImplRepoGateway(self._session)
@@ -41,19 +56,12 @@ class ImplDatabase(Database):
 
     async def flush(self) -> None:
         self._assert_active()
-        if self._session is None:
-            msg = "Database.flush() called outside of an `async with db:` block"
-            raise RuntimeError(msg)
         await self._session.flush()
 
     async def __aenter__(self) -> Self:
         if not self._txn_stack:
-            self._session = self._session_maker()
             txn = await self._session.begin()
         else:
-            if self._session is None:
-                msg = "Nested `async with db:` but no session exists"
-                raise RuntimeError(msg)
             txn = await self._session.begin_nested()
         self._txn_stack.append(txn)
         return self
@@ -66,9 +74,6 @@ class ImplDatabase(Database):
     ) -> None:
         txn = self._txn_stack.pop()
         if txn.is_active:
-            if not self._txn_stack and self._session is not None:
+            if not self._txn_stack:
                 self._session.expunge_all()
             await txn.rollback()
-        if not self._txn_stack and self._session is not None:
-            await self._session.close()
-            self._session = None

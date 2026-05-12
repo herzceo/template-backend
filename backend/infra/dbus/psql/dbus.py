@@ -3,18 +3,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, final
 
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.app.shared.ports.events.dbus import DBus, PublishOptions
+from backend.app.shared.db.dbus import DBus, PublishOptions
 from backend.domain.entities.queue.job import Job
 from backend.infra.dbus.psql.job_service import JobService
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from sqlalchemy.ext.asyncio import AsyncSession
-
+    from backend.app.shared.db.database import Database
     from backend.app.shared.events import BaseEvent
-    from backend.domain.repos.database import Database
 
 _DEFAULT_OPTIONS = PublishOptions()
 

@@ -6,10 +6,10 @@ from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers.base import Command, Handler, HandlerType
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.validation import normalize_email, normalize_username
+from backend.app.shared.db.database import Database
 from backend.domain.entities.profile import Profile
 from backend.domain.entities.user import User
 from backend.domain.enums import IdentityProvider
-from backend.domain.repos.database import Database
 
 
 class CreateUserCommand(Command):
