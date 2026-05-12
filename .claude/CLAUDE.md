@@ -118,10 +118,10 @@ Litestar `Controller` subclass. Decorator order: `@get|@post` -> `@inject` -> `@
 SQLAlchemy `DeclarativeBase` with mixins: `WithUUIDID`, `WithActive`, `WithTime`, `WithTenant`. Mixin order: `WithUUIDID, WithActive, WithTime, WithTenant, Base`. Auto table naming. `Mapped[T]` with `mapped_column()`. Relationships use `lazy="raise"`. Companion entities (1:1 satellites of a primary entity) use only `WithUUIDID, WithTime, Base` and are always created in the same transaction as their primary — see `Profile` as the canonical example (`backend/domain/entities/profile.py`).
 
 ### Database / DBus (app/shared/db/)
-`Database` Protocol (UoW + `RepoGateway` access) and `DBus` Protocol (transactional outbox publish) live in `app/shared/db/`. Both are always published within an `async with self.db:` block so they share the same transaction.
+`Database` Protocol (UoW + `RepoGateway` + `dbus` access) and `DBus` Protocol (transactional outbox publish) live in `app/shared/db/`. `DBus` is NOT injected — access it via `self.db.dbus`. `db.dbus` raises `RuntimeError` outside `async with self.db:` blocks, enforcing that events are always published within the same transaction as the business data.
 
-### Events (app/shared/events/ + app/events/ + infra/dbus/)
-`BaseEvent(StructDTO, kw_only=True)` with `name: ClassVar[str]`. Publish via `DBus.publish(event)`. `EventHandler[E]` with auto-registration keyed by event name. Background execution via PostgreSQL job queue.
+### Events (app/shared/events/ + app/events/ + infra/database/psql/dbus/)
+`BaseEvent(StructDTO, kw_only=True)` with `name: ClassVar[str]`. Publish via `self.db.dbus.publish(event)` inside `async with self.db:`. `EventHandler[E]` with auto-registration keyed by event name. Background execution via PostgreSQL job queue (`infra/database/psql/dbus/`).
 
 ## Code Style
 - ruff `select = ["ALL"]`, line-length 100. Strict mypy.

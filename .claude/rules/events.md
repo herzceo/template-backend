@@ -2,7 +2,7 @@
 paths:
   - "backend/app/shared/events/**/*.py"
   - "backend/app/events/**/*.py"
-  - "backend/infra/dbus/**/*.py"
+  - "backend/infra/database/psql/dbus/**/*.py"
 ---
 
 # Event Rules
@@ -31,24 +31,24 @@ class UserVerificationRequested(BaseEvent):
 ## Publishing (in handlers)
 
 ```python
-from backend.app.shared.db.dbus import DBus
-
 @dataclass
 class SignupHandler(Handler[...]):
-    dbus: DBus
+    db: Database
 
     async def __call__(self, cmd, _ctx=None):
         async with self.db:
             ...
-            await self.dbus.publish(
+            await self.db.dbus.publish(
                 UserVerificationRequested(
                     user_id=user.id, email=user.email, username=user.username
                 )
             )
+            await self.db.commit()
 ```
 
-- Inject `dbus: DBus` as a handler dependency
-- Publish inside the `async with self.db:` block (event becomes a job in the same transaction)
+- Access `DBus` via `self.db.dbus` — not injected, not a handler field
+- `db.dbus` raises `RuntimeError` if accessed outside `async with self.db:` (enforced by `ImplDatabase`)
+- Publish inside the `async with self.db:` block so the job lands in the same transaction as the business data
 - `DBus.publish()` returns a job ID
 - Options: `priority`, `execution_lock`, `queueing_lock`, `scheduled_at`
 
