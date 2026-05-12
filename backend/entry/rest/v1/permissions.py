@@ -5,8 +5,7 @@ from litestar import Controller, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import permissions
-from backend.entry.rest.common.response import result
-from backend.internal.di import Depends, inject
+from backend.internal.di import Depends
 
 from .dtos import UpdatePermissionBody
 
@@ -19,8 +18,6 @@ class PermissionsController(Controller):
     )
 
     @get("/")
-    @inject
-    @result
     async def list_permissions(
         self,
         handler: Depends[permissions.ListPermissionsHandler],
@@ -30,8 +27,6 @@ class PermissionsController(Controller):
         return await handler(permissions.ListPermissionsCommand(offset=offset, limit=limit))
 
     @post("/")
-    @inject
-    @result
     async def create_permission(
         self,
         data: permissions.CreatePermissionCommand,
@@ -40,8 +35,6 @@ class PermissionsController(Controller):
         return await handler(data)
 
     @get("/{id:str}")
-    @inject
-    @result
     async def get_permission(
         self,
         id: str,
@@ -50,8 +43,6 @@ class PermissionsController(Controller):
         return await handler(permissions.GetPermissionCommand(id=UUID(id)))
 
     @patch("/{id:str}")
-    @inject
-    @result
     async def update_permission(
         self,
         id: str,
@@ -63,7 +54,6 @@ class PermissionsController(Controller):
         )
 
     @delete("/{id:str}")
-    @inject
     async def delete_permission(
         self,
         id: str,

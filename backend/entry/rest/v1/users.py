@@ -6,8 +6,7 @@ from litestar import Controller, delete, get, patch, post
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import users
 from backend.app.shared.db.query_services.user import UserWithRoles
-from backend.entry.rest.common.response import result
-from backend.internal.di import Depends, inject
+from backend.internal.di import Depends
 
 from .dtos import AssignRoleBody, RevokeRoleBody, UpdateUserBody
 
@@ -17,8 +16,6 @@ class UsersController(Controller):
     tags = ("Users",)
 
     @get("/users/")
-    @inject
-    @result
     async def list_users(
         self,
         handler: Depends[users.ListUsersHandler],
@@ -28,8 +25,6 @@ class UsersController(Controller):
         return await handler(users.ListUsersCommand(offset=offset, limit=limit))
 
     @get("/users:listWithRoles", tags=["RBAC"])
-    @inject
-    @result
     async def list_users_with_roles(
         self,
         handler: Depends[users.ListUsersWithRolesHandler],
@@ -48,8 +43,6 @@ class UsersController(Controller):
         )
 
     @post("/users/")
-    @inject
-    @result
     async def create_user(
         self,
         data: users.CreateUserCommand,
@@ -58,8 +51,6 @@ class UsersController(Controller):
         return await handler(data)
 
     @get("/users/{id:str}")
-    @inject
-    @result
     async def get_user(
         self,
         id: str,
@@ -68,8 +59,6 @@ class UsersController(Controller):
         return await handler(users.GetUserCommand(id=UUID(id)))
 
     @patch("/users/{id:str}")
-    @inject
-    @result
     async def update_user(
         self,
         id: str,
@@ -79,7 +68,6 @@ class UsersController(Controller):
         return await handler(users.UpdateUserCommand(id=UUID(id), **msgspec.structs.asdict(data)))
 
     @delete("/users/{id:str}")
-    @inject
     async def delete_user(
         self,
         id: str,
@@ -88,8 +76,6 @@ class UsersController(Controller):
         return await handler(users.DeleteUserCommand(id=UUID(id)))
 
     @post("/users/{id:str}:assignRole", tags=["RBAC"])
-    @inject
-    @result
     async def assign_role(
         self,
         id: str,
@@ -99,8 +85,6 @@ class UsersController(Controller):
         return await handler(users.AssignRoleCommand(user_id=UUID(id), role_id=data.role_id))
 
     @post("/users/{id:str}:revokeRole", tags=["RBAC"])
-    @inject
-    @result
     async def revoke_role(
         self,
         id: str,

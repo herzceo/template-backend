@@ -7,10 +7,9 @@ from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.dtos.identity import InitiateResult
 from backend.app.rest.v1.handlers import auth
 from backend.domain.enums import IdentityProvider
-from backend.entry.rest.common.response import result
 from backend.entry.rest.common.scope import set_session_token
 from backend.entry.rest.v1.dtos import SignInBody, VerifyEmailBody
-from backend.internal.di import Depends, inject
+from backend.internal.di import Depends
 
 
 class AuthController(Controller):
@@ -18,8 +17,6 @@ class AuthController(Controller):
     tags = ("Auth",)
 
     @post("/auth:signIn", exclude_from_auth=True, status_code=200)
-    @inject
-    @result
     async def sign_in(
         self,
         data: SignInBody,
@@ -41,8 +38,6 @@ class AuthController(Controller):
         return ctx.data
 
     @post("/auth:signUp", exclude_from_auth=True)
-    @inject
-    @result
     async def sign_up(
         self,
         data: auth.SignupCommand,
@@ -51,8 +46,6 @@ class AuthController(Controller):
         return await handler(data)
 
     @post("/auth:verifyEmail", exclude_from_auth=True, status_code=200)
-    @inject
-    @result
     async def verify_email(
         self,
         data: VerifyEmailBody,
@@ -74,8 +67,6 @@ class AuthController(Controller):
         return ctx.data
 
     @post("/auth:resendVerification", exclude_from_auth=True)
-    @inject
-    @result
     async def resend_verification(
         self,
         data: auth.ResendVerificationCommand,
@@ -84,8 +75,6 @@ class AuthController(Controller):
         await handler(data)
 
     @get("/auth/oauth:initiate", exclude_from_auth=True)
-    @inject
-    @result
     async def initiate_oauth(
         self,
         provider: IdentityProvider,
@@ -94,8 +83,6 @@ class AuthController(Controller):
         return await handler(auth.InitiateOAuthCommand(provider=provider))
 
     @get("/auth/oauth:callback", exclude_from_auth=True)
-    @inject
-    @result
     async def oauth_callback(
         self,
         provider: IdentityProvider,

@@ -16,8 +16,7 @@ from litestar import Controller, Request, get, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import auth
-from backend.entry.rest.common.response import result
-from backend.internal.di import Depends, inject
+from backend.internal.di import Depends
 
 
 class AuthController(Controller):
@@ -25,8 +24,6 @@ class AuthController(Controller):
     tags = ("Auth",)
 
     @post("/login", exclude_from_auth=True)
-    @inject
-    @result
     async def login(
         self,
         data: auth.LoginCommand,
@@ -37,6 +34,8 @@ class AuthController(Controller):
         set_session_token(request.scope, ctx.token)
         return ctx.data
 ```
+
+Route methods have only a single decorator — the HTTP method (`@get`, `@post`, `@patch`, `@delete`). No `@inject` (handled automatically by `DishkaRouter` in `create_v1_router()`). No `@result` (handled by the router-level `after_request=wrap_ok` hook that wraps all non-204 responses in `{"type": "ok", "data": ...}`).
 
 ## Custom Methods (Google-style)
 
@@ -49,8 +48,6 @@ Non-CRUD operations use `:camelCaseVerb` suffix following the Google API Design 
 
 **Litestar path joining with colons**: if a controller's `path` is non-empty (e.g., `path = "/roles"`), route-level paths like `/{id:str}:assignPermission` join correctly as `/roles/{id:str}:assignPermission`. For collection-level custom methods (e.g., `/auth:signIn`), set `path = ""` and use explicit full paths like `@post("/auth:signIn")` — a non-empty `path = "/auth"` would produce `/auth/:signIn` (wrong).
 
-Custom methods converted from `@delete` to `@post` MUST use `@result` (returns HTTP 200 with body, not 204).
-
 ```python
 # Collection-level custom method — path = "" required
 class AuthController(Controller):
@@ -58,8 +55,6 @@ class AuthController(Controller):
     tags = ("Auth",)
 
     @post("/auth:signIn", exclude_from_auth=True)
-    @inject
-    @result
     async def sign_in(self, data: auth.SignInCommand, handler: Depends[auth.SignInHandler]) -> dtos.Session:
         return await handler(data)
 
@@ -69,8 +64,6 @@ class RolesController(Controller):
     tags = ("Roles",)
 
     @post("/{id:str}:assignPermission")
-    @inject
-    @result
     async def assign_permission(
         self,
         id: str,
@@ -86,8 +79,6 @@ List endpoints use offset-based pagination:
 
 ```python
 @get("/users/")
-@inject
-@result
 async def list_users(
     self,
     handler: Depends[users.ListUsersHandler],
@@ -97,24 +88,12 @@ async def list_users(
     return await handler(users.ListUsersCommand(offset=offset, limit=limit))
 ```
 
-## Decorator Order (critical)
-
-The decorator stack MUST be in this exact order (outermost to innermost):
-
-1. `@get(...)` / `@post(...)` / `@patch(...)` / `@delete(...)` -- route definition
-2. `@inject` -- enables Dishka DI
-3. `@result` -- wraps return in `Ok(data=...)` — **OMIT for `@delete`**
-
-**`@delete` routes must NOT use `@result`**. Litestar sets the default status code to 204 (No Content) for `@delete`, and HTTP 204 must have no response body. The `@result` decorator wraps even `None` returns in `Ok(data=None)`, which has a body and causes a 500 error at runtime.
-
 ## Primitive Conversion
 
 Controllers are the boundary where wire types become domain types. Convert BEFORE creating commands:
 
 ```python
 @get("/{user_id:str}")
-@inject
-@result
 async def get_user(
     self,
     user_id: UUID,  # Litestar auto-converts path params
@@ -140,12 +119,13 @@ handler: Depends[auth.LoginHandler]
 
 ## Registration
 
-Register controllers in `backend/entry/rest/v1/__init__.py`:
+Register controllers in `backend/entry/rest/v1/__init__.py` using `DishkaRouter`:
 
 ```python
-def create_v1_router() -> Router:
-    return Router(
+def create_v1_router() -> DishkaRouter:
+    return DishkaRouter(
         path="/v1",
+        after_request=wrap_ok,
         route_handlers=[AuthController, UsersController, ...],
     )
 ```
@@ -157,3 +137,4 @@ def create_v1_router() -> Router:
 - Controllers contain NO business logic -- only routing and type conversion
 - Command DTOs can be used directly as request body: `data: auth.LoginCommand`
 - For controllers with collection-level custom methods, set `path = ""` and use full explicit paths
+- `@delete` routes return `None` and produce HTTP 204 — the `wrap_ok` hook skips them automatically

@@ -1,11 +1,9 @@
-from collections.abc import Callable, Coroutine
-from functools import wraps
 from typing import Any
 
+from litestar import MediaType, Response
 from msgspec import field
 
 from backend.internal.dto import StructDTO
-from backend.internal.result import Ok, Result
 
 
 class ErrorDetail(StructDTO):
@@ -15,15 +13,11 @@ class ErrorDetail(StructDTO):
     details: list[dict[str, Any]] = field(default_factory=list)
 
 
-type ResultResponse[T] = Result[T, ErrorDetail]
-
-
-def result[**P, T](
-    fn: Callable[P, Coroutine[Any, Any, T]],
-) -> Callable[P, Coroutine[Any, Any, ResultResponse[T]]]:
-    @wraps(fn)
-    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> ResultResponse[T]:
-        res = await fn(*args, **kwargs)
-        return Ok(data=res)
-
-    return wrapper
+async def wrap_ok(response: Response[Any]) -> Response[Any]:
+    if response.status_code == 204:  # noqa: PLR2004
+        return response
+    return Response(
+        {"type": "ok", "data": response.content},
+        status_code=response.status_code,
+        media_type=MediaType.JSON,
+    )

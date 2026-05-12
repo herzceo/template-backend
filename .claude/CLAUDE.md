@@ -103,7 +103,7 @@ Read-only interfaces for complex queries that repositories can't serve efficient
 Port = `Protocol` in `app/shared/ports/{category}/`. Adapter = `@final` class in `infra/external/adapters/`. Naming: port = `PasswordHasher`, adapter = `ImplArgon2PasswordHasher`. Adapters never imported by `app/`.
 
 ### Dependency Injection (entry/rest/main/ioc.py)
-Dishka `Provider(scope=Scope.APP|REQUEST)`. Bind impl to Protocol: `provider.provide(ImplClass, provides=ProtocolType)`. `@inject` decorator on controller methods. `Depends[Type]` for parameter injection.
+Dishka `Provider(scope=Scope.APP|REQUEST)`. Bind impl to Protocol: `provider.provide(ImplClass, provides=ProtocolType)`. `Depends[Type]` for parameter injection. `DishkaRouter` in `create_v1_router()` auto-applies injection to all controllers — no per-route `@inject` needed.
 
 ### Error Handling (app/errors.py + internal/result.py + internal/option.py)
 `DetailedError(message, code, details)` hierarchy. `Option[T].some(exc)` for repo lookups. `Result[T,E] = Ok[T] | Err[E]` with `.raise_()` for HTTP client responses.
@@ -112,7 +112,7 @@ Dishka `Provider(scope=Scope.APP|REQUEST)`. Bind impl to Protocol: `provider.pro
 All DTOs are `StructDTO` (msgspec.Struct). App DTOs = response shapes (`app/rest/v1/dtos/`). Entry DTOs = request bodies (`entry/rest/v1/dtos.py`). Conversion: `DTO.from_object(entity)`.
 
 ### Controllers (entry/rest/v1/)
-Litestar `Controller` subclass. Decorator order: `@get|@post` -> `@inject` -> `@result`. Handler injected via `Depends[HandlerType]`. Controllers convert `str` path params to `UUID`/`datetime`/enum before creating commands. Registered in `create_v1_router()`. Non-CRUD operations use Google-style `:camelCaseVerb` suffix (`@post("/{id:str}:assignRole")`). List endpoints use `page_size: int = 50, page_token: str | None = None` query params. Controllers needing collection-level custom methods (e.g., `/auth:signIn`) set `path = ""` and use explicit full paths.
+Litestar `Controller` subclass. Route methods use only the HTTP method decorator (`@get|@post|@patch|@delete`) — no `@inject` (handled by `DishkaRouter`) and no `@result` (handled by the router-level `after_request=wrap_ok` hook in `create_v1_router()`). Handler injected via `Depends[HandlerType]`. Controllers convert `str` path params to `UUID`/`datetime`/enum before creating commands. Registered in `create_v1_router()`. Non-CRUD operations use Google-style `:camelCaseVerb` suffix (`@post("/{id:str}:assignRole")`). List endpoints use `offset: int = 0, limit: int = 50` query params. Controllers needing collection-level custom methods (e.g., `/auth:signIn`) set `path = ""` and use explicit full paths.
 
 ### Entities (domain/entities/)
 SQLAlchemy `DeclarativeBase` with mixins: `WithUUIDID`, `WithActive`, `WithTime`, `WithTenant`. Mixin order: `WithUUIDID, WithActive, WithTime, WithTenant, Base`. Auto table naming. `Mapped[T]` with `mapped_column()`. Relationships use `lazy="raise"`. Companion entities (1:1 satellites of a primary entity) use only `WithUUIDID, WithTime, Base` and are always created in the same transaction as their primary — see `Profile` as the canonical example (`backend/domain/entities/profile.py`).

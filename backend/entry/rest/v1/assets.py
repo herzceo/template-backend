@@ -6,8 +6,7 @@ from litestar import Controller, Request, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import assets
-from backend.entry.rest.common.response import result
-from backend.internal.di import Depends, inject
+from backend.internal.di import Depends
 
 from .dtos import ConfirmAssetUploadBody, PresignAssetBody, UpdateAssetBody
 
@@ -17,8 +16,6 @@ class AssetsController(Controller):
     tags = ("Assets",)
 
     @post("/assets:presign")
-    @inject
-    @result
     async def presign_asset(
         self,
         data: PresignAssetBody,
@@ -33,8 +30,6 @@ class AssetsController(Controller):
         )
 
     @post("/assets/")
-    @inject
-    @result
     async def create_asset(
         self,
         data: ConfirmAssetUploadBody,
@@ -51,8 +46,6 @@ class AssetsController(Controller):
         )
 
     @get("/assets/")
-    @inject
-    @result
     async def list_assets(
         self,
         handler: Depends[assets.ListAssetsHandler],
@@ -62,8 +55,6 @@ class AssetsController(Controller):
         return await handler(assets.ListAssetsCommand(offset=offset, limit=limit))
 
     @get("/assets/{id:str}")
-    @inject
-    @result
     async def get_asset(
         self,
         id: str,
@@ -72,8 +63,6 @@ class AssetsController(Controller):
         return await handler(assets.GetAssetCommand(id=UUID(id)))
 
     @patch("/assets/{id:str}")
-    @inject
-    @result
     async def update_asset(
         self,
         id: str,
@@ -83,7 +72,6 @@ class AssetsController(Controller):
         return await handler(assets.UpdateAssetCommand(id=UUID(id), **msgspec.structs.asdict(data)))
 
     @delete("/assets/{id:str}")
-    @inject
     async def delete_asset(
         self,
         id: str,

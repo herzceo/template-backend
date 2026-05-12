@@ -1,4 +1,7 @@
-from litestar import Router, get
+from dishka.integrations.litestar import DishkaRouter
+from litestar import get
+
+from backend.entry.rest.common.response import wrap_ok
 
 from .assets import AssetsController
 from .audit_logs import AuditLogsController
@@ -17,9 +20,10 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-def create_v1_router() -> Router:
-    return Router(
+def create_v1_router() -> DishkaRouter:
+    return DishkaRouter(
         path="/v1",
+        after_request=wrap_ok,
         route_handlers=[
             health,
             AuthController,

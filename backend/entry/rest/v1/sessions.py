@@ -4,8 +4,7 @@ from litestar import Controller, delete, get, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import sessions
-from backend.entry.rest.common.response import result
-from backend.internal.di import Depends, inject
+from backend.internal.di import Depends
 
 
 class SessionsController(Controller):
@@ -13,8 +12,6 @@ class SessionsController(Controller):
     tags = ("Sessions",)
 
     @get("/")
-    @inject
-    @result
     async def list_sessions(
         self,
         handler: Depends[sessions.ListSessionsHandler],
@@ -24,8 +21,6 @@ class SessionsController(Controller):
         return await handler(sessions.ListSessionsCommand(offset=offset, limit=limit))
 
     @post("/")
-    @inject
-    @result
     async def create_session(
         self,
         data: sessions.CreateSessionCommand,
@@ -34,8 +29,6 @@ class SessionsController(Controller):
         return await handler(data)
 
     @get("/{id:str}")
-    @inject
-    @result
     async def get_session(
         self,
         id: str,
@@ -44,7 +37,6 @@ class SessionsController(Controller):
         return await handler(sessions.GetSessionCommand(id=UUID(id)))
 
     @delete("/{id:str}")
-    @inject
     async def delete_session(
         self,
         id: str,

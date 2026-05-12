@@ -5,8 +5,7 @@ from litestar import Controller, delete, get, patch, post
 
 from backend.app.rest.v1 import dtos
 from backend.app.rest.v1.handlers import roles
-from backend.entry.rest.common.response import result
-from backend.internal.di import Depends, inject
+from backend.internal.di import Depends
 
 from .dtos import AssignPermissionBody, RevokePermissionBody, UpdateRoleBody
 
@@ -19,8 +18,6 @@ class RolesController(Controller):
     )
 
     @get("/roles/")
-    @inject
-    @result
     async def list_roles(
         self,
         handler: Depends[roles.ListRolesHandler],
@@ -30,8 +27,6 @@ class RolesController(Controller):
         return await handler(roles.ListRolesCommand(offset=offset, limit=limit))
 
     @post("/roles/")
-    @inject
-    @result
     async def create_role(
         self,
         data: roles.CreateRoleCommand,
@@ -40,8 +35,6 @@ class RolesController(Controller):
         return await handler(data)
 
     @get("/roles/{id:uuid}")
-    @inject
-    @result
     async def get_role(
         self,
         id: UUID,
@@ -50,8 +43,6 @@ class RolesController(Controller):
         return await handler(roles.GetRoleCommand(id=id))
 
     @patch("/roles/{id:uuid}")
-    @inject
-    @result
     async def update_role(
         self,
         id: UUID,
@@ -61,7 +52,6 @@ class RolesController(Controller):
         return await handler(roles.UpdateRoleCommand(id=id, **msgspec.structs.asdict(data)))
 
     @delete("/roles/{id:uuid}")
-    @inject
     async def delete_role(
         self,
         id: UUID,
@@ -70,8 +60,6 @@ class RolesController(Controller):
         return await handler(roles.DeleteRoleCommand(id=id))
 
     @post("/roles:assignPermission")
-    @inject
-    @result
     async def assign_permission(
         self,
         data: AssignPermissionBody,
@@ -82,8 +70,6 @@ class RolesController(Controller):
         )
 
     @post("/roles:revokePermission")
-    @inject
-    @result
     async def revoke_permission(
         self,
         data: RevokePermissionBody,
