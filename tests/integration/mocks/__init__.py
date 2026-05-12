@@ -1,3 +1,4 @@
+from .database import TestImplDatabase
 from .dbus import MockDBus
 from .email import MockEmailSender
 from .oauth import MockOAuthGateway
@@ -10,4 +11,5 @@ __all__ = (
     "MockOAuthGateway",
     "MockObjectStore",
     "MockVerificationCodeStore",
+    "TestImplDatabase",
 )

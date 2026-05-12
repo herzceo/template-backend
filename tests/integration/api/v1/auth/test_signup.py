@@ -4,7 +4,6 @@ from http import HTTPStatus
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
-from backend.app.shared.db.dbus import DBus
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested
 from tests.integration.mocks import MockDBus
 
@@ -33,8 +32,7 @@ async def test_signup_creates_user_and_publishes_event(
     assert r.status_code == HTTPStatus.CREATED
 
     async with container() as c:
-        dbus = await c.get(DBus)
-    assert isinstance(dbus, MockDBus)
+        dbus = await c.get(MockDBus)
     events = dbus.get_published_of_type(UserVerificationRequested)
     assert len(events) >= 1
     assert any(e.email == email for e in events)

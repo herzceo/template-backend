@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Self, final
+from typing import TYPE_CHECKING, Self
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from backend.app.shared.db.database import Database
+from backend.app.shared.db.dbus import DBus
 from backend.infra.database.psql.dbus.dbus import ImplDBus
 from backend.infra.database.psql.repos.gateway import ImplRepoGateway
 
@@ -12,7 +13,6 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSessionTransaction
 
 
-@final
 class ImplDatabase(Database):
     __slots__ = ("_dbus", "_session", "_txn_stack")
 
@@ -22,7 +22,7 @@ class ImplDatabase(Database):
         self._dbus: ImplDBus | None = None
 
     @property
-    def dbus(self) -> ImplDBus:
+    def dbus(self) -> DBus:
         if not self._txn_stack:
             msg = "Database.dbus accessed outside of an `async with db:` block"
             raise RuntimeError(msg)

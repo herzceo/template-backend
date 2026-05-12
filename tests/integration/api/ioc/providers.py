@@ -10,7 +10,6 @@ from sqlalchemy.pool import NullPool
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.services.session import SessionConfig, SessionService
 from backend.app.shared.db.database import Database
-from backend.app.shared.db.dbus import DBus
 from backend.app.shared.db.query_services.gateway import QueryServiceGateway
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
@@ -20,7 +19,6 @@ from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.app.shared.ports.storage import ObjectStore
 from backend.entry.rest.main.ioc import create_handlers_provider
-from backend.infra.database.psql import ImplDatabase
 from backend.infra.database.psql.engine import create_async_session_maker
 from backend.infra.database.psql.queries import ImplQueryServiceGateway
 from backend.infra.security.oauth_state import ImplHMACOAuthStateSigner
@@ -32,6 +30,7 @@ from tests.integration.mocks import (
     MockOAuthGateway,
     MockObjectStore,
     MockVerificationCodeStore,
+    TestImplDatabase,
 )
 
 
@@ -43,28 +42,29 @@ def _create_session_service(
 
 async def _create_test_database(
     session_maker: async_sessionmaker[AsyncSession],
-) -> AsyncIterator[ImplDatabase]:
-    db = ImplDatabase(session_maker)
+    mock_dbus: MockDBus,
+) -> AsyncIterator[TestImplDatabase]:
+    db = TestImplDatabase(session_maker, mock_dbus)
     try:
         yield db
     finally:
         await db.close()
 
 
-def _database_alias(db: ImplDatabase) -> Database:
+def _database_alias(db: TestImplDatabase) -> Database:
     return db
 
 
 def create_test_container(*, postgres_url: str) -> AsyncContainer:
-    mock_email = MockEmailSender()
     mock_dbus = MockDBus()
+    mock_email = MockEmailSender()
     mock_object_store = MockObjectStore()
     mock_oauth = MockOAuthGateway()
     mock_verification = MockVerificationCodeStore()
 
     mocks_provider = Provider(scope=Scope.APP)
+    mocks_provider.provide(lambda: mock_dbus, provides=MockDBus)
     mocks_provider.provide(lambda: mock_email, provides=EmailSender)
-    mocks_provider.provide(lambda: mock_dbus, provides=DBus)
     mocks_provider.provide(lambda: mock_object_store, provides=ObjectStore)
     mocks_provider.provide(lambda: mock_oauth, provides=OAuthGateway)
     mocks_provider.provide(lambda: mock_verification, provides=VerificationCodeStore)
@@ -77,7 +77,7 @@ def create_test_container(*, postgres_url: str) -> AsyncContainer:
     db_provider.provide(lambda: session_maker, provides=async_sessionmaker[AsyncSession])
 
     req_provider = Provider(scope=Scope.REQUEST)
-    req_provider.provide(_create_test_database, provides=ImplDatabase)
+    req_provider.provide(_create_test_database, provides=TestImplDatabase)
     req_provider.provide(_database_alias, provides=Database)
     req_provider.provide(ImplQueryServiceGateway, provides=QueryServiceGateway)
 
