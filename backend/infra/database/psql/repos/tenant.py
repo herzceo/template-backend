@@ -17,3 +17,8 @@ class ImplTenantRepo(ImplCRUDSupported[Tenant], TenantRepo):
         stmt = select(Tenant).where(Tenant.is_default.is_(True))
         result = await self._session.execute(stmt)
         return Option(result.scalar_one_or_none())
+
+    async def get_by_app_id(self, app_id: str) -> Option[Tenant]:
+        stmt = select(Tenant).where(Tenant.app_id == app_id)
+        result = await self._session.execute(stmt)
+        return Option(result.scalar_one_or_none())

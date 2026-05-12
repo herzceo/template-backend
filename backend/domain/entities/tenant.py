@@ -14,6 +14,7 @@ from .base import Base, WithActive, WithTime, WithUUIDID
 class Tenant(WithUUIDID, WithActive, WithTime, Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
+    app_id: Mapped[str | None] = mapped_column(String(64), unique=True, index=True, nullable=True)
     settings: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     is_default: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default="false", nullable=False

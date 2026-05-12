@@ -9,3 +9,6 @@ from backend.internal import Option
 class TenantRepo(CRUDSupported[Tenant], Protocol):
     @abstractmethod
     async def get_default(self) -> Option[Tenant]: ...
+
+    @abstractmethod
+    async def get_by_app_id(self, app_id: str) -> Option[Tenant]: ...

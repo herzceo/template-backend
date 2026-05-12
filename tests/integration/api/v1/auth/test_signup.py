@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from backend.app.shared.events.v1.user_verification_requested import UserVerificationRequested
+from tests.integration.api.factories.tenant import create_tenant
 from tests.integration.mocks import MockDBus
 
 if TYPE_CHECKING:
@@ -26,7 +27,6 @@ async def test_signup_creates_user_and_publishes_event(
             "username": f"user_{uuid4().hex[:8]}",
             "email": email,
             "password": "Test123!",
-            "tenant_id": str(tenant.id),
         },
     )
     assert r.status_code == HTTPStatus.CREATED
@@ -48,7 +48,6 @@ async def test_signup_returns_user_data(
             "username": f"user_{uuid4().hex[:8]}",
             "email": f"data+{uuid4().hex[:8]}@example.com",
             "password": "Test123!",
-            "tenant_id": str(tenant.id),
         },
     )
     assert r.status_code == HTTPStatus.CREATED
@@ -64,7 +63,6 @@ async def test_signup_duplicate_email_returns_conflict(
     payload = {
         "email": email,
         "password": "Test123!",
-        "tenant_id": str(tenant.id),
     }
     r1 = await client.post(
         "/v1/auth:signUp",
@@ -77,3 +75,36 @@ async def test_signup_duplicate_email_returns_conflict(
         json={**payload, "username": f"user_{uuid4().hex[:8]}"},
     )
     assert r2.status_code == HTTPStatus.CONFLICT
+
+
+async def test_signup_with_app_id_header(
+    client: AsyncTestClient[Any],
+    container: AsyncContainer,
+) -> None:
+    tenant = await create_tenant(container, app_id="test-app", is_default=False)
+    r = await client.post(
+        "/v1/auth:signUp",
+        headers={"X-App-Id": "test-app"},
+        json={
+            "username": f"user_{uuid4().hex[:8]}",
+            "email": f"appid+{uuid4().hex[:8]}@example.com",
+            "password": "Test123!",
+        },
+    )
+    assert r.status_code == HTTPStatus.CREATED
+    _ = tenant
+
+
+async def test_signup_unknown_app_id_returns_not_found(
+    client: AsyncTestClient[Any],
+) -> None:
+    r = await client.post(
+        "/v1/auth:signUp",
+        headers={"X-App-Id": "no-such-app"},
+        json={
+            "username": f"user_{uuid4().hex[:8]}",
+            "email": f"notfound+{uuid4().hex[:8]}@example.com",
+            "password": "Test123!",
+        },
+    )
+    assert r.status_code == HTTPStatus.NOT_FOUND

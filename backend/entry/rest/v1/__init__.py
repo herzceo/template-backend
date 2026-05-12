@@ -1,4 +1,7 @@
 from litestar import Router, get
+from litestar.di import Provide
+
+from backend.entry.rest.main.dependencies import resolve_tenant_id
 
 from .assets import AssetsController
 from .audit_logs import AuditLogsController
@@ -20,6 +23,7 @@ async def health() -> dict[str, str]:
 def create_v1_router() -> Router:
     return Router(
         path="/v1",
+        dependencies={"tenant_id": Provide(resolve_tenant_id)},
         route_handlers=[
             health,
             AuthController,

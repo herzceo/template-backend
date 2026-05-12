@@ -16,6 +16,7 @@ async def create_tenant(
     name: str = "Test Tenant",
     slug: str | None = None,
     is_default: bool = True,
+    app_id: str | None = None,
 ) -> Tenant:
     async with container() as c:
         db: Database = await c.get(Database)
@@ -25,6 +26,7 @@ async def create_tenant(
                 name=name,
                 slug=slug or f"test-{uuid4().hex[:8]}",
                 is_default=is_default,
+                app_id=app_id,
             )
             created = (await db.gateway.tenant.create(tenant)).some(
                 RuntimeError("Failed to create tenant")

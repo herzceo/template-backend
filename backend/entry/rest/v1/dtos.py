@@ -6,6 +6,12 @@ from backend.domain.enums import AssetContentType
 from backend.internal.dto import StructDTO
 
 
+class SignupBody(StructDTO):
+    username: str
+    email: str
+    password: str
+
+
 class SignInBody(StructDTO):
     username: str
     password: str

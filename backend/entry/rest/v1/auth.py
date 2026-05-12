@@ -1,4 +1,5 @@
 from typing import Annotated, Any
+from uuid import UUID
 
 from litestar import Controller, Request, get, post
 from litestar.params import Parameter
@@ -9,7 +10,7 @@ from backend.app.rest.v1.handlers import auth
 from backend.domain.enums import IdentityProvider
 from backend.entry.rest.common.response import result
 from backend.entry.rest.common.scope import set_session_token
-from backend.entry.rest.v1.dtos import SignInBody, VerifyEmailBody
+from backend.entry.rest.v1.dtos import SignInBody, SignupBody, VerifyEmailBody
 from backend.internal.di import Depends, inject
 
 
@@ -45,10 +46,18 @@ class AuthController(Controller):
     @result
     async def sign_up(
         self,
-        data: auth.SignupCommand,
+        data: SignupBody,
+        tenant_id: UUID,
         handler: Depends[auth.SignupHandler],
     ) -> dtos.User:
-        return await handler(data)
+        return await handler(
+            auth.SignupCommand(
+                username=data.username,
+                email=data.email,
+                password=data.password,
+                tenant_id=tenant_id,
+            )
+        )
 
     @post("/auth:verifyEmail", exclude_from_auth=True, status_code=200)
     @inject
