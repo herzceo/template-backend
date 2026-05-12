@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import create_async_engine as _create_async_engine
 from sqlalchemy.pool import NullPool
 
 from backend.entry.queue.main import build_handlers
+from backend.infra.database.psql import ImplDatabase
+from backend.infra.database.psql.dbus.config import QueueExecutorConfig
+from backend.infra.database.psql.dbus.executor import QueueExecutor
 from backend.infra.database.psql.engine import create_async_session_maker
-from backend.infra.database.psql.repos import ImplDatabase
-from backend.infra.dbus.psql.config import QueueExecutorConfig
-from backend.infra.dbus.psql.executor import QueueExecutor
 from tests.integration.events.ioc.providers import create_test_queue_container
 
 if TYPE_CHECKING:

@@ -9,9 +9,9 @@ from backend.entry.queue import run_queue
 from backend.entry.rest.main import APIConfig, run_api
 from backend.infra.database.config import DatabaseConfig
 from backend.infra.database.psql.alembic import ALEMBIC_CONFIG
+from backend.infra.database.psql.dbus.config import QueueExecutorConfig
 from backend.infra.database.redis import RedisConfig
 from backend.infra.database.redis.adapters.config import VerificationConfig
-from backend.infra.dbus.psql.config import QueueExecutorConfig
 from backend.infra.external.http.discord.config import DiscordOAuthConfig
 from backend.infra.external.http.github.config import GitHubOAuthConfig
 from backend.infra.external.http.google_oauth.config import GoogleOAuthConfig

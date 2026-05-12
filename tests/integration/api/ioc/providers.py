@@ -20,9 +20,9 @@ from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.app.shared.ports.storage import ObjectStore
 from backend.entry.rest.main.ioc import create_handlers_provider
+from backend.infra.database.psql import ImplDatabase
 from backend.infra.database.psql.engine import create_async_session_maker
 from backend.infra.database.psql.queries import ImplQueryServiceGateway
-from backend.infra.database.psql.repos import ImplDatabase
 from backend.infra.security.oauth_state import ImplHMACOAuthStateSigner
 from backend.infra.security.password_hasher import ImplArgon2PasswordHasher
 from backend.infra.security.secret_token import ImplSHA256SecretTokenGenerator

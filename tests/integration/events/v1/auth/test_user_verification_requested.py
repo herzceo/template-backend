@@ -12,7 +12,7 @@ from tests.integration.mocks import MockEmailSender, MockVerificationCodeStore
 if TYPE_CHECKING:
     from dishka import AsyncContainer
 
-    from backend.infra.dbus.psql.executor import QueueExecutor
+    from backend.infra.database.psql.dbus.executor import QueueExecutor
 
 
 async def test_issues_code_and_sends_email(

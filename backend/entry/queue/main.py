@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 from dishka import make_async_container
 
 from backend.app.events.v1.handlers import get_defined_event_handlers
+from backend.infra.database.psql import ImplDatabase
+from backend.infra.database.psql.dbus.executor import HandlerDef, QueueExecutor
 from backend.infra.database.psql.engine import create_async_engine, create_async_session_maker
-from backend.infra.database.psql.repos import ImplDatabase
-from backend.infra.dbus.psql.executor import HandlerDef, QueueExecutor
 
 from .ioc import (
     create_email_provider,
@@ -24,9 +24,9 @@ if TYPE_CHECKING:
     from backend.app.events.v1.handlers.base import EventHandler
     from backend.app.shared.events.base import BaseEvent
     from backend.infra.database.config import DatabaseConfig
+    from backend.infra.database.psql.dbus.config import QueueExecutorConfig
     from backend.infra.database.redis import RedisConfig
     from backend.infra.database.redis.adapters.config import VerificationConfig
-    from backend.infra.dbus.psql.config import QueueExecutorConfig
     from backend.infra.external.http.resend.config import ResendConfig
 
 logger = logging.getLogger(__name__)

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.shared.db.dbus import DBus, PublishOptions
 from backend.domain.entities.queue.job import Job
-from backend.infra.dbus.psql.job_service import JobService
+from backend.infra.database.psql.dbus.job_service import JobService
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

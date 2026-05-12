@@ -13,8 +13,8 @@ from sqlalchemy import text
 
 from backend.domain.entities.queue.enums import JobStatus
 from backend.domain.entities.queue.job import Job
-from backend.infra.dbus.psql.job_service import JobService
-from backend.infra.dbus.psql.worker_service import WorkerService
+from backend.infra.database.psql.dbus.job_service import JobService
+from backend.infra.database.psql.dbus.worker_service import WorkerService
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Coroutine
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncEngine
 
     from backend.app.shared.db.database import Database
-    from backend.infra.dbus.psql.config import QueueExecutorConfig
+    from backend.infra.database.psql.dbus.config import QueueExecutorConfig
 
 logger = logging.getLogger(__name__)
 

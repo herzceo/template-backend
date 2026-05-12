@@ -5,9 +5,8 @@ from typing import TYPE_CHECKING, Self, final
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from backend.app.shared.db.database import Database
-from backend.infra.dbus.psql.dbus import ImplDBus
-
-from .gateway import ImplRepoGateway
+from backend.infra.database.psql.dbus.dbus import ImplDBus
+from backend.infra.database.psql.repos.gateway import ImplRepoGateway
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSessionTransaction

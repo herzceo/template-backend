@@ -27,12 +27,12 @@ from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.app.shared.ports.storage import ObjectStore
 from backend.infra.database.config import DatabaseConfig
 from backend.infra.database.object import NullObjectStore, S3ObjectStore
+from backend.infra.database.psql import ImplDatabase
 from backend.infra.database.psql.engine import (
     create_async_engine,
     create_async_session_maker,
 )
 from backend.infra.database.psql.queries import ImplQueryServiceGateway
-from backend.infra.database.psql.repos import ImplDatabase
 from backend.infra.database.redis import RedisClient
 from backend.infra.database.redis.adapters.config import VerificationConfig
 from backend.infra.database.redis.adapters.verification_code import ImplVerificationCodeStore
