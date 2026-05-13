@@ -60,7 +60,8 @@ def gh_pr(pr_number: int, fields: str) -> dict[str, Any]:
         return {}
 
 
-_FAILING_CONCLUSIONS = {"FAILURE", "TIMED_OUT", "CANCELLED", "STARTUP_FAILURE", "ACTION_REQUIRED"}
+_FAILING_CONCLUSIONS = {"FAILURE", "TIMED_OUT", "STARTUP_FAILURE", "ACTION_REQUIRED"}
+_IN_PROGRESS_STATUSES = {"QUEUED", "IN_PROGRESS", "WAITING", "PENDING"}
 
 
 def new_activity(pr: dict[str, Any], state: dict[str, Any]) -> bool:
@@ -80,8 +81,11 @@ def new_activity(pr: dict[str, Any], state: dict[str, Any]) -> bool:
 
 
 def _failed_checks(pr: dict[str, Any]) -> list[dict[str, Any]]:
+    checks = pr.get("statusCheckRollup", [])
+    if any(c.get("status") in _IN_PROGRESS_STATUSES for c in checks):
+        return []
     return [
-        c for c in pr.get("statusCheckRollup", [])
+        c for c in checks
         if c.get("status") == "COMPLETED" and c.get("conclusion") in _FAILING_CONCLUSIONS
     ]
 
