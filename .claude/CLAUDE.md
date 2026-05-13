@@ -168,7 +168,7 @@ User-invoked overrides:
 - `/chat <problem>` -- design consultation before committing to an approach; outputs options + trade-offs + recommendation; no code written
 
 Project setup (use when forking this template):
-- `/specialize` -- interactive session: asks about your domain, auth, infra, and MVP scope, then renames the package, prunes unused code, scaffolds your entities/endpoints, and replaces the init migration
+- `/specialize` -- interactive session: asks about your domain, auth, infra, and MVP scope, then prunes unused code, scaffolds your entities/endpoints, updates project identity config, and replaces the init migration
 
 Template orientation:
 - `/help` -- overview of the template, all commands, and how to start
@@ -196,6 +196,12 @@ Implementation (use DURING coding):
 Test feedback loop (use AFTER coding):
 - `/run-tests <domain | path | category> [pattern]` -- scoped pytest run, faster than `just test`
 - `/debug-failing-test <test-path>` -- decision-tree diagnosis using project test recipes
+
+Linear task automation:
+- `/task <task-id>` -- autonomous mode: isolated tmux session + worktree, agent runs with --dangerously-skip-permissions, no interaction needed
+- `/task <task-id> --interactive` -- same setup but session is open for conversation; attach with `tmux attach -t claude-<task-id>`
+- PR watcher runs in background (zero tokens), injects feedback into the agent's session via tmux send-keys when review activity is detected
+- On merge/close: watcher signals agent to update Linear, then removes session + worktree automatically
 
 ## Agents (`.claude/agents/`)
 

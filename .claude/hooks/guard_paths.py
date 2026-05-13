@@ -17,19 +17,16 @@ import sys
 from pathlib import Path
 
 FORBIDDEN = [
-    r"^backend/infra/database/psql/alembic/migrations/versions/.+\.py$",
-    r"^uv\.lock$",
-    r"^\.env(\..*)?$",
-    r"^\.claude/hooks/.+\.py$",
-]
+      r"^backend/infra/database/psql/alembic/migrations/versions/.+\.py$",
+      r"^uv\.lock$",
+      r"^\.env(\..*)?$",
+  ]
 
 ALLOWLIST = [
-    r"^\.env\.(example|sample|template)$",
-]
+      r"^\.env\.(example|sample|template)$",
+  ]
 
-CREATION_ALLOWED = [
-    r"^\.claude/hooks/.+\.py$",
-]
+CREATION_ALLOWED: list[str] = []
 
 
 def main() -> int:

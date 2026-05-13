@@ -25,6 +25,9 @@ plan-guard:
 notify:
     uv run python .claude/hooks/notify.py
 
+pr-watcher:
+    uv run python -u .claude/hooks/pr-watcher.py
+
 status:
     @echo "branch: $(git branch --show-current)"
     @git diff --stat HEAD 2>/dev/null || true

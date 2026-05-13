@@ -1,6 +1,6 @@
 ---
 name: specialize
-description: One-shot guided session — renames the package, prunes unused code, scaffolds new entities/endpoints, and replaces the init migration for a specific project.
+description: One-shot guided session — prunes unused code, scaffolds new entities/endpoints, updates project identity config, and replaces the init migration for a specific project.
 ---
 
 # Specialize This Template
@@ -19,7 +19,7 @@ Run four rounds of `AskUserQuestion`. Batch questions to avoid overwhelming the 
 
 Three questions in one call:
 
-1. **Project slug** — becomes the Python package name. Must be a valid Python identifier: lowercase letters, digits, underscores only, starts with a letter. Example: `shop_api`, `crm`, `my_app`.
+1. **Project slug** — used for project identity: display name, docker container/volume prefix, pyproject metadata. Must be a valid Python identifier: lowercase letters, digits, underscores only, starts with a letter. Example: `shop_api`, `crm`, `my_app`. **The Python package folder stays `backend/` — do not rename it.**
 2. **Display name** — human-readable title used in OpenAPI docs and README. Example: "Shop API".
 3. **One-line description** — what this project does.
 
@@ -97,11 +97,6 @@ Output the following plan. No files are touched in this phase.
 ```markdown
 # Specialization Plan: {DisplayName}
 
-## Package Rename
-`backend/` → `{slug}/`
-Affects: pyproject.toml (name, scripts entry, mypy files), justfile (uv run backend → uv run {slug}),
-docker-compose.local.yaml (command arrays + container name prefix), alembic env.py (import statement)
-
 ## Files to DELETE
 
 ### Entities (and their repo protocols + implementations)
@@ -151,10 +146,8 @@ docker-compose.local.yaml (command arrays + container name prefix), alembic env.
 ## Config Updates
 
 ### pyproject.toml
-- [project] name: "backend" → "{slug}"
+- [project] name: "backend" → "{slug}" (metadata only — scripts entry and imports stay as `backend`)
 - [project] description: → "{description}"
-- [project.scripts] backend → {slug}, entry path backend.main.cli → {slug}.main.cli
-- [tool.mypy] files: ["backend/", "tests/"] → ["{slug}/", "tests/"]
 
 ### .env.example
 Remove: {list of env vars for removed integrations}
@@ -162,15 +155,12 @@ Add: {list of env vars for new integrations}
 Update: NAME="{DisplayName}", DESCRIPTION="{description}", CORS_ALLOW_ORIGINS="{frontend_origin}"
 
 ### docker-compose.local.yaml
-- Command arrays: `["backend", "api"]` → `["{slug}", "api"]`, same for alembic command
 - Container name prefix: `template.local.` → `{slug}.local.`
 - Volume names: `template.local.psql_data` → `{slug}.local.psql_data`, etc.
-
-### justfile
-- `uv run backend` → `uv run {slug}` (in run, migrate, migration recipes)
+- Command arrays (`["backend", "api"]`, alembic) stay unchanged
 
 ### .claude/CLAUDE.md
-- Stack section: `backend/` → `{slug}/` in architecture diagram
+- Update display name references if any
 
 ## Migration Replacement
 - Delete: backend/infra/database/alembic/migrations/versions/2026_04_30_*.py
@@ -210,42 +200,23 @@ Execute in the order listed in the plan. Steps unique to specialization are desc
 git add -A && git commit -m "chore: pre-specialization snapshot"
 ```
 
-### 5.2 — Package Rename
+### 5.2 — Docker Container/Volume Prefix
+
+The `backend/` package folder is never renamed. Only the docker-compose container/volume prefix changes:
 
 ```bash
-mv backend/ {slug}/
-
-# Update Python imports (macOS-safe sed; Linux: drop the '' after -i)
-find . -name "*.py" \
-  -not -path "./.venv/*" -not -path "*__pycache__*" \
-  | xargs sed -i '' \
-      -e 's/from backend\./from {slug}./g' \
-      -e 's/import backend\b/import {slug}/g'
-
-# justfile
-sed -i '' 's/uv run backend/uv run {slug}/g' justfile
-
-# docker-compose.local.yaml — command arrays and container/volume name prefix
-sed -i '' \
-  -e 's/"backend", "api"/"'{slug}'", "api"/g' \
-  -e 's/"backend", "alembic"/"'{slug}'", "alembic"/g' \
-  -e 's/template\.local\./{slug}.local./g' \
-  docker-compose.local.yaml
-
-# pyproject.toml and .claude/CLAUDE.md — edit with the Edit tool (not sed) for precision
+sed -i '' 's/template\.local\./{slug}.local./g' docker-compose.local.yaml
 ```
-
-After rename: `uv run python -c "import {slug}"` must not error. Fix any missed references before continuing.
 
 ### 5.3 — Delete Unused Files
 
 Delete each file and directory in the DELETE list. After bulk deletes:
-- Remove stale exports from `backend/domain/entities/__init__.py` (now `{slug}/domain/entities/__init__.py`)
+- Remove stale exports from `backend/domain/entities/__init__.py`
 - Remove stale exports from `backend/domain/repos/__init__.py`
-- Remove stale entries from `{slug}/infra/database/psql/repos/__init__.py`
-- Remove stale gateway properties from `{slug}/domain/repos/gateway.py` and its impl
-- Remove stale controller imports and route_handlers entries from `{slug}/entry/rest/v1/__init__.py`
-- Remove stale provider bindings from `{slug}/entry/rest/main/ioc.py`
+- Remove stale entries from `backend/infra/database/psql/repos/__init__.py`
+- Remove stale gateway properties from `backend/domain/repos/gateway.py` and its impl
+- Remove stale controller imports and route_handlers entries from `backend/entry/rest/v1/__init__.py`
+- Remove stale provider bindings from `backend/entry/rest/main/ioc.py`
 
 ### 5.4 — Scaffold New Entities, Repos, Handlers, Endpoints
 
@@ -262,7 +233,7 @@ For HTTP-based services: invoke `/add-http-client` first, then wire via `/add-po
 
 ### 5.6 — Config Updates
 
-Edit `pyproject.toml`, `.env.example`, `.claude/CLAUDE.md` with the Edit tool per the plan's Config Updates section. Use `sed` for docker-compose and justfile (already done in 5.2 for most changes).
+Edit `pyproject.toml`, `.env.example`, `.claude/CLAUDE.md` with the Edit tool per the plan's Config Updates section.
 
 For `.env.example`: add a comment block for secrets that need generation:
 ```
@@ -273,7 +244,7 @@ OAUTH_STATE_SECRET=
 ### 5.7 — Migration Replacement
 
 ```bash
-rm {slug}/infra/database/alembic/migrations/versions/2026_04_30_*.py
+rm backend/infra/database/alembic/migrations/versions/2026_04_30_*.py
 just migration "init"
 ```
 

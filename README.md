@@ -10,9 +10,9 @@ Production-ready Python SaaS backend. Clone or fork, open in [Claude Code](https
 /help                Show all available commands and how to get started.
 
 /specialize          Configure this template for your project. Claude asks about your
-                     domain, auth needs, and MVP scope, then renames the package,
-                     removes unused code, scaffolds entities and endpoints, and
-                     generates the initial migration. Run once after cloning.
+                     domain, auth needs, and MVP scope, then removes unused code,
+                     scaffolds entities and endpoints, updates project identity config,
+                     and generates the initial migration. Run once after cloning.
 
 /explain <question>  Ask a quick question about how the template works. Answers come
                      from .claude/ docs only — no codebase scan. Fast, but shallow.
@@ -28,3 +28,57 @@ large] <description> complexity: small (1–2 files, in-place edit), mid (chain 
                      patterns (DDD, Clean Architecture, CQRS, etc.), and presents 2–3
                      options with trade-offs and a recommendation. No code is written.
 ```
+
+## Linear Task Automation
+
+The `/task` skill runs a Linear task end-to-end with zero manual steps between "start" and "PR open for review".
+
+**Requirements:** [tmux](https://github.com/tmux/tmux), [gh CLI](https://cli.github.com/) authenticated, Linear MCP server configured.
+
+### Starting a task
+
+```
+/task MN-123
+```
+
+Claude fetches the issue, creates an isolated git worktree, starts a dedicated tmux session with a fully autonomous agent (`--dangerously-skip-permissions`), sets the Linear status to In Progress, and reports back:
+
+```
+Task MN-123 is running autonomously in tmux session claude-MN-123.
+Watch it: tmux attach -t claude-MN-123  (detach with Ctrl-b d)
+```
+
+The agent fetches the task description itself, follows the standard implementation pipeline (research → plan → implement → check → commit → push → PR), then sets Linear to In Review and waits.
+
+### Interactive mode
+
+```
+/task MN-123 --interactive
+```
+
+Same setup, but the agent starts without `--dangerously-skip-permissions`. Attach to the session to talk to it:
+
+```bash
+tmux attach -t claude-MN-123
+```
+
+The agent still receives PR feedback automatically and handles Linear status updates.
+
+### PR watcher
+
+The PR watcher polls GitHub every 60 seconds for all active tasks. Start it once and leave it running — it picks up new tasks dynamically without a restart:
+
+```bash
+just pr-watcher
+```
+
+When the watcher detects activity, it injects a message directly into the task's tmux session via `tmux send-keys`. The agent reads it and acts. No tokens are spent on idle polling.
+
+**What it watches:**
+
+- **Failing CI checks** — notifies the agent with the check names and `gh pr checks <n>` to inspect
+- **Review feedback** (comments + submitted reviews) — tells the agent to read and address all feedback
+- **Merged PR** — asks the agent to set Linear → Done, then removes the session and worktree
+- **Closed PR** — asks the agent to set Linear → Backlog, then removes the session and worktree
+
+State for each task is stored in `.claude/tasks/<task-id>.json` (gitignored). Worktrees live in `.claude/worktrees/` (also gitignored).

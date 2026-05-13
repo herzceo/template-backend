@@ -854,3 +854,7 @@ $RECYCLE.BIN/
 dev/
 frontend/
 test.py
+
+# Claude Code runtime state
+.claude/tasks/
+.claude/worktrees/
