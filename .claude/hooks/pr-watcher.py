@@ -117,10 +117,11 @@ def wait_for_phase_done(state_file: Path, timeout: int) -> None:
         time.sleep(5)
 
 
-def cleanup(state: dict[str, Any], state_file: Path) -> None:
+def cleanup(state: dict[str, Any], state_file: Path, *, delete_remote: bool = False) -> None:
     session = state.get("tmux_session", "")
     worktree = state.get("worktree_path", "")
     branch = state.get("local_branch", "")
+    remote_branch = state.get("remote_branch", "")
     task_id = state.get("task_id", "?")
 
     if session:
@@ -133,6 +134,13 @@ def cleanup(state: dict[str, Any], state_file: Path) -> None:
 
     if branch:
         subprocess.run(["git", "branch", "-D", branch], capture_output=True, check=False)
+
+    if delete_remote and remote_branch:
+        subprocess.run(
+            ["git", "push", "origin", "--delete", remote_branch],
+            capture_output=True, check=False,
+        )
+        print(f"[watcher] deleted remote branch {remote_branch}", flush=True)
 
     state_file.unlink(missing_ok=True)
     print(f"[watcher] cleanup complete for {task_id}", flush=True)
@@ -179,7 +187,7 @@ def check_task(state: dict[str, Any], tasks_dir: Path) -> None:
             final_state = json.loads(state_file.read_text())
         except (json.JSONDecodeError, OSError):
             final_state = state
-        cleanup(final_state, state_file)
+        cleanup(final_state, state_file, delete_remote=True)
         return
 
     failures = new_check_failures(pr, state)
