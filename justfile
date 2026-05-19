@@ -22,6 +22,9 @@ stop-reflect:
 plan-guard:
     uv run python .claude/hooks/plan_guard.py
 
+workflow-reminder:
+    uv run python .claude/hooks/workflow_reminder.py
+
 notify:
     uv run python .claude/hooks/notify.py
 

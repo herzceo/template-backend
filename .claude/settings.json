@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '[workflow] 1) ask questions 2) /research 3) /plan 4) plan-reviewer agent 5) user approval 6) implement 7) implementation-verifier agent. Do NOT skip steps. Do NOT write code before plan is approved.'"
+            "command": "just workflow-reminder"
           }
         ]
       }
@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python .claude/hooks/stop_reflection.py"
+            "command": "just stop-reflect"
           },
           {
             "type": "command",
