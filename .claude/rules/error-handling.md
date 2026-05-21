@@ -21,6 +21,22 @@ ApplicationError                         # Base
     AuthenticationRequiredError          # 401
 ```
 
+## Subclass defaults — never use `@dataclass` on `DetailedError`
+
+`DetailedError` is **not** a dataclass. It uses `_default_message` / `_default_code` as `ClassVar[str]` and a manual `__init__` that falls back to those class-level defaults when the caller does not pass `message=` / `code=`.
+
+Do not "simplify" this back to `@dataclass(eq=False)` with `code: str = ""` as a field. If you do, every subclass override (`code = "not_found"`) is silently shadowed by the dataclass-generated `__init__`, which writes the empty default to every instance. The exception will look correct at the class level (`NotFoundError.code == "not_found"`) but `instance.code` will be `""` — and the gRPC mapper will fall back to `INTERNAL` for every error.
+
+When adding a new error type, override the `ClassVar`s only:
+
+```python
+class TooManyAttemptsError(DetailedError):
+    _default_message = "Too many attempts"
+    _default_code = "too_many_attempts"
+```
+
+Never add `code: str = ...` as a class-level annotation in a subclass — that turns it back into a (shadowed) attribute.
+
 Raise with custom message: `raise NotFoundError(message="User not found")`
 
 Raise with details: `raise ValidationFailedError(message="Invalid email", details={"field": "email"})`
