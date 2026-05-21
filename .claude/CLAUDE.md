@@ -44,11 +44,12 @@ No plan file. No approval step.
 1. **Understand**: ask clarifying questions — business rules, scope, data model, side effects, error cases, naming (at least 2–3 questions)
 2. **Research**: use `/research <topic>` — read all existing code that touches the domain
 3. **Plan**: use `/plan <feature>` — every file, field, method signature, error case; no hand-waving
-4. **Review plan**: use the plan-reviewer agent — fix every gap before proceeding
-5. **Confirm**: present the reviewed plan to the user — wait for explicit approval; never infer it
-6. **Implement**: follow the plan exactly, in dependency order — run `just check` after each major step
-7. **Verify**: use the implementation-verifier agent — every planned file must exist, `just check` must pass
-8. **Audit**: use the architecture-reviewer agent — fix any layer violations or pattern drift before reporting done
+4. **Confirm (plan mode only)**: if the session is running in plan mode, call `ExitPlanMode` to present the plan and wait for approval. Outside plan mode, skip — proceed directly to implementation.
+5. **Implement**: follow the plan exactly, in dependency order — run `just check` after each major step
+6. **Verify**: use the implementation-verifier agent — every planned file must exist, `just check` must pass
+7. **Audit**: use the architecture-reviewer agent — fix any layer violations or pattern drift before reporting done
+
+Run the **plan-reviewer** agent only when the user explicitly asks for a plan review (e.g. "review the plan").
 
 The user can type `/impl [small|mid|tuff] <description>` to explicitly force a tier.
 
@@ -206,7 +207,7 @@ Linear task automation:
 ## Agents (`.claude/agents/`)
 
 Quality gates (enforce the workflow):
-- **plan-reviewer** -- validates plan completeness before implementation. MUST pass.
+- **plan-reviewer** -- validates plan completeness. Invoke only when the user explicitly asks for a plan review.
 - **implementation-verifier** -- validates code matches plan after implementation. MUST pass.
 
 Review (catch issues):

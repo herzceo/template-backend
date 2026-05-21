@@ -6,9 +6,10 @@ import json
 import sys
 
 REMINDER = (
-    "[workflow] 1) ask questions 2) /research 3) /plan 4) plan-reviewer agent "
-    "5) user approval 6) implement 7) implementation-verifier agent. "
-    "Do NOT skip steps. Do NOT write code before plan is approved."
+    "[workflow] 1) ask questions 2) /research 3) /plan 4) implement "
+    "5) implementation-verifier agent. "
+    "If running in plan mode: present plan via ExitPlanMode before implementing. "
+    "Run plan-reviewer only if the user asks for it."
 )
 
 

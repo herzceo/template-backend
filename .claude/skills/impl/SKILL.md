@@ -62,13 +62,14 @@ No plan file. No approval step.
 
 ## tuff pipeline
 
-Follow the full workflow — no steps may be skipped:
+Follow the full workflow:
 
 1. Ask clarifying questions: business rules, scope, data model, side effects, error cases, naming
 2. Run `/research <topic>` — read all relevant existing code thoroughly
 3. Run `/plan <feature>` — produce the structured plan with every file, field, method signature
-4. Delegate to **plan-reviewer** agent — fix every gap it reports before proceeding
-5. Present the reviewed plan to the user — wait for explicit approval; never infer it
-6. Implement in dependency order — run `just check` after each major step; do not deviate from the plan without asking
-7. Delegate to **implementation-verifier** agent — fix any drift before reporting the task done
-8. Delegate to **architecture-reviewer** agent — fix any layer violations or pattern drift before reporting done
+4. **Confirm (plan mode only)**: if the session is running in plan mode, call `ExitPlanMode` to present the plan and wait for approval. Outside plan mode, skip — proceed directly to implementation.
+5. Implement in dependency order — run `just check` after each major step; do not deviate from the plan without asking
+6. Delegate to **implementation-verifier** agent — fix any drift before reporting the task done
+7. Delegate to **architecture-reviewer** agent — fix any layer violations or pattern drift before reporting done
+
+Run the **plan-reviewer** agent only when the user explicitly asks for a plan review.

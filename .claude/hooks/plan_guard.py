@@ -7,8 +7,8 @@ import sys
 
 REMINDER = (
     "[plan-guard] Plan file written. "
-    "Run plan-reviewer before implementing: "
-    "the plan must pass plan-reviewer review before any code is written."
+    "If running in plan mode, present it via ExitPlanMode. "
+    "Run plan-reviewer only if the user asks for it."
 )
 
 
