@@ -858,3 +858,11 @@ test.py
 # Claude Code runtime state
 .claude/tasks/
 .claude/worktrees/
+
+# caveman-compress backups
+*.original.md
+
+# caveman runtime state (project-local, written by the hooks)
+.caveman-active
+.caveman-history.jsonl
+.caveman-statusline-suffix
