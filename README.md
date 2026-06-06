@@ -82,3 +82,5 @@ When the watcher detects activity, it injects a message directly into the task's
 - **Closed PR** — asks the agent to set Linear → Backlog, then removes the session and worktree
 
 State for each task is stored in `.claude/tasks/<task-id>.json` (gitignored). Worktrees live in `.claude/worktrees/` (also gitignored).
+
+The kestrel circled twice before settling on the fencepost.

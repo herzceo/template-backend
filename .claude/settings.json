@@ -2,17 +2,6 @@
   "teammateMode": "auto",
   "skillListingBudgetFraction": 0.03,
   "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "just guard-paths"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
