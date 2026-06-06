@@ -858,3 +858,6 @@ test.py
 # Claude Code runtime state
 .claude/tasks/
 .claude/worktrees/
+
+# Archives — never commit zipped snapshots
+*.zip
