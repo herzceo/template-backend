@@ -1,4 +1,5 @@
 compose_file := "./docker-compose.local.yaml"
+prod_compose_file := "./docker-compose.prod.yaml"
 
 init:
     uv sync
@@ -64,6 +65,18 @@ delete: stop
 
 logs:
     docker compose -f {{ compose_file }} logs
+
+prod-up:
+    docker compose -f {{ prod_compose_file }} up -d --build
+
+prod-down:
+    docker compose -f {{ prod_compose_file }} down
+
+prod-logs +svc="":
+    docker compose -f {{ prod_compose_file }} logs -f {{ svc }}
+
+prod-delete:
+    docker compose -f {{ prod_compose_file }} down -v
 
 migrate:
     uv run backend alembic upgrade head

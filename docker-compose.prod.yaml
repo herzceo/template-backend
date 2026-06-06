@@ -1,0 +1,239 @@
+# Production stack: app (api + queue) behind nginx, with a full observability
+# stack (Prometheus + Grafana + Loki + Alloy + exporters).
+#
+# nginx is the ONLY service that publishes a host port. Everything else is
+# reachable only on the internal compose network. Grafana is served through
+# nginx at /grafana/; Prometheus and Loki stay internal.
+#
+# TLS: this template terminates plain HTTP on :80. To add TLS, publish :443 on
+# nginx, mount certs, and add an `ssl` server block in monitoring/nginx/nginx.conf.
+
+services:
+  nginx:
+    container_name: template.prod.nginx
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./monitoring/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - stack
+    depends_on:
+      backend:
+        condition: service_healthy
+      grafana:
+        condition: service_started
+    restart: unless-stopped
+
+  backend:
+    container_name: template.prod.backend
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: ["backend", "api"]
+    networks:
+      - stack
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsSL http://localhost:${PORT:-8000}/v1/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    environment:
+      - POSTGRES_HOST=database
+      - REDIS_HOST=redis
+    env_file:
+      - .env
+
+  queue:
+    container_name: template.prod.queue
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: ["backend", "queue"]
+    networks:
+      - stack
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    environment:
+      - POSTGRES_HOST=database
+      - REDIS_HOST=redis
+    env_file:
+      - .env
+
+  migrations:
+    container_name: template.prod.migrations
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: ["backend", "alembic", "upgrade", "head"]
+    networks:
+      - stack
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      - POSTGRES_HOST=database
+    env_file:
+      - .env
+
+  database:
+    container_name: template.prod.database
+    image: postgres:18
+    shm_size: 4g
+    volumes:
+      - psql_data:/var/lib/postgresql:rw
+    networks:
+      - stack
+    command: postgres -c 'max_connections=${POSTGRES_MAX_CONNECTIONS}'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASS}
+      - POSTGRES_MAX_CONNECTIONS=${POSTGRES_MAX_CONNECTIONS}
+    env_file:
+      - .env
+
+  redis:
+    container_name: template.prod.redis
+    image: redis:8
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - stack
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres-exporter:
+    container_name: template.prod.postgres-exporter
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.16.0
+    networks:
+      - stack
+    environment:
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER}:${POSTGRES_PASS}@database:5432/${POSTGRES_DB}?sslmode=disable
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis-exporter:
+    container_name: template.prod.redis-exporter
+    image: oliver006/redis_exporter:v1.66.0
+    networks:
+      - stack
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  node-exporter:
+    container_name: template.prod.node-exporter
+    image: prom/node-exporter:v1.8.2
+    command:
+      - "--path.rootfs=/host"
+    pid: host
+    volumes:
+      - /:/host:ro,rslave
+    networks:
+      - stack
+    restart: unless-stopped
+
+  prometheus:
+    container_name: template.prod.prometheus
+    image: prom/prometheus:v3.1.0
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+    networks:
+      - stack
+    restart: unless-stopped
+
+  loki:
+    container_name: template.prod.loki
+    image: grafana/loki:3.3.2
+    command: ["-config.file=/etc/loki/loki-config.yml"]
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    networks:
+      - stack
+    restart: unless-stopped
+
+  alloy:
+    container_name: template.prod.alloy
+    image: grafana/alloy:v1.5.1
+    command:
+      - "run"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "/etc/alloy/config.alloy"
+    volumes:
+      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - stack
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  grafana:
+    container_name: template.prod.grafana
+    image: grafana/grafana:11.4.0
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:?set GF_SECURITY_ADMIN_PASSWORD in .env}
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(http_host)s/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - stack
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+
+volumes:
+  psql_data:
+    name: template.prod.psql_data
+  redis_data:
+    name: template.prod.redis_data
+  prom_data:
+    name: template.prod.prom_data
+  loki_data:
+    name: template.prod.loki_data
+  grafana_data:
+    name: template.prod.grafana_data
+
+networks:
+  stack:
+    name: template.prod.stack

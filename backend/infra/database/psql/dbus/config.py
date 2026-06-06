@@ -10,3 +10,4 @@ class QueueExecutorConfig(StructDTO):
     WORKER_PERIODIC_INTERVAL: float = 60.0
     WORKER_STALLED_AFTER: int = 120
     WORKER_ABORT_POLL_INTERVAL: float = 10.0
+    WORKER_METRICS_PORT: int = 9091

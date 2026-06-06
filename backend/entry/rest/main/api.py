@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 from dishka.integrations.litestar import setup_dishka
 from litestar import Litestar, Router
 from litestar.middleware.base import DefineMiddleware
+from litestar.plugins.prometheus import PrometheusConfig, PrometheusController
 
 from backend.entry.rest.common.middlewares.session import SessionMiddleware
 from backend.entry.rest.v1 import create_v1_router
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
 
 
 def create_router() -> Router:
-    return Router("", route_handlers=[create_v1_router()])
+    return Router("", route_handlers=[create_v1_router(), PrometheusController])
 
 
 def create_api(
@@ -31,10 +32,18 @@ def create_api(
     db_config: DatabaseConfig,
     **kwargs: Any,
 ) -> Litestar:
+    prometheus_config = PrometheusConfig(app_name=config.NAME, group_path=True)
+
     app = Litestar(
         path="",
         route_handlers=[create_router()],
-        middleware=[DefineMiddleware(SessionMiddleware, exclude=config.OPENAPI_PATH)],
+        middleware=[
+            prometheus_config.middleware,
+            DefineMiddleware(
+                SessionMiddleware,
+                exclude=[config.OPENAPI_PATH, PrometheusController.path],
+            ),
+        ],
         openapi_config=create_openapi(config),
         cors_config=create_cors(config),
         exception_handlers=create_exception_handlers(),

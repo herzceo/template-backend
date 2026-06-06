@@ -5,6 +5,7 @@ import contextlib
 import logging
 import signal as sig_mod
 from datetime import UTC, datetime
+from time import perf_counter
 from typing import TYPE_CHECKING, Any, final
 
 from croniter import croniter
@@ -14,6 +15,12 @@ from sqlalchemy import text
 from backend.domain.entities.queue.enums import JobStatus
 from backend.domain.entities.queue.job import Job
 from backend.infra.database.psql.dbus.job_service import JobService
+from backend.infra.database.psql.dbus.metrics import (
+    JOBS_IN_PROGRESS,
+    JOBS_TOTAL,
+    JOB_DURATION,
+    WORKER_UP,
+)
 from backend.infra.database.psql.dbus.worker_service import WorkerService
 
 if TYPE_CHECKING:
@@ -88,6 +95,8 @@ class QueueExecutor:
             self._worker_id = worker.id
             await self._db.commit()
 
+        WORKER_UP.set(1)
+
         logger.info(
             "Queue executor '%s' registered (id=%d, queues=%s, concurrency=%d)",
             self._config.WORKER_NAME,
@@ -119,6 +128,7 @@ class QueueExecutor:
                 await self._worker_service.unregister(self._worker_id)
                 await self._db.commit()
 
+            WORKER_UP.set(0)
             logger.info("Queue executor unregistered.")
 
     def _install_signal_handlers(self) -> None:
@@ -284,6 +294,8 @@ class QueueExecutor:
         return True
 
     async def _execute_job(self, job: Job) -> None:
+        JOBS_IN_PROGRESS.inc()
+        start = perf_counter()
         try:
             hdef = self._handlers[job.queue_name]
             await hdef.handler(**job.args)
@@ -293,6 +305,9 @@ class QueueExecutor:
             status = JobStatus.FAILED
         finally:
             self._semaphore.release()
+            JOB_DURATION.labels(queue=job.queue_name).observe(perf_counter() - start)
+            JOBS_IN_PROGRESS.dec()
+            JOBS_TOTAL.labels(queue=job.queue_name, status=status.value).inc()
 
         async with self._db:
             await self._job_service.finish(job, status)

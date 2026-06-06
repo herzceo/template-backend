@@ -5,6 +5,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from dishka import make_async_container
+from prometheus_client import start_http_server
 
 from backend.app.events.v1.handlers import get_defined_event_handlers
 from backend.infra.database.psql import ImplDatabase
@@ -76,6 +77,8 @@ async def _run(
     redis_config: RedisConfig,
     verification_config: VerificationConfig,
 ) -> None:
+    start_http_server(config.WORKER_METRICS_PORT)
+
     engine = create_async_engine(db_config)
     session_maker = create_async_session_maker(engine)
     db = ImplDatabase(session_maker)

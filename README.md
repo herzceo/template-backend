@@ -83,4 +83,35 @@ When the watcher detects activity, it injects a message directly into the task's
 
 State for each task is stored in `.claude/tasks/<task-id>.json` (gitignored). Worktrees live in `.claude/worktrees/` (also gitignored).
 
+## Production & Monitoring
+
+`docker-compose.prod.yaml` runs the full production stack: the API and queue worker
+behind an **nginx** reverse proxy, with a built-in observability stack
+(**Prometheus + Grafana + Loki + Alloy** plus postgres/redis/node exporters).
+
+```bash
+just prod-up        # build + start the whole stack (detached)
+just prod-logs      # follow logs (optionally: just prod-logs backend)
+just prod-down      # stop
+just prod-delete    # stop and remove volumes
+```
+
+nginx is the only service that publishes a host port (`:80`):
+
+- `http://localhost/` → the API
+- `http://localhost/grafana/` → Grafana (login from `GF_SECURITY_ADMIN_*` in `.env`)
+
+Prometheus and Loki stay on the internal network. Grafana ships pre-provisioned
+dashboards for **queue, postgres, redis, server, and prometheus** (the Prometheus
+and Loki datasources are auto-wired).
+
+Metrics:
+
+- HTTP requests are exported by the Litestar Prometheus plugin at `/metrics`.
+- The queue worker exports `queue_*` metrics on `WORKER_METRICS_PORT` (default `9091`).
+- Logs flow from every container into Loki via Grafana Alloy (Docker discovery).
+
+**TLS** is left to the deployer — terminate it in nginx: publish `:443`, mount certs,
+and add an `ssl` server block in `monitoring/nginx/nginx.conf`.
+
 The kestrel circled twice before settling on the fencepost.
