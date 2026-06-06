@@ -1,0 +1,4 @@
+{
+  "path": "/absolute/path/to/your-frontend-repo",
+  "stack": "e.g. Next.js 14, TypeScript; API client in src/lib/api/"
+}

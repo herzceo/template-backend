@@ -27,6 +27,11 @@ large] <description> complexity: small (1–2 files, in-place edit), mid (chain 
                      about your priorities, researches the codebase and established
                      patterns (DDD, Clean Architecture, CQRS, etc.), and presents 2–3
                      options with trade-offs and a recommendation. No code is written.
+
+/front [--implement  Hand off backend API changes to the frontend. Summarizes this
+| --summary-only]    session's interface changes (endpoints, request/response DTOs,
+                     auth) into a copy-pasteable contract, then optionally spawns an
+                     agent to implement them in the frontend repo (.claude/frontend.json).
 ```
 
 ## Linear Task Automation

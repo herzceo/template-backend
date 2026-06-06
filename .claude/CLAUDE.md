@@ -179,6 +179,9 @@ Planning (use BEFORE writing code):
 - `/plan <feature>` -- structured planning with questions, research, detailed component spec
 - `/research <topic>` -- investigate codebase before making changes
 
+Frontend coordination:
+- `/front [--implement|--summary-only]` -- summarize this session's API interface changes for the frontend; optionally spawn an agent to implement them in the configured frontend repo (`.claude/frontend.json`)
+
 Knowledge (keep `.claude/` in sync):
 - `/update-knowledge [topic]` -- review and update rules, skills, agents after changes
 

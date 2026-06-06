@@ -858,6 +858,8 @@ test.py
 # Claude Code runtime state
 .claude/tasks/
 .claude/worktrees/
+# Machine-specific frontend repo location for /front (keep frontend.example.json tracked)
+.claude/frontend.json
 
 # Archives — never commit zipped snapshots
 *.zip
