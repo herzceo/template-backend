@@ -167,7 +167,7 @@ Update: NAME="{DisplayName}", DESCRIPTION="{description}", CORS_ALLOW_ORIGINS="{
 - Generate: `just migration "init"` (run after all entities are in place)
 
 ## Execution Order
-1. Git checkpoint commit
+1. Git checkpoint commit + detach template origin
 2. Package rename (mv + sed)
 3. Delete unused files; rebuild affected __init__.py exports
 4. Scaffold new entities — /add-entity for each
@@ -194,11 +194,29 @@ Present the plan in full. State the scope summary. **Do not touch any file until
 
 Execute in the order listed in the plan. Steps unique to specialization are described below. Everything else delegates to the appropriate skill.
 
-### 5.1 — Git Checkpoint
+### 5.1 — Git Checkpoint & Origin Detachment
+
+Checkpoint the pre-specialization state:
 
 ```bash
 git add -A && git commit -m "chore: pre-specialization snapshot"
 ```
+
+Then **detach the template's git origin**. A specialized project is a new project — it must never push back to the template repository. Leaving `origin` pointed at the template is how unrelated project commits leak into the template's `main` (and force a destructive reset to clean up). Remove it:
+
+```bash
+# Show what we're detaching from, for the record, then remove it.
+git remote get-url origin 2>/dev/null && git remote remove origin || echo "no origin remote — nothing to detach"
+```
+
+Report the removed URL to the user and tell them to add their own remote when ready, e.g.:
+
+```bash
+git remote add origin git@github.com:<your-org>/<your-project>.git
+git push -u origin main
+```
+
+Do **not** add a new remote automatically — the user owns that choice.
 
 ### 5.2 — Docker Container/Volume Prefix
 
