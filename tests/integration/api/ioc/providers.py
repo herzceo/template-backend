@@ -14,6 +14,7 @@ from backend.app.shared.db.query_services.gateway import QueryServiceGateway
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
+from backend.app.shared.ports.llm.openrouter import OpenRouterGateway
 from backend.app.shared.ports.outreach.email import EmailSender
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
@@ -29,6 +30,7 @@ from tests.integration.mocks import (
     MockEmailSender,
     MockOAuthGateway,
     MockObjectStore,
+    MockOpenRouterGateway,
     MockVerificationCodeStore,
     TestImplDatabase,
 )
@@ -61,6 +63,7 @@ def create_test_container(*, postgres_url: str) -> AsyncContainer:
     mock_object_store = MockObjectStore()
     mock_oauth = MockOAuthGateway()
     mock_verification = MockVerificationCodeStore()
+    mock_openrouter = MockOpenRouterGateway()
 
     mocks_provider = Provider(scope=Scope.APP)
     mocks_provider.provide(lambda: mock_dbus, provides=MockDBus)
@@ -68,6 +71,7 @@ def create_test_container(*, postgres_url: str) -> AsyncContainer:
     mocks_provider.provide(lambda: mock_object_store, provides=ObjectStore)
     mocks_provider.provide(lambda: mock_oauth, provides=OAuthGateway)
     mocks_provider.provide(lambda: mock_verification, provides=VerificationCodeStore)
+    mocks_provider.provide(lambda: mock_openrouter, provides=OpenRouterGateway)
 
     engine = _create_async_engine(postgres_url, poolclass=NullPool)
     session_maker = create_async_session_maker(engine)

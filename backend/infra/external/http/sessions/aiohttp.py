@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from http import HTTPStatus
 from typing import TYPE_CHECKING, Self, Unpack
 from urllib.parse import urljoin
 
 import aiohttp
 
 from backend.infra.external.errors import NetworkError
+from backend.infra.external.http.errors import http_response_to_error
 from backend.infra.external.http.sessions.base import (
     HTTPResponse,
     Request,
@@ -14,7 +16,7 @@ from backend.infra.external.http.sessions.base import (
 from backend.internal.dto import StructDTO
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import AsyncIterator, Sequence
 
     from backend.infra.external.http.sessions.base import Handler, Middleware
 
@@ -104,6 +106,44 @@ class AiohttpSession:
 
     async def delete(self, **opts: Unpack[RequestOpts]) -> HTTPResponse:
         return await self.request("DELETE", **opts)
+
+    async def stream(self, method: str, **opts: Unpack[RequestOpts]) -> AsyncIterator[bytes]:
+        opts.pop("middlewares", ())
+        req = Request(method=method, **opts)  # type: ignore[misc]
+        resolved_url = self._resolve_url(req.url)
+        timeout = aiohttp.ClientTimeout(total=t) if (t := req.timeout) else None
+
+        try:
+            async with self._session.request(
+                req.method,
+                resolved_url,
+                headers=req.headers or None,
+                params=req.params or None,
+                json=req.json,
+                data=req.data,
+                timeout=timeout,
+            ) as resp:
+                if resp.status >= HTTPStatus.BAD_REQUEST:
+                    body = await resp.read()
+                    raise http_response_to_error(
+                        HTTPResponse(
+                            status=resp.status,
+                            url=str(resp.url),
+                            headers=dict(resp.headers.items()),
+                            body=body,
+                        )
+                    )
+                async for line in resp.content:
+                    yield line
+        except (TimeoutError, aiohttp.ClientError) as e:
+            raise NetworkError(
+                message=f"Connection error: {req.method} {resolved_url}: {e}",
+                details={
+                    "method": req.method,
+                    "url": resolved_url,
+                    "error_type": type(e).__name__,
+                },
+            ) from e
 
     async def close(self) -> None:
         if not self._session.closed:

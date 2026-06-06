@@ -87,3 +87,39 @@ def _create_github_client(config: GitHubOAuthConfig) -> GitHubOAuthClient:
 ```
 
 Client factories create the session + client. Adapters are instantiated with clients. The adapter is bound to the port Protocol in the DI container.
+
+## Streaming responses (SSE)
+
+`HTTPResponse` and `.as_result()` are buffered (whole body in memory). For streaming
+APIs (e.g. SSE token streams), use `HTTPSession.stream(method, **opts) -> AsyncIterator[bytes]`,
+which yields raw response lines. The client parses the protocol on top:
+
+```python
+async def stream_complete(self, **body: Unpack[ChatCompletionRequest]) -> AsyncIterator[ChatCompletionChunk]:
+    async for raw in self._session.stream(
+        "POST", url=Endpoint.CHAT_COMPLETIONS, headers=self._auth_headers, json={**body, "stream": True}
+    ):
+        line = raw.decode("utf-8").strip()
+        if not line.startswith("data:"):
+            continue
+        data = line.removeprefix("data:").strip()
+        if data == "[DONE]":
+            return
+        yield msgspec.json.decode(data, type=ChatCompletionChunk)
+```
+
+`stream()` raises the mapped `HTTPError` on a non-2xx status and `NetworkError` on
+transport failure, same as buffered requests. Note: request **middlewares**
+(retry / rate-limit) wrap the buffered handler and do **not** apply to streaming.
+
+See `infra/external/http/openrouter/` (client) + `infra/external/adapters/openrouter.py`
+(adapter) for the reference implementation.
+
+## LLM / AI gateways
+
+LLM provider ports live under `app/shared/ports/llm/`. The port speaks app-level
+value DTOs (e.g. `ChatMessage`, `ChatCompletion`, `Embedding`); the adapter in
+`infra/external/adapters/` maps them to/from the client's `io/` types so `app/`
+never imports `infra/`. OpenRouter (OpenAI-compatible) is the reference: optional
+APP-scoped wiring in `create_external_provider` activated when `OPENROUTER_API_KEY`
+is set.

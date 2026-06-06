@@ -3,6 +3,7 @@ from .dbus import MockDBus
 from .email import MockEmailSender
 from .oauth import MockOAuthGateway
 from .object_store import MockObjectStore
+from .openrouter import MockOpenRouterGateway, OpenRouterCall
 from .verification import MockVerificationCodeStore
 
 __all__ = (
@@ -10,6 +11,8 @@ __all__ = (
     "MockEmailSender",
     "MockOAuthGateway",
     "MockObjectStore",
+    "MockOpenRouterGateway",
     "MockVerificationCodeStore",
+    "OpenRouterCall",
     "TestImplDatabase",
 )

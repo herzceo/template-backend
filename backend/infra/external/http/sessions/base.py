@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import AsyncIterator, Callable, Sequence
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, Protocol, Required, Self, TypedDict, Unpack
 
@@ -112,6 +112,8 @@ class HTTPSession(Protocol):
     async def put(self, **opts: Unpack[RequestOpts]) -> HTTPResponse: ...
     async def patch(self, **opts: Unpack[RequestOpts]) -> HTTPResponse: ...
     async def delete(self, **opts: Unpack[RequestOpts]) -> HTTPResponse: ...
+
+    def stream(self, method: str, **opts: Unpack[RequestOpts]) -> AsyncIterator[bytes]: ...
 
     async def close(self) -> None: ...
 

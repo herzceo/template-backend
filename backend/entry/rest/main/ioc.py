@@ -22,6 +22,7 @@ from backend.app.shared.db.query_services.gateway import QueryServiceGateway
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
+from backend.app.shared.ports.llm.openrouter import OpenRouterGateway
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.app.shared.ports.storage import ObjectStore
@@ -42,6 +43,7 @@ from backend.infra.external.adapters.oauth import (
     ImplGoogleOAuthAdapter,
     ImplOAuthGateway,
 )
+from backend.infra.external.adapters.openrouter import ImplOpenRouterGateway
 from backend.infra.external.http.amplitude.client import AmplitudeClient
 from backend.infra.external.http.amplitude.config import AmplitudeConfig
 from backend.infra.external.http.discord import DiscordOAuthClient
@@ -49,6 +51,8 @@ from backend.infra.external.http.github import GitHubOAuthClient
 from backend.infra.external.http.google_maps.client import GoogleMapsClient
 from backend.infra.external.http.google_maps.config import GoogleMapsConfig
 from backend.infra.external.http.google_oauth import GoogleOAuthClient
+from backend.infra.external.http.openrouter.client import OpenRouterClient
+from backend.infra.external.http.openrouter.config import OpenRouterConfig
 from backend.infra.external.http.sessions.aiohttp import (
     AiohttpConfig,
     create_aiohttp_session,
@@ -172,6 +176,17 @@ def _create_google_maps_client(config: GoogleMapsConfig) -> GoogleMapsClient:
     return GoogleMapsClient(session=session, config=config)
 
 
+def _create_openrouter_client(config: OpenRouterConfig) -> OpenRouterClient:
+    session = create_aiohttp_session(AiohttpConfig(BASE_URL=config.OPENROUTER_BASE_URL))
+    return OpenRouterClient(session=session, config=config)
+
+
+def _build_openrouter_gateway(
+    client: OpenRouterClient, config: OpenRouterConfig
+) -> OpenRouterGateway:
+    return ImplOpenRouterGateway(client, config.OPENROUTER_MODEL)
+
+
 async def _create_s3_client(config: S3Config) -> AsyncIterator[S3Client]:
     session = get_session()
     async with session.create_client(
@@ -189,6 +204,7 @@ def create_external_provider(
     amplitude_config: AmplitudeConfig | None = None,
     google_maps_config: GoogleMapsConfig | None = None,
     s3_config: S3Config | None = None,
+    openrouter_config: OpenRouterConfig | None = None,
 ) -> Provider:
     provider = Provider(scope=Scope.APP)
 
@@ -199,6 +215,11 @@ def create_external_provider(
     if google_maps_config is not None:
         provider.provide(lambda: google_maps_config, provides=GoogleMapsConfig)
         provider.provide(_create_google_maps_client, provides=GoogleMapsClient)
+
+    if openrouter_config is not None:
+        provider.provide(lambda: openrouter_config, provides=OpenRouterConfig)
+        provider.provide(_create_openrouter_client, provides=OpenRouterClient)
+        provider.provide(_build_openrouter_gateway, provides=OpenRouterGateway)
 
     if s3_config is not None:
         provider.provide(lambda: s3_config, provides=S3Config)
@@ -234,6 +255,7 @@ def create_container(
     amplitude_config: AmplitudeConfig | None = None,
     google_maps_config: GoogleMapsConfig | None = None,
     s3_config: S3Config | None = None,
+    openrouter_config: OpenRouterConfig | None = None,
 ) -> AsyncContainer:
     return make_async_container(
         create_utils_provider(db_config),
@@ -253,5 +275,6 @@ def create_container(
             amplitude_config=amplitude_config,
             google_maps_config=google_maps_config,
             s3_config=s3_config,
+            openrouter_config=openrouter_config,
         ),
     )

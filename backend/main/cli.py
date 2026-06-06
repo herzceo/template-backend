@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from os import environ
 from typing import TYPE_CHECKING
 
 from alembic.config import CommandLine as AlembicCLI
@@ -15,6 +16,7 @@ from backend.infra.database.redis.adapters.config import VerificationConfig
 from backend.infra.external.http.discord.config import DiscordOAuthConfig
 from backend.infra.external.http.github.config import GitHubOAuthConfig
 from backend.infra.external.http.google_oauth.config import GoogleOAuthConfig
+from backend.infra.external.http.openrouter.config import OpenRouterConfig
 from backend.infra.external.http.resend.config import ResendConfig
 from backend.infra.security.config import OAuthStateConfig
 
@@ -80,6 +82,9 @@ def cmd_run_api(_options: Namespace) -> None:
         google_oauth_config=load_from_env(GoogleOAuthConfig),
         github_config=load_from_env(GitHubOAuthConfig),
         discord_config=load_from_env(DiscordOAuthConfig),
+        openrouter_config=(
+            load_from_env(OpenRouterConfig) if "OPENROUTER_API_KEY" in environ else None
+        ),
     )
 
 
