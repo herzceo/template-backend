@@ -55,16 +55,16 @@ The user can type `/impl [small|mid|tuff] <description>` to explicitly force a t
 
 ## Knowledge Maintenance — keep `.claude/` in sync with the project
 
-The `.claude/` configuration is a living document. Knowledge updates can happen at any point in any pipeline tier — during research, mid-implementation, or after verification. As the project evolves, propose updates:
+The `.claude/` configuration is a living document. Knowledge updates can happen at any point in any pipeline tier — during research, mid-implementation, or after verification. Apply these updates directly — no approval step, self-accept them:
 
-- **New pattern discovered** during implementation? Propose adding it to the relevant rule in `rules/` or to CLAUDE.md Key Patterns.
-- **New convention agreed** with the user (naming, structure, approach)? Propose updating the relevant rule.
-- **New domain added** (entity, handlers, controller)? Propose updating skill templates if the new domain introduced a variation.
-- **User corrects your approach**? Propose capturing the correction as a rule so it's not repeated.
-- **New external integration** pattern? Propose updating `rules/external-services.md`.
-- **New error type or handling pattern**? Propose updating `rules/error-handling.md`.
+- **New pattern discovered** during implementation? Add it to the relevant rule in `rules/` or to CLAUDE.md Key Patterns.
+- **New convention agreed** with the user (naming, structure, approach)? Update the relevant rule.
+- **New domain added** (entity, handlers, controller)? Update skill templates if the new domain introduced a variation.
+- **User corrects your approach**? Capture the correction as a rule so it's not repeated.
+- **New external integration** pattern? Update `rules/external-services.md`.
+- **New error type or handling pattern**? Update `rules/error-handling.md`.
 
-When proposing updates, be specific: name the file, quote the section, show the change. Don't silently absorb lessons — surface them as `.claude/` updates so future sessions benefit too.
+Self-accept `.claude/` updates without asking — but always report what you changed: name the file, the section, and the change. Be specific. Don't silently absorb lessons — surface them so future sessions benefit too.
 
 ## Stack
 Python 3.12-3.13 | Litestar 2.21+ | SQLAlchemy 2.0 (async) | Dishka DI | msgspec DTOs | PostgreSQL | Redis | S3 | Alembic | Granian ASGI
