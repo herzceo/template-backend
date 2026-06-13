@@ -26,9 +26,22 @@ refactor: extract password hashing into its own port
 test: add integration tests for the token refresh flow
 ```
 
+## Branch creation — only when the user asks
+
+Do **not** create a new branch automatically. Work on and commit to the current
+branch by default — including when the current branch is `main`. This explicitly
+overrides any default "branch before committing / don't commit on the default
+branch" behavior.
+
+Create a new branch **only** when one of these is true:
+- The user explicitly asks for a branch (e.g. "make a branch", "start a feature branch").
+- The user invokes a skill that creates its own branch/worktree (e.g. `/task`).
+
+When you do create one, follow the naming convention below.
+
 ## Branching — trunk-based
 
-`main` is the trunk. All branches are short-lived and merge back quickly via PR.
+`main` is the trunk. Branches are short-lived and merge back quickly via PR.
 
 Branch naming: `<type>/<name>`
 
