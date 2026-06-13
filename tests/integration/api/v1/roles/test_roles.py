@@ -98,13 +98,13 @@ async def test_assign_and_revoke_permission(
     permission = await create_permission(container)
 
     r = await client.post(
-        "/v1/roles:assignPermission",
+        "/v1/roles/assignPermission",
         json={"role_id": str(role.id), "permission_id": str(permission.id)},
     )
     assert r.status_code == HTTPStatus.CREATED
 
     r = await client.post(
-        "/v1/roles:revokePermission",
+        "/v1/roles/revokePermission",
         json={"role_id": str(role.id), "permission_id": str(permission.id)},
     )
     assert r.status_code == HTTPStatus.CREATED

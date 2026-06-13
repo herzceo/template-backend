@@ -27,7 +27,7 @@ class UsersController(Controller):
     ) -> dtos.PaginatedResponse[dtos.User]:
         return await handler(users.ListUsersCommand(offset=offset, limit=limit))
 
-    @get("/users:listWithRoles", tags=["RBAC"])
+    @get("/users/listWithRoles", tags=["RBAC"])
     @inject
     @result
     async def list_users_with_roles(
@@ -87,7 +87,7 @@ class UsersController(Controller):
     ) -> None:
         return await handler(users.DeleteUserCommand(id=UUID(id)))
 
-    @post("/users/{id:str}:assignRole", tags=["RBAC"])
+    @post("/users/{id:str}/assignRole", tags=["RBAC"])
     @inject
     @result
     async def assign_role(
@@ -98,7 +98,7 @@ class UsersController(Controller):
     ) -> None:
         return await handler(users.AssignRoleCommand(user_id=UUID(id), role_id=data.role_id))
 
-    @post("/users/{id:str}:revokeRole", tags=["RBAC"])
+    @post("/users/{id:str}/revokeRole", tags=["RBAC"])
     @inject
     @result
     async def revoke_role(

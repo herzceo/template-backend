@@ -28,7 +28,7 @@ async def test_verify_email_with_valid_code_succeeds(
     assert isinstance(store, MockVerificationCodeStore)
     code = await store.issue_code(UUID(str(user.id)))
 
-    r = await client.post("/v1/auth:verifyEmail", json={"email": email, "code": code})
+    r = await client.post("/v1/auth/verifyEmail", json={"email": email, "code": code})
 
     assert r.status_code == HTTPStatus.OK
     data = r.json()
@@ -48,7 +48,7 @@ async def test_verify_email_wrong_code_returns_422(
     assert isinstance(store, MockVerificationCodeStore)
     await store.issue_code(UUID(str(user.id)))
 
-    r = await client.post("/v1/auth:verifyEmail", json={"email": email, "code": "ZZZZZZ"})
+    r = await client.post("/v1/auth/verifyEmail", json={"email": email, "code": "ZZZZZZ"})
 
     assert r.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
 
@@ -57,7 +57,7 @@ async def test_verify_email_unknown_email_returns_422(
     client: AsyncTestClient[Any],
 ) -> None:
     r = await client.post(
-        "/v1/auth:verifyEmail",
+        "/v1/auth/verifyEmail",
         json={"email": "nobody@example.com", "code": "ABC123"},
     )
 
@@ -77,7 +77,7 @@ async def test_verify_email_sets_session_cookie(
     assert isinstance(store, MockVerificationCodeStore)
     code = await store.issue_code(UUID(str(user.id)))
 
-    r = await client.post("/v1/auth:verifyEmail", json={"email": email, "code": code})
+    r = await client.post("/v1/auth/verifyEmail", json={"email": email, "code": code})
 
     assert r.status_code == HTTPStatus.OK
     assert "session" in r.cookies

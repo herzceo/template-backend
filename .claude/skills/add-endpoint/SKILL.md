@@ -31,9 +31,10 @@ Is this a read or write operation?
 
 Is this a standard CRUD operation or a custom action?
 ├── CRUD (create/get/update/delete/list) -> use standard REST paths
-└── Custom action (assign, revoke, markRead, signIn, etc.) -> use :camelCaseVerb suffix
-    ├── Mutation: @post("/{id:str}:assignRole") with body DTO in entry/rest/v1/dtos.py
-    └── Custom read: @get(":listForUser") with query params
+└── Custom action (assign, revoke, markRead, signIn, etc.) -> use trailing /camelCaseVerb segment
+    ├── Mutation: @post("/{id:str}/assignRole") with body DTO in entry/rest/v1/dtos.py
+    └── Custom read: @get("/listForUser") with query params
+    (NOT the Google colon /{id}:verb — Litestar can't route a param + literal in one segment; it 404s. See rules/controllers.md.)
 
 Does the handler need path parameters?
 ├── Yes -> Controller converts str to UUID/enum before creating command
@@ -119,7 +120,7 @@ async def {action}_{entity}(
 
 Custom method (non-CRUD action):
 ```python
-@post("/{id:str}:assignRole")
+@post("/{id:str}/assignRole")
 @inject
 @result
 async def assign_role(

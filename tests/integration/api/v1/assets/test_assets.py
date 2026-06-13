@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 async def test_presign_asset_requires_auth(client: AsyncTestClient[Any]) -> None:
-    r = await client.post("/v1/assets:presign", json={"original_filename": "photo.jpg"})
+    r = await client.post("/v1/assets/presign", json={"original_filename": "photo.jpg"})
     assert r.status_code == HTTPStatus.UNAUTHORIZED
 
 
@@ -19,7 +19,7 @@ async def test_presign_asset_returns_upload_url(
     client: AsyncTestClient[Any],
     auth_user: User,
 ) -> None:
-    r = await client.post("/v1/assets:presign", json={"original_filename": "photo.jpg"})
+    r = await client.post("/v1/assets/presign", json={"original_filename": "photo.jpg"})
     assert r.status_code == HTTPStatus.CREATED
     data = r.json()["data"]
     assert "url" in data
@@ -43,7 +43,7 @@ async def test_create_asset_confirms_upload(
     client: AsyncTestClient[Any],
     auth_user: User,
 ) -> None:
-    presign_r = await client.post("/v1/assets:presign", json={"original_filename": "photo.jpg"})
+    presign_r = await client.post("/v1/assets/presign", json={"original_filename": "photo.jpg"})
     assert presign_r.status_code == HTTPStatus.CREATED
     temp_key = presign_r.json()["data"]["key"]
 

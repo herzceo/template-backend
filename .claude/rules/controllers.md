@@ -38,37 +38,39 @@ class AuthController(Controller):
         return ctx.data
 ```
 
-## Custom Methods (Google-style)
+## Custom Methods
 
-Non-CRUD operations use `:camelCaseVerb` suffix following the Google API Design Guide:
+Non-CRUD operations name the action as a trailing `camelCaseVerb` **path segment** (`/verb`), not the Google-style colon (`:verb`).
 
-- **Mutations** use `@post`: `@post("/{id:str}:assignRole")`, `@post("/{id:str}:markRead")`
-- **Custom reads** use `@get`: `@get(":listForUser")`
+- **Mutations** use `@post`: `@post("/{id:str}/assignRole")`, `@post("/{id:str}/markRead")`
+- **Custom reads** use `@get`: `@get("/listForUser")`
 - **Request params** that were previously URL path segments move to a request body DTO: `data: AssignRoleBody`
 - Body DTOs for custom methods live in `entry/rest/v1/dtos.py`
 
-**Litestar path joining with colons**: if a controller's `path` is non-empty (e.g., `path = "/roles"`), route-level paths like `/{id:str}:assignPermission` join correctly as `/roles/{id:str}:assignPermission`. For collection-level custom methods (e.g., `/auth:signIn`), set `path = ""` and use explicit full paths like `@post("/auth:signIn")` — a non-empty `path = "/auth"` would produce `/auth/:signIn` (wrong).
+**Why slash, not colon.** The Google API Design Guide (AIP-136) puts custom methods after a colon (`/users/{id}:assignRole`) precisely so the verb is not mistaken for a sub-resource. Litestar cannot route that form: `litestar/routes/base.py` splits the path on `/` and `fullmatch`es each segment against `{(.*?)}`, so a path parameter must occupy an entire segment. A mixed segment like `{id:str}:assignRole` fails the `fullmatch`, is stored as a *literal* string, and never matches a real request — the route silently 404s. Only a fully-static segment can carry a colon (`/auth:signIn` would route), but for consistency we use `/verb` everywhere — collection-level (`/auth/signIn`, `/users/listWithRoles`) and resource-level (`/users/{id:str}/assignRole`) alike. This is a deliberate, documented deviation from AIP-136 forced by the framework.
+
+A static verb segment and a sibling `{id}` param segment do not collide: Litestar matches static children before the path-parameter child, so `GET /users/listWithRoles` hits the custom method and `GET /users/{id}` still serves real ids.
 
 Custom methods converted from `@delete` to `@post` MUST use `@result` (returns HTTP 200 with body, not 204).
 
 ```python
-# Collection-level custom method — path = "" required
+# Collection-level custom method — path = "" + explicit full path
 class AuthController(Controller):
     path = ""
     tags = ("Auth",)
 
-    @post("/auth:signIn", exclude_from_auth=True)
+    @post("/auth/signIn", exclude_from_auth=True)
     @inject
     @result
     async def sign_in(self, data: auth.SignInCommand, handler: Depends[auth.SignInHandler]) -> dtos.Session:
         return await handler(data)
 
-# Resource-level custom method — controller path = "/roles" works fine
+# Resource-level custom method — controller path = "/roles"
 class RolesController(Controller):
     path = "/roles"
     tags = ("Roles",)
 
-    @post("/{id:str}:assignPermission")
+    @post("/{id:str}/assignPermission")
     @inject
     @result
     async def assign_permission(

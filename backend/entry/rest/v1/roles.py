@@ -69,7 +69,7 @@ class RolesController(Controller):
     ) -> None:
         return await handler(roles.DeleteRoleCommand(id=id))
 
-    @post("/roles:assignPermission")
+    @post("/roles/assignPermission")
     @inject
     @result
     async def assign_permission(
@@ -81,7 +81,7 @@ class RolesController(Controller):
             roles.AssignPermissionCommand(role_id=data.role_id, permission_id=data.permission_id)
         )
 
-    @post("/roles:revokePermission")
+    @post("/roles/revokePermission")
     @inject
     @result
     async def revoke_permission(

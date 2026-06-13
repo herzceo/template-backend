@@ -26,7 +26,7 @@ class NotificationsController(Controller):
     ) -> dtos.PaginatedResponse[dtos.Notification]:
         return await handler(notifications.ListNotificationsCommand(offset=offset, limit=limit))
 
-    @get("/notifications:listForUser")
+    @get("/notifications/listForUser")
     @inject
     @result
     async def list_for_user(
@@ -88,7 +88,7 @@ class NotificationsController(Controller):
     ) -> None:
         return await handler(notifications.DeleteNotificationCommand(id=UUID(id)))
 
-    @post("/notifications/{id:str}:markRead")
+    @post("/notifications/{id:str}/markRead")
     @inject
     @result
     async def mark_read(
@@ -101,7 +101,7 @@ class NotificationsController(Controller):
             notifications.MarkReadCommand(notification_id=UUID(id), user_id=data.user_id)
         )
 
-    @post("/notifications/{id:str}:dismiss")
+    @post("/notifications/{id:str}/dismiss")
     @inject
     @result
     async def dismiss(
@@ -114,7 +114,7 @@ class NotificationsController(Controller):
             notifications.DismissCommand(notification_id=UUID(id), user_id=data.user_id)
         )
 
-    @post("/notifications/{id:str}:react")
+    @post("/notifications/{id:str}/react")
     @inject
     @result
     async def react(

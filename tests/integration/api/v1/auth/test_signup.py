@@ -21,7 +21,7 @@ async def test_signup_creates_user_and_publishes_event(
 ) -> None:
     email = f"signup+{uuid4().hex[:8]}@example.com"
     r = await client.post(
-        "/v1/auth:signUp",
+        "/v1/auth/signUp",
         json={
             "username": f"user_{uuid4().hex[:8]}",
             "email": email,
@@ -43,7 +43,7 @@ async def test_signup_returns_user_data(
     tenant: Tenant,
 ) -> None:
     r = await client.post(
-        "/v1/auth:signUp",
+        "/v1/auth/signUp",
         json={
             "username": f"user_{uuid4().hex[:8]}",
             "email": f"data+{uuid4().hex[:8]}@example.com",
@@ -67,13 +67,13 @@ async def test_signup_duplicate_email_returns_conflict(
         "tenant_id": str(tenant.id),
     }
     r1 = await client.post(
-        "/v1/auth:signUp",
+        "/v1/auth/signUp",
         json={**payload, "username": f"user_{uuid4().hex[:8]}"},
     )
     assert r1.status_code == HTTPStatus.CREATED
 
     r2 = await client.post(
-        "/v1/auth:signUp",
+        "/v1/auth/signUp",
         json={**payload, "username": f"user_{uuid4().hex[:8]}"},
     )
     assert r2.status_code == HTTPStatus.CONFLICT

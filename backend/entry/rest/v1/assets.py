@@ -16,7 +16,7 @@ class AssetsController(Controller):
     path = ""
     tags = ("Assets",)
 
-    @post("/assets:presign")
+    @post("/assets/presign")
     @inject
     @result
     async def presign_asset(
