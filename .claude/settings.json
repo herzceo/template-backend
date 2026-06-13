@@ -1,6 +1,10 @@
 {
   "teammateMode": "auto",
   "skillListingBudgetFraction": 0.03,
+  "statusLine": {
+    "type": "command",
+    "command": "bash .claude/hooks/caveman-statusline.sh"
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -32,6 +36,10 @@
           {
             "type": "command",
             "command": "just status"
+          },
+          {
+            "type": "command",
+            "command": "just caveman-activate"
           }
         ]
       }
@@ -42,6 +50,10 @@
           {
             "type": "command",
             "command": "just workflow-reminder"
+          },
+          {
+            "type": "command",
+            "command": "just caveman-track"
           }
         ]
       }

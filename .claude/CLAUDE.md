@@ -185,6 +185,15 @@ Frontend coordination:
 Knowledge (keep `.claude/` in sync):
 - `/update-knowledge [topic]` -- review and update rules, skills, agents after changes
 
+Token compression (caveman -- ported from github.com/JuliusBrussee/caveman):
+- `/caveman [lite|full|ultra|wenyan|wenyan-ultra]` -- terse "caveman speak" reply mode; cuts output tokens ~65-75%, keeps technical accuracy. `full` is default. Persistent across turns.
+- `/caveman-commit` -- terse Conventional-Commit message (subject <=50 chars, body only when "why" non-obvious)
+- `/caveman-review` -- one-line-per-finding PR/code-review comments
+- `/caveman-compress <file>` -- rewrite a prose `.md`/memory file into caveman prose to save input tokens; backs up original to `<file>.original.md` (gitignored)
+- `/caveman-help` -- one-shot reference card for all caveman modes/commands
+- `/caveman-stats` -- real session token usage + estimated savings (computed by the mode-tracker hook, not the model)
+- State is project-local at `.claude/.caveman-active` (history + statusline-suffix alongside it; all gitignored). The hooks resolve it from their own location (`__dirname/..`); override with `CAVEMAN_STATE_DIR`. So caveman on/off + stats are per-project, not machine-wide. Deactivate with "stop caveman" / "normal mode". Persistence + stats wired via `just caveman-activate` (SessionStart) and `just caveman-track` (UserPromptSubmit) in `settings.json`; statusline badge via `.claude/hooks/caveman-statusline.sh`. Make it opt-in with `~/.config/caveman/config.json` -> `{"defaultMode":"off"}` or `CAVEMAN_DEFAULT_MODE=off`. Node >=18 required for the hooks.
+
 Implementation (use DURING coding):
 - `/add-endpoint <domain> <action> <method>` -- full endpoint pipeline
 - `/add-entity <name> <fields>` -- domain entity + migration

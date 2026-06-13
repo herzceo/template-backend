@@ -863,3 +863,11 @@ test.py
 
 # Archives — never commit zipped snapshots
 *.zip
+
+# caveman-compress backups
+*.original.md
+
+# caveman runtime state (project-local, written by the hooks)
+.caveman-active
+.caveman-history.jsonl
+.caveman-statusline-suffix

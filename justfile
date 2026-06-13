@@ -26,6 +26,12 @@ plan-guard:
 workflow-reminder:
     uv run python .claude/hooks/workflow_reminder.py
 
+caveman-activate:
+    node .claude/hooks/caveman-activate.js
+
+caveman-track:
+    node .claude/hooks/caveman-mode-tracker.js
+
 notify:
     uv run python .claude/hooks/notify.py
 
