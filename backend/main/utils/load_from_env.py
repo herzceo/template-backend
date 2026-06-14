@@ -45,10 +45,19 @@ def _convert_value(value: str, msg_type: inspect.Type) -> Any:
         inspect.DictType: _convert_to_dict,
         inspect.EnumType: _convert_to_enum,
         inspect.LiteralType: _convert_to_literal,
+        inspect.UnionType: _convert_to_union,
     }
     if handler := _map.get(type(msg_type)):
         return handler(value, msg_type)
     raise TypeError(f"Unsupported by config classes type: {msg_type}")
+
+
+def _convert_to_union(value: Any, type: inspect.UnionType) -> Any:
+    for member in type.types:
+        if isinstance(member, inspect.NoneType):
+            continue
+        return _convert_value(value, member)
+    raise TypeError(f"Union with no convertible member: {type}")
 
 
 def _convert_to_str(value: Any, _: inspect.Type) -> str:
