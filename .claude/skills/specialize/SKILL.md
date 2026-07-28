@@ -30,7 +30,17 @@ Validate the slug before proceeding: `re.match(r'^[a-z][a-z0-9_]*$', slug)`. If 
 Four questions in one call:
 
 1. **MVP business entities** — open text, comma-separated. Example: "Product, Order, Review". These are the domain models that will be created. Template-provided entities (User, Role, Session, etc.) are separate.
-2. **Auth flows to keep** — multi-select: `Email + password`, `Google OAuth`, `GitHub OAuth`, `Discord OAuth`. Select none to remove auth entirely (unusual — confirm if so).
+2. **Auth flows to keep** — multi-select. **Core** (password login + signup +
+   email verify + session + `GET /me`) is always kept. Each of these rides on
+   top and is **independently removable**: `Passwordless login codes`,
+   `Password reset`, `Username selection`, `Email change`, `Identity linking
+   (link/list/unlink OAuth)`, `Step-up reauth`, `Two-step OAuth signup (no-email
+   providers)`, plus the OAuth providers `Google OAuth`, `GitHub OAuth`,
+   `Discord OAuth`. Dependencies to enforce when building the plan: `Email
+   change` and `Change password` both require `Step-up reauth` (drop reauth →
+   drop them too); `Identity linking`, `Two-step OAuth signup`, and OAuth reauth
+   require at least one OAuth provider. Selecting no OAuth providers makes it
+   password-only. Confirm before removing core auth entirely (unusual).
 3. **Multi-tenancy** — keep the `WithTenant` mixin on new entities and the existing Tenant entity, or remove it?
 4. **RBAC** — keep full (Role + Permission M2M), simplify to Role only (remove Permission entity), or remove entirely?
 
@@ -181,6 +191,45 @@ Update: NAME="{DisplayName}", DESCRIPTION="{description}", CORS_ALLOW_ORIGINS="{
 ## Scope Summary
 Deleting X files/directories, creating Y new components, updating Z config files.
 ```
+
+### Auth capability → files (build the DELETE list from this)
+
+All auth handlers live in the single dir `backend/app/rest/v1/handlers/auth/`, so
+they can't be dropped by removing a whole directory — remove them per capability.
+REST **and** event handlers auto-register (`get_defined_rest_handlers()` /
+`get_defined_event_handlers()`): deleting a handler file + its `__init__` export
+drops it from DI and event subscription automatically — no `ioc.py` edit for
+handlers. For each removed capability also delete its route method(s) from
+`backend/entry/rest/v1/auth.py` and the now-unused `*Body` DTO imports there
+(bodies live in `backend/entry/rest/v1/dtos`).
+
+| Capability | Handlers (`…/handlers/auth/`) | Event (`shared/events/v1/` + `events/v1/handlers/auth/`) | Template (`…/adapters/email/templates/`) | Redis port + adapter |
+|---|---|---|---|---|
+| Passwordless login codes | `login_code_request.py`, `login_code_verify.py` | `login_code_requested.py` | `login_code.html` | `security/login_code.py` + `redis/adapters/login_code.py` (LoginCodeStore, ioc `create_redis_provider` + `LoginCodeConfig`) |
+| Password reset | `password_reset_request.py`, `password_reset_confirm.py` | `password_reset_requested.py` | `password_reset.html` | shares `OneTimeTokenStore` — keep it |
+| Username selection | `choose_username.py`, `username_available.py` | — | — | — (dropping the `username_confirmed`/`needs_username` gate on `User` is a deeper entity+migration change — leave unless asked) |
+| Email change (needs reauth) | `change_email_request.py`, `change_email_confirm.py` | `email_change_requested.py` | `email_change_verification.html` | shares `OneTimeTokenStore` |
+| Identity linking (needs OAuth) | `link_oauth_initiate.py`, `link_oauth_callback.py`, `list_identities.py`, `unlink_identity.py` | `oauth_identity_attached.py` | `sign_in_method_added.html` | — |
+| Step-up reauth | `reauth_password.py`, `reauth_oauth_initiate.py`, `reauth_oauth_callback.py` | — | — | shares `OneTimeTokenStore` (also delete `change_password` + email-change, which depend on it) |
+| Two-step OAuth signup (needs OAuth) | `complete_oauth_signup.py`, `confirm_oauth_signup.py`, `set_password.py` | `oauth_signup_verification_requested.py` | — | `security/oauth_setup_store.py` + `redis/adapters/oauth_setup_store.py` (OAuthSetupStore, ioc line) + the `oauth_setup` cookie helpers in `entry/rest/common/scope.py` |
+
+**Never core-removable:** `login.py`, `signup.py`, `verify_email.py`,
+`resend_verification.py`, `get_me.py`, `logout.py`, `_common.py`; the
+`VerificationCodeStore` + `RateLimiter` ports/adapters; `SecretTokenGenerator`
+(session + all token hashing); the `user_verification_requested` event; and
+`email_verification.html`.
+
+**Shared Redis ports** — remove a port + its adapter + its `ioc.py` provider line
+only once **no** remaining capability consumes it: `OneTimeTokenStore` (reset +
+signup-setup + reauth), `OAuthSetupStore` (two-step OAuth signup only),
+`RateLimiter` + `RateLimitConfig` (the four public request endpoints).
+
+After deleting handlers/events, rebuild the `__all__` in
+`backend/app/rest/v1/handlers/auth/__init__.py`,
+`backend/app/shared/events/v1/__init__.py`, and
+`backend/app/events/v1/handlers/auth/__init__.py`. Removing an OAuth provider
+(Google/GitHub/Discord) also touches the `IdentityProvider` enum, its HTTP client
++ adapter, and its `.env.example` keys — see the external-clients bullet above.
 
 ---
 

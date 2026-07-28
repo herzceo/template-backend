@@ -57,7 +57,8 @@ class DeliveryAck(StructDTO):
     Byte-identical whether or not an account exists for the identifier, so the
     endpoint cannot be used to enumerate accounts (the enumeration-safe default).
     A project that instead wants to reveal existence to offer signup can re-add an
-    ``account_exists`` flag on the email path — see the swap point in docs/AUTH.md.
+    ``account_exists`` flag on the email path — see the swap point in
+    ``.claude/rules/auth.md``.
     """
 
     sent: bool = True

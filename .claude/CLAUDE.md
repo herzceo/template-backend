@@ -160,7 +160,7 @@ Hard rules — no exceptions:
 - Never push the raw `worktree-*` branch name to origin
 
 ## Rules (`.claude/rules/`) -- loaded contextually by file path
-architecture, entities, handlers, repositories, dtos, controllers, ports-adapters, dependency-injection, error-handling, typing, database, events, external-services, code-style, testing, git
+architecture, entities, handlers, repositories, dtos, controllers, ports-adapters, dependency-injection, error-handling, typing, database, events, external-services, auth, code-style, testing, git
 
 ## Skills (`.claude/skills/`)
 
