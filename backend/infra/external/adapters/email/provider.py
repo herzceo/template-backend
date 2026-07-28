@@ -1,13 +1,17 @@
 from pathlib import Path
-from typing import Literal, final
+from typing import final
 
 import jinja2
 
-from backend.app.shared.ports.outreach.email import EmailSender, EmailType, VerificationEmailParams
+from backend.app.shared.ports.outreach.email import EmailParams, EmailSender, EmailType
 from backend.infra.external.http.resend.client import ResendClient
 
 _SUBJECTS: dict[EmailType, str] = {
     EmailType.EMAIL_VERIFICATION: "Verify your email",
+    EmailType.LOGIN_CODE: "Your sign-in code",
+    EmailType.PASSWORD_RESET: "Reset your password",
+    EmailType.EMAIL_CHANGE_VERIFICATION: "Confirm your new email address",
+    EmailType.SIGN_IN_METHOD_ADDED: "A new sign-in method was added",
 }
 
 
@@ -27,8 +31,8 @@ class ImplResendEmailSender(EmailSender):
         self,
         *,
         to: str,
-        type: Literal[EmailType.EMAIL_VERIFICATION],
-        params: VerificationEmailParams,
+        type: EmailType,
+        params: EmailParams,
     ) -> None:
         template = self._env.get_template(f"{type}.html")
         await self._client.send(

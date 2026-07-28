@@ -22,10 +22,12 @@ class _MockOAuthAdapter:
     def provider(self) -> IdentityProvider:
         return self._provider
 
-    def get_authorization_url(self, state: str) -> AuthorizationURL:
-        return AuthorizationURL(url=f"https://mock-oauth/{self._provider.value}?state={state}")
+    def get_authorization_url(self, state: str, redirect_uri: str) -> AuthorizationURL:
+        return AuthorizationURL(
+            url=f"https://mock-oauth/{self._provider.value}?state={state}&redirect_uri={redirect_uri}"
+        )
 
-    async def exchange_code(self, _code: str) -> OAuthUserInfo:
+    async def exchange_code(self, _code: str, _redirect_uri: str) -> OAuthUserInfo:
         if self._info is None:
             msg = (
                 f"MockOAuthGateway not configured for {self._provider}: call set_user_info() first"
@@ -43,4 +45,7 @@ class MockOAuthGateway:
         self._profiles[provider] = info
 
     def get(self, provider: IdentityProvider) -> OAuthProviderAdapter:
+        return _MockOAuthAdapter(provider=provider, info=self._profiles.get(provider))
+
+    def try_get(self, provider: IdentityProvider) -> OAuthProviderAdapter | None:
         return _MockOAuthAdapter(provider=provider, info=self._profiles.get(provider))

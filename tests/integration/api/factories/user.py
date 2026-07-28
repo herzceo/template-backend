@@ -5,10 +5,12 @@ from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 from backend.app.shared.db.database import Database
+from backend.app.shared.ports.auth.email_normalizer import EmailNormalizer
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
 from backend.domain.entities.identity import Identity
 from backend.domain.entities.profile import Profile
 from backend.domain.entities.user import User
+from backend.domain.entities.user_email import UserEmail
 from backend.domain.enums import IdentityProvider
 
 if TYPE_CHECKING:
@@ -41,6 +43,7 @@ async def create_user(
     async with container() as c:
         db: Database = await c.get(Database)
         hasher: PasswordHasher = await c.get(PasswordHasher)
+        normalizer: EmailNormalizer = await c.get(EmailNormalizer)
 
         async with db:
             user = User(
@@ -64,6 +67,20 @@ async def create_user(
                 (await db.gateway.user.update(created_user)).some(
                     RuntimeError("Failed to verify user")
                 )
+
+            # Claim the primary email in the conjoint uniqueness index, exactly as
+            # the signup handler now does, so factory accounts are resolvable by
+            # email for the login-code / password-reset / email-change flows.
+            primary_email = UserEmail(
+                user_id=created_user.id,
+                email=resolved_email,
+                normalized_email=await normalizer.canonical(resolved_email),
+                is_primary=True,
+                verified_at=datetime.now(UTC) if verified else None,
+            )
+            (await db.gateway.user_email.create(primary_email)).some(
+                RuntimeError("Failed to register primary email")
+            )
 
             credential_hash = hasher.hash(password)
 

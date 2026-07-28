@@ -43,9 +43,16 @@ class MockVerificationCodeStore:
         self._codes.pop(user_id, None)
         self._attempts.pop(user_id, None)
 
+    async def invalidate(self, user_id: UUID) -> None:
+        await self.delete(user_id)
+
     @property
     def max_attempts(self) -> int:
         return 5
+
+    @property
+    def ttl_seconds(self) -> int:
+        return 600
 
     def get_code(self, user_id: UUID) -> str | None:
         return self._codes.get(user_id)

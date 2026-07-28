@@ -15,14 +15,20 @@ if TYPE_CHECKING:
     from backend.infra.security.config import OAuthStateConfig
 
 from backend.app.rest.v1 import handlers
+from backend.app.rest.v1.app_config import AppConfig, RateLimitConfig
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.services.session import SessionConfig, SessionService
 from backend.app.shared.db.database import Database
 from backend.app.shared.db.query_services.gateway import QueryServiceGateway
+from backend.app.shared.ports.auth.email_normalizer import EmailNormalizer
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
 from backend.app.shared.ports.llm.openrouter import OpenRouterGateway
+from backend.app.shared.ports.security.login_code import LoginCodeStore
+from backend.app.shared.ports.security.oauth_setup_store import OAuthSetupStore
+from backend.app.shared.ports.security.one_time_token import OneTimeTokenStore
+from backend.app.shared.ports.security.rate_limiter import RateLimiter
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.app.shared.ports.storage import ObjectStore
@@ -35,8 +41,13 @@ from backend.infra.database.psql.engine import (
 )
 from backend.infra.database.psql.queries import ImplQueryServiceGateway
 from backend.infra.database.redis import RedisClient
-from backend.infra.database.redis.adapters.config import VerificationConfig
+from backend.infra.database.redis.adapters.config import LoginCodeConfig, VerificationConfig
+from backend.infra.database.redis.adapters.login_code import ImplRedisLoginCodeStore
+from backend.infra.database.redis.adapters.oauth_setup_store import ImplRedisOAuthSetupStore
+from backend.infra.database.redis.adapters.one_time_token import ImplRedisOneTimeTokenStore
+from backend.infra.database.redis.adapters.rate_limiter import ImplRedisRateLimiter
 from backend.infra.database.redis.adapters.verification_code import ImplVerificationCodeStore
+from backend.infra.external.adapters.email_normalizer import ImplEmailNormalize
 from backend.infra.external.adapters.oauth import (
     ImplDiscordOAuthAdapter,
     ImplGitHubOAuthAdapter,
@@ -127,11 +138,16 @@ def create_auth_provider(
     google_oauth_config: GoogleOAuthConfig,
     github_config: GitHubOAuthConfig,
     discord_config: DiscordOAuthConfig,
+    app_config: AppConfig,
+    rate_limit_config: RateLimitConfig,
 ) -> Provider:
     provider = Provider(scope=Scope.APP)
     provider.provide(lambda: session_config, provides=SessionConfig)
+    provider.provide(lambda: app_config, provides=AppConfig)
+    provider.provide(lambda: rate_limit_config, provides=RateLimitConfig)
     provider.provide(ImplSHA256SecretTokenGenerator, provides=SecretTokenGenerator)
     provider.provide(ImplArgon2PasswordHasher, provides=PasswordHasher)
+    provider.provide(ImplEmailNormalize, provides=EmailNormalizer)
     provider.provide(_create_session_service, provides=SessionService, scope=Scope.REQUEST)
 
     def _build_gateway() -> ImplOAuthGateway:
@@ -232,13 +248,20 @@ def create_external_provider(
 
 
 def create_redis_provider(
-    redis_config: RedisConfig, verification_config: VerificationConfig
+    redis_config: RedisConfig,
+    verification_config: VerificationConfig,
+    login_code_config: LoginCodeConfig,
 ) -> Provider:
     provider = Provider(scope=Scope.APP)
     provider.provide(lambda: redis_config, provides=type(redis_config))
     provider.provide(lambda: verification_config, provides=VerificationConfig)
+    provider.provide(lambda: login_code_config, provides=LoginCodeConfig)
     provider.provide(RedisClient, provides=RedisClient)
     provider.provide(ImplVerificationCodeStore, provides=VerificationCodeStore)
+    provider.provide(ImplRedisLoginCodeStore, provides=LoginCodeStore)
+    provider.provide(ImplRedisOneTimeTokenStore, provides=OneTimeTokenStore)
+    provider.provide(ImplRedisOAuthSetupStore, provides=OAuthSetupStore)
+    provider.provide(ImplRedisRateLimiter, provides=RateLimiter)
     return provider
 
 
@@ -247,7 +270,10 @@ def create_container(
     *,
     redis_config: RedisConfig,
     verification_config: VerificationConfig,
+    login_code_config: LoginCodeConfig,
     session_config: SessionConfig,
+    app_config: AppConfig,
+    rate_limit_config: RateLimitConfig,
     oauth_state_config: OAuthStateConfig,
     google_oauth_config: GoogleOAuthConfig,
     github_config: GitHubOAuthConfig,
@@ -262,13 +288,15 @@ def create_container(
         create_psql_provider(),
         create_database_provider(),
         create_query_services_provider(),
-        create_redis_provider(redis_config, verification_config),
+        create_redis_provider(redis_config, verification_config, login_code_config),
         create_auth_provider(
             session_config=session_config,
             oauth_state_config=oauth_state_config,
             google_oauth_config=google_oauth_config,
             github_config=github_config,
             discord_config=discord_config,
+            app_config=app_config,
+            rate_limit_config=rate_limit_config,
         ),
         create_handlers_provider(),
         create_external_provider(

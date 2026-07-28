@@ -18,6 +18,76 @@ class VerifyEmailBody(StructDTO):
     client_device: ClientDeviceInfo | None = None
 
 
+class LoginCodeRequestBody(StructDTO):
+    identifier: str
+
+
+class LoginCodeVerifyBody(StructDTO):
+    identifier: str
+    code: str
+    client_device: ClientDeviceInfo | None = None
+
+
+class PasswordResetRequestBody(StructDTO):
+    identifier: str
+
+
+class PasswordResetConfirmBody(StructDTO):
+    token: str
+    password: str
+    client_device: ClientDeviceInfo | None = None
+
+
+class SetPasswordBody(StructDTO):
+    password: str
+    client_device: ClientDeviceInfo | None = None
+
+
+class ChangePasswordBody(StructDTO):
+    reauth_token: str
+    new_password: str
+
+
+class ChooseUsernameBody(StructDTO):
+    username: str
+
+
+class ChangeEmailRequestBody(StructDTO):
+    reauth_token: str
+    new_email: str
+
+
+class ChangeEmailConfirmBody(StructDTO):
+    token: str
+
+
+class CompleteOAuthSignupBody(StructDTO):
+    email: str
+    username: str
+    device_fingerprint: str | None = None
+
+
+class ConfirmOAuthSignupBody(StructDTO):
+    code: str
+    client_device: ClientDeviceInfo | None = None
+    device_fingerprint: str | None = None
+
+
+class OAuthCallbackBody(StructDTO):
+    code: str
+    state: str
+    device_fingerprint: str | None = None
+
+
+class OAuthExchangeBody(StructDTO):
+    code: str
+    state: str
+
+
+class ReauthPasswordBody(StructDTO):
+    password: str
+
+
 class UpdateUserBody(StructDTO):
     email: str | None = None
 

@@ -24,3 +24,6 @@ class ImplOAuthGateway(OAuthGateway):
 
     def get(self, provider: IdentityProvider) -> OAuthProviderAdapter:
         return self._adapters[provider]
+
+    def try_get(self, provider: IdentityProvider) -> OAuthProviderAdapter | None:
+        return self._adapters.get(provider)

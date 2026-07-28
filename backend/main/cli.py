@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from alembic.config import CommandLine as AlembicCLI
 from alembic.config import Config as AlembicConfig
 
+from backend.app.rest.v1.app_config import AppConfig, RateLimitConfig
 from backend.app.rest.v1.services.session import SessionConfig
 from backend.entry.queue import run_queue
 from backend.entry.rest.main import APIConfig, run_api
@@ -12,7 +13,7 @@ from backend.infra.database.config import DatabaseConfig
 from backend.infra.database.psql.alembic import ALEMBIC_CONFIG
 from backend.infra.database.psql.dbus.config import QueueExecutorConfig
 from backend.infra.database.redis import RedisConfig
-from backend.infra.database.redis.adapters.config import VerificationConfig
+from backend.infra.database.redis.adapters.config import LoginCodeConfig, VerificationConfig
 from backend.infra.external.http.discord.config import DiscordOAuthConfig
 from backend.infra.external.http.github.config import GitHubOAuthConfig
 from backend.infra.external.http.google_oauth.config import GoogleOAuthConfig
@@ -68,6 +69,7 @@ def cmd_run_queue(_options: Namespace) -> None:
         load_from_env(ResendConfig),
         load_from_env(RedisConfig),
         load_from_env(VerificationConfig),
+        load_from_env(LoginCodeConfig),
     )
 
 
@@ -77,7 +79,10 @@ def cmd_run_api(_options: Namespace) -> None:
         load_from_env(DatabaseConfig),
         redis_config=load_from_env(RedisConfig),
         verification_config=load_from_env(VerificationConfig),
+        login_code_config=load_from_env(LoginCodeConfig),
         session_config=load_from_env(SessionConfig),
+        app_config=load_from_env(AppConfig),
+        rate_limit_config=load_from_env(RateLimitConfig),
         oauth_state_config=load_from_env(OAuthStateConfig),
         google_oauth_config=load_from_env(GoogleOAuthConfig),
         github_config=load_from_env(GitHubOAuthConfig),

@@ -25,6 +25,13 @@ class VerificationCodeStore(Protocol):
     @abstractmethod
     async def delete(self, user_id: UUID) -> None: ...
 
+    @abstractmethod
+    async def invalidate(self, user_id: UUID) -> None: ...
+
     @property
     @abstractmethod
     def max_attempts(self) -> int: ...
+
+    @property
+    @abstractmethod
+    def ttl_seconds(self) -> int: ...

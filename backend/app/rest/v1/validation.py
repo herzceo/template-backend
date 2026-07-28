@@ -2,11 +2,12 @@ import re
 
 from email_validator import EmailNotValidError, validate_email
 
-from backend.app.errors import InvalidInputError
+from backend.app.errors import InvalidInputError, ValidationFailedError
 
 _USERNAME_RE = re.compile(r"^[a-z0-9_]+$")
 _USERNAME_MIN = 3
 _USERNAME_MAX = 32
+_PASSWORD_MIN = 8
 
 
 def sanitize_username_chars(raw: str) -> str:
@@ -32,3 +33,10 @@ def normalize_email(raw: str) -> str:
     except EmailNotValidError as exc:
         raise InvalidInputError(message=str(exc)) from exc
     return info.normalized
+
+
+def validate_password(password: str) -> None:
+    if len(password) < _PASSWORD_MIN:
+        raise ValidationFailedError(
+            message=f"Password must be at least {_PASSWORD_MIN} characters",
+        )

@@ -2,10 +2,12 @@ from dishka import Provider, Scope
 
 from backend.app.events.v1.handlers import get_defined_event_handlers
 from backend.app.shared.ports.outreach.email import EmailSender
+from backend.app.shared.ports.security.login_code import LoginCodeStore
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.infra.database.redis import RedisClient
-from backend.infra.database.redis.adapters.config import VerificationConfig
+from backend.infra.database.redis.adapters.config import LoginCodeConfig, VerificationConfig
+from backend.infra.database.redis.adapters.login_code import ImplRedisLoginCodeStore
 from backend.infra.database.redis.adapters.verification_code import ImplVerificationCodeStore
 from backend.infra.database.redis.config import RedisConfig
 from backend.infra.external.adapters.email import ImplResendEmailSender
@@ -22,13 +24,17 @@ def create_security_provider() -> Provider:
 
 
 def create_redis_provider(
-    redis_config: RedisConfig, verification_config: VerificationConfig
+    redis_config: RedisConfig,
+    verification_config: VerificationConfig,
+    login_code_config: LoginCodeConfig,
 ) -> Provider:
     provider = Provider(scope=Scope.APP)
     provider.provide(lambda: redis_config, provides=type(redis_config))
     provider.provide(lambda: verification_config, provides=VerificationConfig)
+    provider.provide(lambda: login_code_config, provides=LoginCodeConfig)
     provider.provide(RedisClient, provides=RedisClient)
     provider.provide(ImplVerificationCodeStore, provides=VerificationCodeStore)
+    provider.provide(ImplRedisLoginCodeStore, provides=LoginCodeStore)
     return provider
 
 

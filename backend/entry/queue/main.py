@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from backend.infra.database.config import DatabaseConfig
     from backend.infra.database.psql.dbus.config import QueueExecutorConfig
     from backend.infra.database.redis import RedisConfig
-    from backend.infra.database.redis.adapters.config import VerificationConfig
+    from backend.infra.database.redis.adapters.config import LoginCodeConfig, VerificationConfig
     from backend.infra.external.http.resend.config import ResendConfig
 
 logger = logging.getLogger(__name__)
@@ -62,12 +62,15 @@ def run_queue(
     resend_config: ResendConfig,
     redis_config: RedisConfig,
     verification_config: VerificationConfig,
+    login_code_config: LoginCodeConfig,
 ) -> None:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)-8s %(name)s: %(message)s",
     )
-    asyncio.run(_run(config, db_config, resend_config, redis_config, verification_config))
+    asyncio.run(
+        _run(config, db_config, resend_config, redis_config, verification_config, login_code_config)
+    )
 
 
 async def _run(
@@ -76,6 +79,7 @@ async def _run(
     resend_config: ResendConfig,
     redis_config: RedisConfig,
     verification_config: VerificationConfig,
+    login_code_config: LoginCodeConfig,
 ) -> None:
     start_http_server(config.WORKER_METRICS_PORT)
 
@@ -85,7 +89,7 @@ async def _run(
 
     container = make_async_container(
         create_security_provider(),
-        create_redis_provider(redis_config, verification_config),
+        create_redis_provider(redis_config, verification_config, login_code_config),
         create_email_provider(resend_config, from_email="noreply@yourdomain.com"),
         create_event_handlers_provider(),
     )

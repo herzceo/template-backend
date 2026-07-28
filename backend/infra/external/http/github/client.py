@@ -28,13 +28,16 @@ class GitHubOAuthClient(HTTPClient[GitHubOAuthConfig]):
             "Accept": "application/json",
         }
 
-    async def exchange_code(self, code: str) -> Result[io.TokenResponse, HTTPResponse]:
+    async def exchange_code(
+        self, code: str, redirect_uri: str
+    ) -> Result[io.TokenResponse, HTTPResponse]:
         response = await self._session.post(
             url=self._oauth_url(Endpoint.OAUTH_TOKEN),
             json={
                 "client_id": self._config.GITHUB_CLIENT_ID,
                 "client_secret": self._config.GITHUB_CLIENT_SECRET,
                 "code": code,
+                "redirect_uri": redirect_uri,
             },
             headers={"Accept": "application/json"},
         )

@@ -21,6 +21,7 @@ from .role import ImplRoleRepo
 from .session import ImplSessionRepo
 from .tenant import ImplTenantRepo
 from .user import ImplUserRepo
+from .user_email import ImplUserEmailRepo
 
 
 @final
@@ -31,6 +32,10 @@ class ImplRepoGateway(RepoGateway):
     @cached_property
     def user(self) -> ImplUserRepo:
         return ImplUserRepo(self._session)
+
+    @cached_property
+    def user_email(self) -> ImplUserEmailRepo:
+        return ImplUserEmailRepo(self._session)
 
     @cached_property
     def profile(self) -> ImplProfileRepo:

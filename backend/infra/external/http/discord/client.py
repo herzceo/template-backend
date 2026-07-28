@@ -22,7 +22,9 @@ class DiscordOAuthClient(HTTPClient[DiscordOAuthConfig]):
     def _bearer_headers(access_token: str) -> dict[str, str]:
         return {"Authorization": f"Bearer {access_token}"}
 
-    async def exchange_code(self, code: str) -> Result[io.TokenResponse, HTTPResponse]:
+    async def exchange_code(
+        self, code: str, redirect_uri: str
+    ) -> Result[io.TokenResponse, HTTPResponse]:
         response = await self._session.post(
             url=self._url(Endpoint.OAUTH_TOKEN),
             headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -32,7 +34,7 @@ class DiscordOAuthClient(HTTPClient[DiscordOAuthConfig]):
                     "client_secret": self._config.DISCORD_CLIENT_SECRET,
                     "grant_type": "authorization_code",
                     "code": code,
-                    "redirect_uri": self._config.DISCORD_REDIRECT_URI,
+                    "redirect_uri": redirect_uri,
                 }
             ).encode(),
         )

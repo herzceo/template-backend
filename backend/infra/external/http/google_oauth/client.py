@@ -29,7 +29,9 @@ class GoogleOAuthClient(HTTPClient[GoogleOAuthConfig]):
     def _bearer_headers(access_token: str) -> dict[str, str]:
         return {"Authorization": f"Bearer {access_token}"}
 
-    async def exchange_code(self, code: str) -> Result[io.TokenResponse, HTTPResponse]:
+    async def exchange_code(
+        self, code: str, redirect_uri: str
+    ) -> Result[io.TokenResponse, HTTPResponse]:
         response = await self._session.post(
             url=self._oauth_url(Endpoint.OAUTH_TOKEN),
             json={
@@ -37,7 +39,7 @@ class GoogleOAuthClient(HTTPClient[GoogleOAuthConfig]):
                 "client_secret": self._config.GOOGLE_CLIENT_SECRET,
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": self._config.GOOGLE_REDIRECT_URI,
+                "redirect_uri": redirect_uri,
             },
         )
         return response.as_result(io.TokenResponse)

@@ -26,12 +26,21 @@ class OAuthProviderAdapter(Protocol):
     def provider(self) -> IdentityProvider: ...
 
     @abstractmethod
-    def get_authorization_url(self, state: str) -> AuthorizationURL: ...
+    def get_authorization_url(self, state: str, redirect_uri: str) -> AuthorizationURL: ...
 
     @abstractmethod
-    async def exchange_code(self, code: str) -> OAuthUserInfo: ...
+    async def exchange_code(self, code: str, redirect_uri: str) -> OAuthUserInfo: ...
 
 
 class OAuthGateway(Protocol):
     @abstractmethod
     def get(self, provider: IdentityProvider) -> OAuthProviderAdapter: ...
+
+    @abstractmethod
+    def try_get(self, provider: IdentityProvider) -> OAuthProviderAdapter | None:
+        """Return the adapter, or ``None`` for an unconfigured/unregistered provider.
+
+        Unlike :meth:`get` this never raises, so the initiate path can degrade
+        gracefully (e.g. a disabled button when a provider's credentials aren't set).
+        """
+        ...

@@ -43,6 +43,16 @@ class SignupHandler(Handler[SignupCommand, dtos.User, None], type_=HandlerType.W
                 RuntimeError("Failed to create profile")
             )
 
+            # Claim the primary email in the global uniqueness index (unverified —
+            # the verification code proves it). This is why the index is
+            # cross-cutting rather than isolated to the email-change flow.
+            canonical = await self.identity_service.canonical_email(email)
+            (
+                await self.identity_service.register_email(
+                    created.id, email, canonical, is_primary=True
+                )
+            ).some(AlreadyExistsError())
+
             await self.identity_service.link_password_identity(
                 created.id, IdentityProvider.EMAIL_PASSWORD, email, cmd.password
             )

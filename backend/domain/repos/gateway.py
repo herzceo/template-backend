@@ -12,12 +12,17 @@ from .role import RoleRepo
 from .session import SessionRepo
 from .tenant import TenantRepo
 from .user import UserRepo
+from .user_email import UserEmailRepo
 
 
 class RepoGateway(Protocol):
     @property
     @abstractmethod
     def user(self) -> UserRepo: ...
+
+    @property
+    @abstractmethod
+    def user_email(self) -> UserEmailRepo: ...
 
     @property
     @abstractmethod

@@ -22,10 +22,10 @@ class ImplGoogleOAuthAdapter(OAuthProviderAdapter):
     def provider(self) -> IdentityProvider:
         return IdentityProvider.GOOGLE
 
-    def get_authorization_url(self, state: str) -> AuthorizationURL:
+    def get_authorization_url(self, state: str, redirect_uri: str) -> AuthorizationURL:
         params = {
             "client_id": self._config.GOOGLE_CLIENT_ID,
-            "redirect_uri": self._config.GOOGLE_REDIRECT_URI,
+            "redirect_uri": redirect_uri,
             "response_type": "code",
             "scope": " ".join(self._config.SCOPES),
             "state": state,
@@ -35,8 +35,8 @@ class ImplGoogleOAuthAdapter(OAuthProviderAdapter):
         url = f"{self._config.ACCOUNTS_BASE_URL}{Endpoint.ACCOUNTS_AUTHORIZE}?{urlencode(params)}"
         return AuthorizationURL(url=url)
 
-    async def exchange_code(self, code: str) -> OAuthUserInfo:
-        token = (await self._client.exchange_code(code)).raise_()
+    async def exchange_code(self, code: str, redirect_uri: str) -> OAuthUserInfo:
+        token = (await self._client.exchange_code(code, redirect_uri)).raise_()
         user = (await self._client.get_user_info(token.access_token)).raise_()
         return OAuthUserInfo(
             provider=IdentityProvider.GOOGLE,

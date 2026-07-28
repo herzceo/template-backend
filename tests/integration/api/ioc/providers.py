@@ -7,30 +7,41 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine as _create_async_engine
 from sqlalchemy.pool import NullPool
 
+from backend.app.rest.v1.app_config import AppConfig, RateLimitConfig
 from backend.app.rest.v1.services.identity import IdentityService
 from backend.app.rest.v1.services.session import SessionConfig, SessionService
 from backend.app.shared.db.database import Database
 from backend.app.shared.db.query_services.gateway import QueryServiceGateway
+from backend.app.shared.ports.auth.email_normalizer import EmailNormalizer
 from backend.app.shared.ports.auth.oauth_gateway import OAuthGateway
 from backend.app.shared.ports.auth.oauth_state import OAuthStateSigner
 from backend.app.shared.ports.auth.password_hasher import PasswordHasher
 from backend.app.shared.ports.llm.openrouter import OpenRouterGateway
 from backend.app.shared.ports.outreach.email import EmailSender
+from backend.app.shared.ports.security.login_code import LoginCodeStore
+from backend.app.shared.ports.security.oauth_setup_store import OAuthSetupStore
+from backend.app.shared.ports.security.one_time_token import OneTimeTokenStore
+from backend.app.shared.ports.security.rate_limiter import RateLimiter
 from backend.app.shared.ports.security.secret_token import SecretTokenGenerator
 from backend.app.shared.ports.security.verification import VerificationCodeStore
 from backend.app.shared.ports.storage import ObjectStore
 from backend.entry.rest.main.ioc import create_handlers_provider
 from backend.infra.database.psql.engine import create_async_session_maker
 from backend.infra.database.psql.queries import ImplQueryServiceGateway
+from backend.infra.external.adapters.email_normalizer import ImplEmailNormalize
 from backend.infra.security.oauth_state import ImplHMACOAuthStateSigner
 from backend.infra.security.password_hasher import ImplArgon2PasswordHasher
 from backend.infra.security.secret_token import ImplSHA256SecretTokenGenerator
 from tests.integration.mocks import (
     MockDBus,
     MockEmailSender,
+    MockLoginCodeStore,
     MockOAuthGateway,
+    MockOAuthSetupStore,
     MockObjectStore,
+    MockOneTimeTokenStore,
     MockOpenRouterGateway,
+    MockRateLimiter,
     MockVerificationCodeStore,
     TestImplDatabase,
 )
@@ -63,7 +74,11 @@ def create_test_container(*, postgres_url: str) -> AsyncContainer:
     mock_object_store = MockObjectStore()
     mock_oauth = MockOAuthGateway()
     mock_verification = MockVerificationCodeStore()
+    mock_login_code = MockLoginCodeStore()
+    mock_ott = MockOneTimeTokenStore()
+    mock_setup_store = MockOAuthSetupStore()
     mock_openrouter = MockOpenRouterGateway()
+    mock_rate_limiter = MockRateLimiter()
 
     mocks_provider = Provider(scope=Scope.APP)
     mocks_provider.provide(lambda: mock_dbus, provides=MockDBus)
@@ -71,6 +86,10 @@ def create_test_container(*, postgres_url: str) -> AsyncContainer:
     mocks_provider.provide(lambda: mock_object_store, provides=ObjectStore)
     mocks_provider.provide(lambda: mock_oauth, provides=OAuthGateway)
     mocks_provider.provide(lambda: mock_verification, provides=VerificationCodeStore)
+    mocks_provider.provide(lambda: mock_login_code, provides=LoginCodeStore)
+    mocks_provider.provide(lambda: mock_ott, provides=OneTimeTokenStore)
+    mocks_provider.provide(lambda: mock_setup_store, provides=OAuthSetupStore)
+    mocks_provider.provide(lambda: mock_rate_limiter, provides=RateLimiter)
     mocks_provider.provide(lambda: mock_openrouter, provides=OpenRouterGateway)
 
     engine = _create_async_engine(postgres_url, poolclass=NullPool)
@@ -91,8 +110,13 @@ def create_test_container(*, postgres_url: str) -> AsyncContainer:
     auth_provider = Provider(scope=Scope.APP)
     auth_provider.provide(ImplArgon2PasswordHasher, provides=PasswordHasher)
     auth_provider.provide(ImplSHA256SecretTokenGenerator, provides=SecretTokenGenerator)
+    auth_provider.provide(ImplEmailNormalize, provides=EmailNormalizer)
     auth_provider.provide(lambda: state_signer, provides=OAuthStateSigner)
     auth_provider.provide(lambda: session_config, provides=SessionConfig)
+    auth_provider.provide(
+        lambda: AppConfig(APP_PUBLIC_URL="https://test.example"), provides=AppConfig
+    )
+    auth_provider.provide(lambda: RateLimitConfig(), provides=RateLimitConfig)
 
     services_provider = Provider(scope=Scope.REQUEST)
     services_provider.provide(_create_session_service, provides=SessionService)

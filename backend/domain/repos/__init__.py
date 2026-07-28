@@ -20,6 +20,7 @@ from .role import RoleRepo
 from .session import SessionRepo
 from .tenant import TenantRepo
 from .user import UserRepo
+from .user_email import UserEmailRepo
 
 __all__ = (
     "AssetRepo",
@@ -41,5 +42,6 @@ __all__ = (
     "StreamSupported",
     "TenantRepo",
     "UpdateSupported",
+    "UserEmailRepo",
     "UserRepo",
 )

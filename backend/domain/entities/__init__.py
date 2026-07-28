@@ -13,6 +13,7 @@ from .role import Role
 from .session import Session
 from .tenant import Tenant
 from .user import User
+from .user_email import UserEmail
 
 __all__ = (
     "Asset",
@@ -30,6 +31,7 @@ __all__ = (
     "Session",
     "Tenant",
     "User",
+    "UserEmail",
     "WorkerEvent",
     "role_permission",
     "user_role",

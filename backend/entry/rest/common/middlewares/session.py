@@ -11,7 +11,12 @@ from litestar.types import ASGIApp, Empty, Message, Receive, Scope, Send
 
 from backend.app.rest.v1.dtos.sessions import Session as SessionDTO
 from backend.app.rest.v1.services.session import SessionService
-from backend.entry.rest.common.scope import get_session_token
+from backend.entry.rest.common.scope import (
+    SETUP_COOKIE_NAME,
+    get_oauth_setup_token,
+    get_session_token,
+    oauth_setup_cleared,
+)
 
 if TYPE_CHECKING:
     from litestar import Litestar
@@ -109,6 +114,16 @@ class SessionMiddleware(AbstractMiddleware):
 
                 elif scope.get("auth") is Empty and incoming_session_token:
                     headers.append(self._build_set_cookie_header(self.cookie_key, "", 0))
+
+                # OAuth-signup setup cookie: a separate short-lived httpOnly cookie
+                # set when a no-email OAuth signup begins and cleared once it
+                # completes. Its intent is stashed in scope state by the controller.
+                setup = get_oauth_setup_token(scope)
+                if setup is not None:
+                    token, max_age = setup
+                    headers.append(self._build_set_cookie_header(SETUP_COOKIE_NAME, token, max_age))
+                elif oauth_setup_cleared(scope):
+                    headers.append(self._build_set_cookie_header(SETUP_COOKIE_NAME, "", 0))
 
                 message["headers"] = headers
 

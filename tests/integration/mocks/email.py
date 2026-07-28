@@ -1,17 +1,20 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Literal, final
+from typing import TYPE_CHECKING, final
 
 if TYPE_CHECKING:
-    from backend.app.shared.ports.outreach.email import EmailType, VerificationEmailParams
+    from backend.app.shared.ports.outreach.email import EmailParams, EmailType
 
 
 @dataclass
 class SentEmail:
     to: str
     type: EmailType
-    params: VerificationEmailParams
+    # Widened to a plain mapping so tests can index any key regardless of which
+    # EmailParams variant was sent.
+    params: Mapping[str, object]
 
 
 @final
@@ -23,8 +26,8 @@ class MockEmailSender:
         self,
         *,
         to: str,
-        type: Literal[EmailType.EMAIL_VERIFICATION],
-        params: VerificationEmailParams,
+        type: EmailType,
+        params: EmailParams,
     ) -> None:
         self._sent.append(SentEmail(to=to, type=type, params=params))
 

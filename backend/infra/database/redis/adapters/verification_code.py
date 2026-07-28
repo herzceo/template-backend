@@ -66,6 +66,13 @@ class ImplVerificationCodeStore(VerificationCodeStore):
     async def delete(self, user_id: UUID) -> None:
         await self._redis.delete(_key(user_id))
 
+    async def invalidate(self, user_id: UUID) -> None:
+        await self.delete(user_id)
+
     @property
     def max_attempts(self) -> int:
         return self._config.VERIFICATION_MAX_ATTEMPTS
+
+    @property
+    def ttl_seconds(self) -> int:
+        return self._config.VERIFICATION_TTL_SECONDS

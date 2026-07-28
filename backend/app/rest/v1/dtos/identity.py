@@ -18,8 +18,13 @@ class IdentityDTO(StructDTO):
     provider_email: str | None
     provider_display_name: str | None
     provider_avatar_url: str | None
+    has_password: bool
     created_at: datetime
     updated_at: datetime
+
+
+class ConnectedIdentities(StructDTO):
+    identities: list[IdentityDTO]
 
 
 class InitiateResult(StructDTO):
